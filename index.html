@@ -2,369 +2,486 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unsere Ferienhütte</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hüttenbuch – Unsere Ferienhütte</title>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --braun:     #5c3d2e;
-      --hell:      #f5efe6;
-      --akzent:    #c8a96e;
-      --dunkel:    #2b1f14;
-      --gruen:     #4a6741;
+      --ink:       #1e1510;
+      --paper:     #f7f2ea;
+      --aged:      #e8dfc8;
+      --rust:      #8b4513;
+      --gold:      #b8860b;
+      --pine:      #2d4a2d;
+      --muted:     #7a6a58;
+      --divider:   #d4c9b0;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Lato', sans-serif;
-      background-color: var(--hell);
-      color: var(--dunkel);
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(180,160,120,0.07) 28px, rgba(180,160,120,0.07) 29px);
     }
 
-    /* ── HERO ── */
-    .hero {
-      height: 100vh;
-      background:
-        linear-gradient(to bottom, rgba(43,31,20,0.45) 0%, rgba(43,31,20,0.15) 60%, rgba(245,239,230,1) 100%),
-        url('https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1600&q=80') center/cover no-repeat;
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 220px;
+      background: var(--ink);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .hero-badge {
-      font-family: 'Lato', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--akzent);
-      margin-bottom: 1.2rem;
-      opacity: 0;
-      animation: fadeUp 0.8s 0.2s forwards;
-    }
-
-    .hero h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.8rem, 8vw, 6rem);
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.1;
-      text-shadow: 0 2px 20px rgba(0,0,0,0.4);
-      opacity: 0;
-      animation: fadeUp 0.9s 0.4s forwards;
-    }
-
-    .hero p {
-      margin-top: 1.2rem;
-      font-size: 1.15rem;
-      font-weight: 300;
-      color: rgba(255,255,255,0.88);
-      letter-spacing: 0.05em;
-      opacity: 0;
-      animation: fadeUp 0.9s 0.6s forwards;
-    }
-
-    .hero-btn {
-      margin-top: 2.5rem;
-      display: inline-block;
-      padding: 0.9rem 2.4rem;
-      background: var(--akzent);
-      color: var(--dunkel);
-      font-family: 'Lato', sans-serif;
-      font-weight: 700;
-      font-size: 0.85rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      text-decoration: none;
-      border-radius: 2px;
-      transition: background 0.2s, transform 0.2s;
-      opacity: 0;
-      animation: fadeUp 0.9s 0.8s forwards;
-    }
-    .hero-btn:hover { background: #e0c080; transform: translateY(-2px); }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(22px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── NAVIGATION ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
+      padding: 2.5rem 1.8rem;
       z-index: 100;
+      border-right: 3px solid var(--rust);
+    }
+    .sidebar-logo {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.4rem;
+      color: var(--aged);
+      line-height: 1.3;
+      margin-bottom: 0.4rem;
+    }
+    .sidebar-logo span { color: var(--gold); font-style: italic; }
+    .sidebar-sub {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3rem;
+    }
+    .sidebar nav { display: flex; flex-direction: column; gap: 0.2rem; }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      color: rgba(232,223,200,0.65);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      border-radius: 3px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: rgba(139,69,19,0.25);
+      color: var(--aged);
+    }
+    .sidebar nav a .ni { font-size: 1rem; width: 1.2rem; text-align: center; }
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 0.65rem;
+      color: rgba(122,106,88,0.4);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── MAIN ── */
+    .main { margin-left: 220px; min-height: 100vh; }
+
+    .page-header {
+      padding: 3.5rem 3.5rem 2rem;
+      border-bottom: 1px solid var(--divider);
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 1.2rem 3rem;
-      background: transparent;
-      transition: background 0.3s;
+      align-items: flex-end;
     }
-    nav.scrolled { background: rgba(43,31,20,0.95); }
+    .page-header h1 {
+      font-family: 'Crimson Pro', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      color: var(--rust);
+      line-height: 1;
+    }
+    .page-header h1 em { font-style: italic; color: var(--ink); }
+    .page-header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
+    .header-date { font-size: 0.75rem; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
 
-    .nav-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
+    .content { padding: 3rem 3.5rem; }
+    .section { margin-bottom: 4rem; }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+    }
+    .section-heading::after { content:''; flex:1; height:1px; background: var(--divider); }
+    .section-heading h2 {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--rust);
+      white-space: nowrap;
+    }
+
+    /* ── STAT CARDS ── */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.2rem;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--divider);
+      border-top: 3px solid var(--rust);
+      padding: 1.4rem 1.6rem;
+      border-radius: 2px;
+    }
+    .stat-card.green { border-top-color: var(--pine); }
+    .stat-card.gold  { border-top-color: var(--gold); }
+    .stat-card .slabel { font-size: 0.65rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .stat-card .sval {
+      font-family: 'Crimson Pro', serif;
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .stat-card .snote { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* ── KALENDER PLACEHOLDER ── */
+    .cal-placeholder {
+      background: #fff;
+      border: 1px solid var(--divider);
+      border-radius: 2px;
+      padding: 2.5rem;
+      text-align: center;
+      color: var(--muted);
+    }
+    .cal-placeholder .ci { font-size: 3rem; margin-bottom: 1rem; }
+    .cal-placeholder p { font-size: 0.9rem; line-height: 1.7; }
+    .cal-placeholder a {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1.5rem;
+      background: var(--rust);
       color: #fff;
       text-decoration: none;
-    }
-
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
-    .nav-links a {
-      color: rgba(255,255,255,0.85);
-      text-decoration: none;
-      font-size: 0.85rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--akzent); }
-
-    /* ── SECTION ALLGEMEIN ── */
-    section { padding: 5rem 2rem; }
-
-    .section-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.4em;
-      text-transform: uppercase;
-      color: var(--akzent);
-      margin-bottom: 0.8rem;
-    }
-
-    .section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      color: var(--braun);
-      margin-bottom: 1.5rem;
-    }
-
-    /* ── ÜBER DIE HÜTTE ── */
-    .ueber {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: center;
-    }
-
-    .ueber-text p {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      color: #4a3728;
-      margin-bottom: 1rem;
-    }
-
-    .ueber-bild img {
-      width: 100%;
-      border-radius: 4px;
-      box-shadow: 8px 8px 0px var(--akzent);
-    }
-
-    /* ── AUSSTATTUNG ── */
-    .ausstattung-section {
-      background: var(--braun);
-      color: var(--hell);
-    }
-
-    .ausstattung-inner {
-      max-width: 1000px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .ausstattung-section .section-title { color: var(--akzent); }
-
-    .ausstattung-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-
-    .ausstattung-item {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(200,169,110,0.3);
-      border-radius: 4px;
-      padding: 1.5rem 1rem;
-      transition: background 0.2s;
-    }
-    .ausstattung-item:hover { background: rgba(200,169,110,0.15); }
-
-    .ausstattung-item .icon { font-size: 2rem; margin-bottom: 0.6rem; }
-    .ausstattung-item span { font-size: 0.9rem; letter-spacing: 0.05em; }
-
-    /* ── GALERIE ── */
-    .galerie-inner { max-width: 1100px; margin: 0 auto; }
-
-    .galerie-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      grid-template-rows: 220px 220px;
-      gap: 0.75rem;
-      margin-top: 2rem;
-    }
-
-    .galerie-grid .bild { border-radius: 3px; overflow: hidden; }
-    .galerie-grid .bild:first-child { grid-row: 1 / 3; }
-    .galerie-grid .bild img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s;
-    }
-    .galerie-grid .bild:hover img { transform: scale(1.04); }
-
-    /* ── KONTAKT ── */
-    .kontakt-section {
-      background: var(--dunkel);
-      color: var(--hell);
-      text-align: center;
-    }
-    .kontakt-section .section-title { color: #fff; }
-    .kontakt-section p { color: rgba(245,239,230,0.7); font-size: 1rem; line-height: 1.8; }
-    .kontakt-section a { color: var(--akzent); text-decoration: none; }
-    .kontakt-section a:hover { text-decoration: underline; }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      background: #1a0f08;
-      color: rgba(245,239,230,0.35);
       font-size: 0.8rem;
       letter-spacing: 0.1em;
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+    .cal-placeholder a:hover { background: #a0521a; }
+
+    /* ── TIMELINE ── */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.4rem; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--divider);
+    }
+    .titem { position: relative; margin-bottom: 2.2rem; padding-left: 1rem; }
+    .titem::before {
+      content: '';
+      position: absolute;
+      left: -1.67rem; top: 0.45rem;
+      width: 10px; height: 10px;
+      background: var(--rust);
+      border-radius: 50%;
+      border: 2px solid var(--paper);
+    }
+    .tyear { font-size: 0.68rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 0.2rem; }
+    .ttitle { font-family: 'Crimson Pro', serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .ttext { font-size: 0.88rem; color: var(--muted); line-height: 1.75; }
+
+    /* ── GALERIE ── */
+    .galerie-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .foto { aspect-ratio: 4/3; overflow: hidden; border-radius: 2px; border: 1px solid var(--divider); }
+    .foto.big { grid-column: span 2; aspect-ratio: 16/7; }
+    .foto img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: sepia(12%) brightness(0.97);
+      transition: filter 0.3s, transform 0.35s;
+    }
+    .foto:hover img { filter: sepia(0%) brightness(1.02); transform: scale(1.04); }
+
+    /* ── REGELN ── */
+    .regeln-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .rcard {
+      background: #fff;
+      border: 1px solid var(--divider);
+      border-left: 4px solid var(--pine);
+      padding: 1.2rem 1.4rem;
+      border-radius: 0 2px 2px 0;
+    }
+    .rcard.warn { border-left-color: var(--gold); }
+    .rcard h4 { font-family: 'Crimson Pro', serif; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .rcard ul { list-style: none; font-size: 0.84rem; color: var(--muted); line-height: 1.9; }
+    .rcard ul li::before { content: '— '; color: var(--rust); }
+
+    /* ── KONTAKT ── */
+    .kontakt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .kcard {
+      background: #fff;
+      border: 1px solid var(--divider);
+      border-radius: 2px;
+      padding: 1.4rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .kicon { font-size: 1.6rem; }
+    .klabel { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+    .kval { font-family: 'Crimson Pro', serif; font-size: 1.05rem; color: var(--ink); }
+    .kval a { color: var(--rust); text-decoration: none; }
+    .kval a:hover { text-decoration: underline; }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      margin-left: 220px;
+      padding: 1.2rem 3.5rem;
+      border-top: 1px solid var(--divider);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      display: flex;
+      justify-content: space-between;
     }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 720px) {
-      nav { padding: 1rem 1.5rem; }
-      .nav-links { display: none; }
-      .ueber { grid-template-columns: 1fr; gap: 2rem; }
-      .galerie-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto;
-      }
-      .galerie-grid .bild:first-child { grid-row: auto; }
+    @media (max-width: 900px) {
+      .sidebar { width: 58px; padding: 1.2rem 0.7rem; }
+      .sidebar-logo, .sidebar-sub, .sidebar nav a span, .sidebar-footer { display: none; }
+      .sidebar nav a { justify-content: center; padding: 0.7rem; }
+      .main, .site-footer { margin-left: 58px; }
+      .content, .page-header { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .regeln-grid, .kontakt-grid { grid-template-columns: 1fr; }
+      .galerie-grid { grid-template-columns: 1fr 1fr; }
+      .foto.big { grid-column: span 1; aspect-ratio: 4/3; }
+    }
+    @media (max-width: 560px) {
+      .dashboard-grid { grid-template-columns: 1fr 1fr; }
+      .galerie-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Navigation -->
-  <nav id="navbar">
-    <a class="nav-logo" href="#">🏔 Ferienhütte</a>
-    <ul class="nav-links">
-      <li><a href="#ueber">Die Hütte</a></li>
-      <li><a href="#ausstattung">Ausstattung</a></li>
-      <li><a href="#galerie">Galerie</a></li>
-      <li><a href="kalender.html">Verfügbarkeit</a></li>
-      <li><a href="#kontakt">Kontakt</a></li>
-    </ul>
-  </nav>
+  <aside class="sidebar">
+    <div class="sidebar-logo">Hütten<span>buch</span></div>
+    <div class="sidebar-sub">Verwaltung</div>
+    <nav>
+      <a href="#uebersicht" class="active"><span class="ni">🏠</span><span>Übersicht</span></a>
+      <a href="#kalender"><span class="ni">📅</span><span>Kalender</span></a>
+      <a href="#geschichte"><span class="ni">📖</span><span>Geschichte</span></a>
+      <a href="#galerie"><span class="ni">🖼</span><span>Galerie</span></a>
+      <a href="#regeln"><span class="ni">📋</span><span>Regeln & Infos</span></a>
+      <a href="#kontakt"><span class="ni">✉️</span><span>Kontakt</span></a>
+    </nav>
+    <div class="sidebar-footer">© 2025 Familie Mustermann</div>
+  </aside>
 
-  <!-- Hero -->
-  <section class="hero">
-    <p class="hero-badge">Urlaub in der Natur</p>
-    <h1>Unsere Ferienhütte</h1>
-    <p>Ruhe, Natur und Gemütlichkeit – mitten im Grünen</p>
-    <a href="kalender.html" class="hero-btn">Verfügbarkeit prüfen</a>
-  </section>
+  <main class="main">
+    <header class="page-header" id="uebersicht">
+      <div>
+        <h1>Unsere <em>Ferienhütte</em></h1>
+        <p>Familieninterne Verwaltung · Schwarzwald</p>
+      </div>
+      <div class="header-date" id="current-date"></div>
+    </header>
 
-  <!-- Über die Hütte -->
-  <section id="ueber">
-    <div class="ueber">
-      <div class="ueber-text">
-        <p class="section-label">Willkommen</p>
-        <h2 class="section-title">Ein Rückzugsort für die ganze Familie</h2>
-        <p>
-          Unsere gemütliche Hütte liegt idyllisch eingebettet in der Natur und bietet
-          den perfekten Rahmen für erholsame Auszeiten. Ob im Sommer beim Wandern
-          oder im Winter beim Schneeschuhwandern – hier findet jeder seine Ruhe.
+    <div class="content">
+
+      <!-- Übersicht -->
+      <section class="section">
+        <div class="section-heading"><span>📊</span><h2>Auf einen Blick</h2></div>
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="slabel">Belegungen 2025</div>
+            <div class="sval">14</div>
+            <div class="snote">davon 3 diesen Monat</div>
+          </div>
+          <div class="stat-card green">
+            <div class="slabel">Nächste freie Woche</div>
+            <div class="sval" style="font-size:1.3rem;padding-top:.4rem">KW 34</div>
+            <div class="snote">19.–25. August</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="slabel">Nächste Belegung</div>
+            <div class="sval" style="font-size:1.2rem;padding-top:.4rem">Familie T.</div>
+            <div class="snote">28. Juli – 4. Aug.</div>
+          </div>
+          <div class="stat-card">
+            <div class="slabel">Übernachtungen gesamt</div>
+            <div class="sval">87</div>
+            <div class="snote">seit Eröffnung 1978</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Kalender -->
+      <section class="section" id="kalender">
+        <div class="section-heading"><span>📅</span><h2>Belegungskalender</h2></div>
+        <div class="cal-placeholder">
+          <div class="ci">🗓️</div>
+          <p>
+            Hier wird der interaktive Belegungskalender eingebunden.<br/>
+            Kommt als nächster Schritt mit <strong>FullCalendar.js</strong>!
+          </p>
+          <a href="kalender.html">→ Kalender öffnen</a>
+        </div>
+      </section>
+
+      <!-- Geschichte -->
+      <section class="section" id="geschichte">
+        <div class="section-heading"><span>📖</span><h2>Geschichte der Hütte</h2></div>
+        <div class="timeline">
+          <div class="titem">
+            <div class="tyear">1978</div>
+            <div class="ttitle">Der Bau</div>
+            <div class="ttext">Opa Hermann baut die Hütte in Eigenregie über zwei Sommer. Die Holzbalken stammen aus dem eigenen Waldstück, der Kamin wird gemeinsam mit den Nachbarn gemauert.</div>
+          </div>
+          <div class="titem">
+            <div class="tyear">1985</div>
+            <div class="ttitle">Erste Erweiterung</div>
+            <div class="ttext">Ein zweites Schlafzimmer und die Veranda werden angebaut. Ab jetzt können auch Großfamilienurlaube stattfinden.</div>
+          </div>
+          <div class="titem">
+            <div class="tyear">2003</div>
+            <div class="ttitle">Renovierung</div>
+            <div class="ttext">Neue Küche, neues Bad, neue Elektrik. Die Hütte erhält außerdem einen Holzofen im Wohnzimmer als Herzstück.</div>
+          </div>
+          <div class="titem">
+            <div class="tyear">2019</div>
+            <div class="ttitle">Übergabe an die nächste Generation</div>
+            <div class="ttext">Die Verwaltung geht an die Kinder und Enkel über. WLAN wird installiert. Die Tradition lebt weiter.</div>
+          </div>
+          <div class="titem">
+            <div class="tyear">2025</div>
+            <div class="ttitle">Dieses digitale Hüttenbuch</div>
+            <div class="ttext">Zur besseren Koordination innerhalb der Familie entsteht diese Website. Wer wann? Ab jetzt alles auf einen Blick.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Galerie -->
+      <section class="section" id="galerie">
+        <div class="section-heading"><span>🖼</span><h2>Galerie</h2></div>
+        <div class="galerie-grid">
+          <div class="foto big">
+            <img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=900&q=80" alt="Hütte im Winter"/>
+          </div>
+          <div class="foto">
+            <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Außenansicht"/>
+          </div>
+          <div class="foto">
+            <img src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=500&q=80" alt="Umgebung"/>
+          </div>
+          <div class="foto">
+            <img src="https://images.unsplash.com/photo-1520637836993-a072955a31e1?w=500&q=80" alt="Innenraum"/>
+          </div>
+          <div class="foto">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80" alt="Wohnzimmer"/>
+          </div>
+          <div class="foto">
+            <img src="https://images.unsplash.com/photo-1586105449897-20b5efeb3233?w=500&q=80" alt="Natur"/>
+          </div>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem;">
+          💡 Eigene Fotos hochladen und die URLs durch z.B. <code>fotos/huette1.jpg</code> ersetzen.
         </p>
-        <p>
-          Die Hütte bietet Platz für bis zu 6 Personen und ist mit allem ausgestattet,
-          was ihr für einen angenehmen Aufenthalt benötigt.
-        </p>
-      </div>
-      <div class="ueber-bild">
-        <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&q=80" alt="Ferienhütte von außen" />
-      </div>
+      </section>
+
+      <!-- Regeln -->
+      <section class="section" id="regeln">
+        <div class="section-heading"><span>📋</span><h2>Regeln & Wichtige Infos</h2></div>
+        <div class="regeln-grid">
+          <div class="rcard">
+            <h4>🔑 Anreise & Schlüssel</h4>
+            <ul>
+              <li>Anreise ab 15:00 Uhr</li>
+              <li>Schlüssel bei Familie Mustermann</li>
+              <li>Abreise bis 11:00 Uhr</li>
+              <li>Schlüssel im Briefkasten einwerfen</li>
+            </ul>
+          </div>
+          <div class="rcard">
+            <h4>🧹 Reinigung</h4>
+            <ul>
+              <li>Hütte besenrein hinterlassen</li>
+              <li>Bettwäsche in den Wäschebeutel</li>
+              <li>Kühlschrank leeren</li>
+              <li>Müll zur Tonne bringen</li>
+            </ul>
+          </div>
+          <div class="rcard warn">
+            <h4>⚠️ Wichtige Hinweise</h4>
+            <ul>
+              <li>Kamin nur mit trocknem Holz</li>
+              <li>Lüftung bei Abreise schließen</li>
+              <li>Wasser im Winter absperren</li>
+              <li>Notfall Heizung: 0800 123 456</li>
+            </ul>
+          </div>
+          <div class="rcard">
+            <h4>🐾 Sonstiges</h4>
+            <ul>
+              <li>Haustiere willkommen</li>
+              <li>Rauchen nur im Außenbereich</li>
+              <li>WLAN-Passwort: HütteXXXX</li>
+              <li>Holz im Schuppen nachfüllen</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Kontakt -->
+      <section class="section" id="kontakt">
+        <div class="section-heading"><span>✉️</span><h2>Kontakt & Verwaltung</h2></div>
+        <div class="kontakt-grid">
+          <div class="kcard">
+            <div class="kicon">👤</div>
+            <div><div class="klabel">Ansprechpartner</div><div class="kval">Max Mustermann</div></div>
+          </div>
+          <div class="kcard">
+            <div class="kicon">📞</div>
+            <div><div class="klabel">Telefon</div><div class="kval"><a href="tel:+491234567890">+49 123 456 7890</a></div></div>
+          </div>
+          <div class="kcard">
+            <div class="kicon">📧</div>
+            <div><div class="klabel">E-Mail</div><div class="kval"><a href="mailto:huette@familie.de">huette@familie.de</a></div></div>
+          </div>
+          <div class="kcard">
+            <div class="kicon">📍</div>
+            <div><div class="klabel">Adresse</div><div class="kval">Waldweg 7, 79123 Musterort</div></div>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </section>
+  </main>
 
-  <!-- Ausstattung -->
-  <section id="ausstattung" class="ausstattung-section">
-    <div class="ausstattung-inner">
-      <p class="section-label">Was euch erwartet</p>
-      <h2 class="section-title">Ausstattung</h2>
-      <div class="ausstattung-grid">
-        <div class="ausstattung-item"><div class="icon">🛏</div><span>3 Schlafzimmer</span></div>
-        <div class="ausstattung-item"><div class="icon">🛁</div><span>2 Badezimmer</span></div>
-        <div class="ausstattung-item"><div class="icon">🔥</div><span>Kamin</span></div>
-        <div class="ausstattung-item"><div class="icon">🍳</div><span>Küche</span></div>
-        <div class="ausstattung-item"><div class="icon">📶</div><span>WLAN</span></div>
-        <div class="ausstattung-item"><div class="icon">🌲</div><span>Terrasse & Garten</span></div>
-        <div class="ausstattung-item"><div class="icon">🅿️</div><span>Parkplatz</span></div>
-        <div class="ausstattung-item"><div class="icon">🐕</div><span>Haustiere erlaubt</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Galerie -->
-  <section id="galerie">
-    <div class="galerie-inner">
-      <p class="section-label">Eindrücke</p>
-      <h2 class="section-title">Galerie</h2>
-      <div class="galerie-grid">
-        <div class="bild">
-          <img src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=800&q=80" alt="Hütte Außenansicht" />
-        </div>
-        <div class="bild">
-          <img src="https://images.unsplash.com/photo-1520637836993-a072955a31e1?w=600&q=80" alt="Innenansicht" />
-        </div>
-        <div class="bild">
-          <img src="https://images.unsplash.com/photo-1586105449897-20b5efeb3233?w=600&q=80" alt="Umgebung" />
-        </div>
-        <div class="bild">
-          <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&q=80" alt="Außenbereich" />
-        </div>
-        <div class="bild">
-          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80" alt="Wohnzimmer" />
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Kontakt -->
-  <section id="kontakt" class="kontakt-section">
-    <p class="section-label">Anfragen & Buchung</p>
-    <h2 class="section-title">Kontakt</h2>
-    <p>
-      Interesse? Schreibt uns einfach eine E-Mail oder ruft an.<br />
-      <br />
-      📧 <a href="mailto:deine@email.de">deine@email.de</a><br />
-      📞 <a href="tel:+491234567890">+49 123 456 7890</a>
-    </p>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    © 2025 Ferienhütte · Alle Rechte vorbehalten
+  <footer class="site-footer">
+    <span>Hüttenbuch · Familieninterne Verwaltung</span>
+    <span id="fyear"></span>
   </footer>
 
   <script>
-    // Navbar wird beim Scrollen dunkler
-    const navbar = document.getElementById('navbar');
+    const d = new Date();
+    document.getElementById('current-date').textContent =
+      d.toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    document.getElementById('fyear').textContent = '© ' + d.getFullYear();
+
+    const links = document.querySelectorAll('.sidebar nav a');
+    const secs = document.querySelectorAll('[id]');
     window.addEventListener('scroll', () => {
-      navbar.classList.toggle('scrolled', window.scrollY > 50);
+      let cur = '';
+      secs.forEach(s => { if (window.scrollY >= s.offsetTop - 140) cur = s.id; });
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
     });
   </script>
-
 </body>
 </html>
