@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalender – Hüttenbuch</title>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <!-- FullCalendar einbinden -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/de.global.min.js"></script>
+
+  <style>
+    :root {
+      --ink:     #1e1510;
+      --paper:   #f7f2ea;
+      --aged:    #e8dfc8;
+      --rust:    #8b4513;
+      --gold:    #b8860b;
+      --pine:    #2d4a2d;
+      --muted:   #7a6a58;
+      --divider: #d4c9b0;
+      --belegt:  #8b4513;
+      --frei:    #2d4a2d;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 28px,
+          rgba(180,160,120,0.07) 28px, rgba(180,160,120,0.07) 29px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 220px;
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      padding: 2.5rem 1.8rem;
+      z-index: 100;
+      border-right: 3px solid var(--rust);
+    }
+    .sidebar-logo { font-family: 'Crimson Pro', serif; font-size: 1.4rem; color: var(--aged); line-height: 1.3; margin-bottom: 0.4rem; }
+    .sidebar-logo span { color: var(--gold); font-style: italic; }
+    .sidebar-sub { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin-bottom: 3rem; }
+    .sidebar nav { display: flex; flex-direction: column; gap: 0.2rem; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.6rem 0.8rem;
+      color: rgba(232,223,200,0.65);
+      text-decoration: none; font-size: 0.82rem; letter-spacing: 0.04em;
+      border-radius: 3px; transition: background 0.15s, color 0.15s;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active { background: rgba(139,69,19,0.25); color: var(--aged); }
+    .sidebar nav a .ni { font-size: 1rem; width: 1.2rem; text-align: center; }
+    .sidebar-footer { margin-top: auto; font-size: 0.65rem; color: rgba(122,106,88,0.4); letter-spacing: 0.1em; }
+
+    /* ── MAIN ── */
+    .main { margin-left: 220px; min-height: 100vh; }
+
+    .page-header {
+      padding: 3.5rem 3.5rem 2rem;
+      border-bottom: 1px solid var(--divider);
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .page-header h1 { font-family: 'Crimson Pro', serif; font-size: 2.8rem; font-weight: 300; color: var(--rust); }
+    .page-header h1 em { font-style: italic; color: var(--ink); }
+    .page-header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
+    .header-date { font-size: 0.75rem; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
+
+    .content { padding: 2.5rem 3.5rem; }
+
+    /* ── LEGENDE ── */
+    .legende {
+      display: flex; gap: 1.5rem; align-items: center;
+      margin-bottom: 1.5rem;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .legende-item { display: flex; align-items: center; gap: 0.5rem; }
+    .legende-dot { width: 12px; height: 12px; border-radius: 2px; }
+    .legende-dot.belegt { background: var(--belegt); }
+    .legende-dot.frei   { background: var(--frei); }
+
+    /* ── LAYOUT: Kalender + Seitenleiste ── */
+    .kalender-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* ── FULLCALENDAR STYLING ── */
+    #kalender-container {
+      background: #fff;
+      border: 1px solid var(--divider);
+      border-radius: 2px;
+      padding: 1.5rem;
+    }
+
+    /* FullCalendar überschreiben */
+    .fc { font-family: 'DM Sans', sans-serif; }
+    .fc .fc-toolbar-title { font-family: 'Crimson Pro', serif; font-size: 1.5rem; font-weight: 400; color: var(--rust); }
+    .fc .fc-button-primary {
+      background: var(--rust) !important;
+      border-color: var(--rust) !important;
+      font-size: 0.78rem !important;
+      letter-spacing: 0.05em !important;
+      border-radius: 2px !important;
+    }
+    .fc .fc-button-primary:hover { background: #a0521a !important; border-color: #a0521a !important; }
+    .fc .fc-button-primary:disabled { background: var(--muted) !important; border-color: var(--muted) !important; }
+    .fc .fc-col-header-cell { background: var(--aged); }
+    .fc .fc-col-header-cell-cushion {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; padding: 0.5rem 0;
+    }
+    .fc .fc-daygrid-day-number {
+      font-size: 0.8rem; color: var(--muted); text-decoration: none; padding: 4px 6px;
+    }
+    .fc .fc-daygrid-day.fc-day-today { background: rgba(184,134,11,0.08) !important; }
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number { color: var(--gold); font-weight: 500; }
+    .fc-event { border-radius: 2px !important; border: none !important; font-size: 0.78rem !important; padding: 1px 4px !important; }
+    .fc-event-title { font-weight: 400 !important; }
+    .fc .fc-daygrid-event-dot { display: none; }
+    .fc-list-event:hover td { background: rgba(139,69,19,0.06) !important; }
+    .fc .fc-list-event-title a { color: var(--ink) !important; text-decoration: none !important; }
+
+    /* ── SEITENLEISTE RECHTS ── */
+    .sidebar-right { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .info-card {
+      background: #fff;
+      border: 1px solid var(--divider);
+      border-top: 3px solid var(--rust);
+      border-radius: 2px;
+      padding: 1.2rem 1.3rem;
+    }
+    .info-card.pine { border-top-color: var(--pine); }
+    .info-card h3 {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1rem; font-weight: 600;
+      margin-bottom: 0.9rem; color: var(--ink);
+    }
+
+    /* Neue Belegung Formular */
+    .form-group { margin-bottom: 0.75rem; }
+    .form-group label { display: block; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+    .form-group input {
+      width: 100%; padding: 0.5rem 0.6rem;
+      border: 1px solid var(--divider); border-radius: 2px;
+      background: var(--paper); color: var(--ink);
+      font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus { outline: none; border-color: var(--rust); }
+    .btn-add {
+      width: 100%; padding: 0.6rem;
+      background: var(--rust); color: #fff;
+      border: none; border-radius: 2px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem; letter-spacing: 0.1em;
+      cursor: pointer; transition: background 0.2s;
+      margin-top: 0.3rem;
+    }
+    .btn-add:hover { background: #a0521a; }
+
+    /* Belegungsliste */
+    .belegung-liste { display: flex; flex-direction: column; gap: 0.6rem; }
+    .belegung-eintrag {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 0.6rem 0.7rem;
+      background: var(--paper);
+      border-radius: 2px;
+      border-left: 3px solid var(--belegt);
+      font-size: 0.82rem;
+    }
+    .be-name { font-weight: 500; margin-bottom: 0.15rem; }
+    .be-datum { color: var(--muted); font-size: 0.75rem; }
+    .be-del {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 0.9rem; padding: 0 2px;
+      transition: color 0.2s;
+    }
+    .be-del:hover { color: var(--rust); }
+
+    /* Hinweis-Box */
+    .hinweis {
+      font-size: 0.78rem; color: var(--muted); line-height: 1.7;
+      padding: 0.8rem; background: var(--paper);
+      border-radius: 2px; border: 1px dashed var(--divider);
+    }
+    .hinweis strong { color: var(--rust); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1100px) {
+      .kalender-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .sidebar { width: 58px; padding: 1.2rem 0.7rem; }
+      .sidebar-logo, .sidebar-sub, .sidebar nav a span, .sidebar-footer { display: none; }
+      .sidebar nav a { justify-content: center; padding: 0.7rem; }
+      .main { margin-left: 58px; }
+      .content, .page-header { padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">Hütten<span>buch</span></div>
+    <div class="sidebar-sub">Verwaltung</div>
+    <nav>
+      <a href="index.html"><span class="ni">🏠</span><span>Übersicht</span></a>
+      <a href="kalender.html" class="active"><span class="ni">📅</span><span>Kalender</span></a>
+      <a href="index.html#geschichte"><span class="ni">📖</span><span>Geschichte</span></a>
+      <a href="index.html#galerie"><span class="ni">🖼</span><span>Galerie</span></a>
+      <a href="index.html#regeln"><span class="ni">📋</span><span>Regeln & Infos</span></a>
+      <a href="index.html#kontakt"><span class="ni">✉️</span><span>Kontakt</span></a>
+    </nav>
+    <div class="sidebar-footer">© 2025 Familie Mustermann</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="page-header">
+      <div>
+        <h1>Belegungs<em>kalender</em></h1>
+        <p>Wer ist wann in der Hütte?</p>
+      </div>
+      <div class="header-date" id="current-date"></div>
+    </header>
+
+    <div class="content">
+      <div class="legende">
+        <span style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;margin-right:0.5rem;">Legende:</span>
+        <div class="legende-item"><div class="legende-dot belegt"></div> Belegt</div>
+        <div class="legende-item"><div class="legende-dot frei"></div> Eigene Buchung</div>
+      </div>
+
+      <div class="kalender-layout">
+
+        <!-- Kalender -->
+        <div id="kalender-container">
+          <div id="kalender"></div>
+        </div>
+
+        <!-- Rechte Seitenleiste -->
+        <div class="sidebar-right">
+
+          <!-- Neue Belegung eintragen -->
+          <div class="info-card">
+            <h3>➕ Belegung eintragen</h3>
+            <div class="form-group">
+              <label>Name / Familie</label>
+              <input type="text" id="f-name" placeholder="z.B. Familie Müller"/>
+            </div>
+            <div class="form-group">
+              <label>Von</label>
+              <input type="date" id="f-von"/>
+            </div>
+            <div class="form-group">
+              <label>Bis (Abreisetag)</label>
+              <input type="date" id="f-bis"/>
+            </div>
+            <button class="btn-add" onclick="belegungHinzufuegen()">Eintragen</button>
+          </div>
+
+          <!-- Aktuelle Belegungen -->
+          <div class="info-card pine">
+            <h3>📋 Aktuelle Belegungen</h3>
+            <div class="belegung-liste" id="belegung-liste"></div>
+          </div>
+
+          <!-- Hinweis -->
+          <div class="hinweis">
+            <strong>Hinweis:</strong> Einträge werden nur im Browser gespeichert (kein Server). Nach dem Schließen des Browsers sind sie weg.<br/><br/>
+            Für dauerhaftes Speichern: Belegungen direkt im Code in der <code>belegungen</code>-Liste eintragen.
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ── DATUM ──
+    document.getElementById('current-date').textContent =
+      new Date().toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+    // ── BELEGUNGEN (hier eintragen!) ──
+    // Format: { name, von: 'JJJJ-MM-TT', bis: 'JJJJ-MM-TT' }
+    let belegungen = [
+      { name: 'Familie Müller',   von: '2025-07-05', bis: '2025-07-12' },
+      { name: 'Familie Schmidt',  von: '2025-07-28', bis: '2025-08-04' },
+      { name: 'Oma & Opa',        von: '2025-08-18', bis: '2025-08-25' },
+      { name: 'Familie Huber',    von: '2025-09-06', bis: '2025-09-13' },
+    ];
+
+    // ── KALENDER INITIALISIEREN ──
+    let kalender;
+
+    function belegungenZuEvents(liste) {
+      return liste.map((b, i) => ({
+        id: i,
+        title: b.name,
+        start: b.von,
+        end:   b.bis,
+        backgroundColor: '#8b4513',
+        borderColor:     '#8b4513',
+      }));
+    }
+
+    function listeAktualisieren() {
+      const el = document.getElementById('belegung-liste');
+      if (belegungen.length === 0) {
+        el.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);">Noch keine Einträge.</div>';
+        return;
+      }
+      el.innerHTML = belegungen
+        .sort((a, b) => a.von.localeCompare(b.von))
+        .map((b, i) => `
+          <div class="belegung-eintrag">
+            <div>
+              <div class="be-name">${b.name}</div>
+              <div class="be-datum">
+                ${new Date(b.von).toLocaleDateString('de-DE', {day:'2-digit',month:'short'})} –
+                ${new Date(b.bis).toLocaleDateString('de-DE', {day:'2-digit',month:'short',year:'numeric'})}
+              </div>
+            </div>
+            <button class="be-del" onclick="belegungLoeschen(${i})" title="Löschen">✕</button>
+          </div>
+        `).join('');
+    }
+
+    function kalenderAktualisieren() {
+      kalender.removeAllEvents();
+      kalender.addEventSource(belegungenZuEvents(belegungen));
+      listeAktualisieren();
+    }
+
+    function belegungHinzufuegen() {
+      const name = document.getElementById('f-name').value.trim();
+      const von  = document.getElementById('f-von').value;
+      const bis  = document.getElementById('f-bis').value;
+
+      if (!name || !von || !bis) { alert('Bitte alle Felder ausfüllen!'); return; }
+      if (von >= bis) { alert('Das Enddatum muss nach dem Startdatum liegen.'); return; }
+
+      belegungen.push({ name, von, bis });
+      kalenderAktualisieren();
+
+      // Felder leeren
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-von').value  = '';
+      document.getElementById('f-bis').value  = '';
+    }
+
+    function belegungLoeschen(index) {
+      if (confirm('Belegung wirklich löschen?')) {
+        belegungen.splice(index, 1);
+        kalenderAktualisieren();
+      }
+    }
+
+    // ── KALENDER STARTEN ──
+    document.addEventListener('DOMContentLoaded', () => {
+      kalender = new FullCalendar.Calendar(document.getElementById('kalender'), {
+        initialView:    'dayGridMonth',
+        locale:         'de',
+        firstDay:       1,           // Montag als erster Tag
+        height:         'auto',
+        events:         belegungenZuEvents(belegungen),
+        eventClick: function(info) {
+          if (confirm(`"${info.event.title}" löschen?`)) {
+            const idx = belegungen.findIndex(
+              b => b.name === info.event.title && b.von === info.event.startStr.slice(0,10)
+            );
+            if (idx !== -1) {
+              belegungen.splice(idx, 1);
+              kalenderAktualisieren();
+            }
+          }
+        },
+        headerToolbar: {
+          left:   'prev,next today',
+          center: 'title',
+          right:  'dayGridMonth,listMonth'
+        },
+        buttonText: {
+          today:      'Heute',
+          month:      'Monat',
+          list:       'Liste'
+        }
+      });
+
+      kalender.render();
+      listeAktualisieren();
+    });
+  </script>
+</body>
+</html>
