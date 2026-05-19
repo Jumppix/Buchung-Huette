@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hüttenbuch</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ════════════ DESIGN-VARIABLEN ════════════ */
+:root{
+  --ink:#1e1510; --paper:#f7f2ea; --aged:#e8dfc8; --rust:#8b4513;
+  --gold:#b8860b; --pine:#2d4a2d; --blue:#2c5f8a; --muted:#7a6a58;
+  --divider:#d4c9b0; --red:#c0392b; --warn:#e67e22;
+  --nav-h:56px; --sub-h:44px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(180,160,120,.06) 28px,rgba(180,160,120,.06) 29px);}
+
+/* ════════════ PASSWORD GATE ════════════ */
+#pw-gate{
+  position:fixed;inset:0;background:var(--ink);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+}
+.pw-box{
+  background:var(--paper);border-radius:4px;padding:3rem 3.5rem;text-align:center;
+  max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+.pw-logo{font-family:'Crimson Pro',serif;font-size:2rem;color:var(--rust);margin-bottom:.3rem;}
+.pw-logo span{color:var(--gold);font-style:italic;}
+.pw-sub{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem;}
+.pw-box input{
+  width:100%;padding:.7rem 1rem;border:1px solid var(--divider);border-radius:2px;
+  background:#fff;font-family:'DM Sans',sans-serif;font-size:1rem;text-align:center;
+  letter-spacing:.15em;margin-bottom:.7rem;transition:border-color .2s;
+}
+.pw-box input:focus{outline:none;border-color:var(--rust);}
+.pw-box button{
+  width:100%;padding:.7rem;background:var(--rust);color:#fff;border:none;border-radius:2px;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;letter-spacing:.15em;cursor:pointer;transition:background .2s;
+}
+.pw-box button:hover{background:#a0521a;}
+.pw-error{font-size:.8rem;color:var(--red);margin-top:.5rem;min-height:1.2em;}
+.pw-hint{font-size:.72rem;color:var(--muted);margin-top:1rem;}
+
+/* ════════════ COOKIE BANNER ════════════ */
+#cookie-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:8000;
+  background:var(--ink);color:var(--aged);padding:1rem 2rem;
+  display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;
+  border-top:2px solid var(--rust);
+}
+#cookie-banner p{font-size:.8rem;flex:1;line-height:1.6;}
+#cookie-banner a{color:var(--gold);}
+.cookie-btns{display:flex;gap:.6rem;flex-shrink:0;}
+.btn-cookie-acc{background:var(--pine);color:#fff;border:none;padding:.5rem 1.2rem;border-radius:2px;cursor:pointer;font-size:.78rem;letter-spacing:.08em;}
+.btn-cookie-ess{background:transparent;color:var(--aged);border:1px solid rgba(232,223,200,.3);padding:.5rem 1.2rem;border-radius:2px;cursor:pointer;font-size:.78rem;}
+
+/* ════════════ HEADER / TOPNAV ════════════ */
+#app{display:none;}
+header{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--ink);border-bottom:2px solid var(--rust);
+  display:flex;align-items:center;padding:0 1.5rem;gap:1.5rem;
+}
+.logo{font-family:'Crimson Pro',serif;font-size:1.3rem;color:var(--aged);white-space:nowrap;cursor:pointer;text-decoration:none;}
+.logo span{color:var(--gold);font-style:italic;}
+#main-nav{display:flex;gap:.1rem;overflow-x:auto;flex:1;scrollbar-width:none;}
+#main-nav::-webkit-scrollbar{display:none;}
+.nav-item{
+  padding:.5rem .85rem;color:rgba(232,223,200,.65);font-size:.78rem;letter-spacing:.04em;
+  cursor:pointer;border-radius:3px;white-space:nowrap;transition:background .15s,color .15s;
+  display:flex;align-items:center;gap:.3rem;user-select:none;
+}
+.nav-item:hover{color:var(--aged);background:rgba(255,255,255,.06);}
+.nav-item.active{background:rgba(139,69,19,.35);color:#fff;}
+.nav-arrow{font-size:.6rem;opacity:.5;}
+
+/* ════════════ SUB-NAVIGATION ════════════ */
+#sub-nav{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;
+  height:var(--sub-h);background:var(--aged);border-bottom:1px solid var(--divider);
+  display:flex;align-items:center;padding:0 1.5rem;gap:.3rem;overflow-x:auto;
+  scrollbar-width:none;
+}
+#sub-nav::-webkit-scrollbar{display:none;}
+#sub-nav.hidden{display:none;}
+.sub-item{
+  padding:.35rem .85rem;font-size:.78rem;letter-spacing:.03em;color:var(--muted);
+  cursor:pointer;border-radius:2px;white-space:nowrap;transition:background .15s,color .15s;
+  border:1px solid transparent;
+}
+.sub-item:hover{background:rgba(139,69,19,.1);color:var(--ink);}
+.sub-item.active{background:var(--rust);color:#fff;border-color:var(--rust);}
+
+/* ════════════ BILDER-SERVER BANNER ════════════ */
+#bilder-server-bar{
+  position:fixed;top:calc(var(--nav-h) + var(--sub-h));left:0;right:0;z-index:998;
+  background:linear-gradient(135deg,var(--blue),#1a3f5f);
+  padding:.6rem 1.5rem;display:none;align-items:center;justify-content:space-between;
+  border-bottom:2px solid var(--gold);
+}
+#bilder-server-bar.show{display:flex;}
+.bilder-server-info{font-size:.82rem;color:#fff;}
+.bilder-server-info strong{color:var(--gold);}
+.btn-bilder-server{
+  background:var(--gold);color:var(--ink);border:none;padding:.45rem 1.2rem;
+  border-radius:2px;font-size:.78rem;letter-spacing:.1em;cursor:pointer;font-weight:600;
+  text-decoration:none;display:inline-block;
+}
+
+/* ════════════ CONTENT AREA ════════════ */
+#content{
+  margin-top:calc(var(--nav-h) + var(--sub-h));
+  min-height:calc(100vh - var(--nav-h) - var(--sub-h) - 400px);
+  padding:2rem 2.5rem;
+  transition:margin-top .2s;
+}
+#content.with-bar{margin-top:calc(var(--nav-h) + var(--sub-h) + 44px);}
+
+/* Panels */
+.panel{display:none;animation:fadeIn .2s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* Section headings */
+.panel-title{
+  font-family:'Crimson Pro',serif;font-size:2rem;font-weight:300;color:var(--rust);
+  margin-bottom:.3rem;
+}
+.panel-title em{font-style:italic;color:var(--ink);}
+.panel-desc{color:var(--muted);font-size:.85rem;margin-bottom:1.8rem;}
+
+/* ════════════ HINTERGRUNDBILD-WRAPPER ════════════ */
+.bg-section{
+  background-size:cover;background-position:center;background-attachment:fixed;
+  border-radius:4px;padding:1.5rem;margin-bottom:1.5rem;position:relative;
+  transition:background .5s;
+}
+.bg-section::before{
+  content:'';position:absolute;inset:0;background:rgba(247,242,234,.88);border-radius:4px;pointer-events:none;
+}
+.bg-section > *{position:relative;}
+.bg-section[style*="background-image"]::before{background:rgba(247,242,234,.82);}
+.bg-edit-btn{
+  position:absolute;top:.6rem;right:.6rem;z-index:2;
+  background:rgba(139,69,19,.15);border:1px solid var(--divider);color:var(--muted);
+  font-size:.68rem;padding:.25rem .5rem;border-radius:2px;cursor:pointer;
+  display:none;transition:background .2s;
+}
+.bg-section:hover .bg-edit-btn{display:block;}
+.bg-edit-btn:hover{background:rgba(139,69,19,.25);color:var(--rust);}
+
+/* ════════════ ÜBERSICHT DASHBOARD ════════════ */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:1.1rem;margin-bottom:2rem;}
+.stat-card{background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);border-radius:2px;padding:1.3rem 1.5rem;}
+.stat-card.g{border-top-color:var(--pine);}
+.stat-card.au{border-top-color:var(--gold);}
+.stat-card.bl{border-top-color:var(--blue);}
+.slabel{font-size:.63rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+.sval{font-family:'Crimson Pro',serif;font-size:2rem;font-weight:300;line-height:1;}
+.sval.sm{font-size:1.1rem;padding-top:.3rem;}
+.snote{font-size:.72rem;color:var(--muted);margin-top:.25rem;}
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Mini Kalender Wrapper */
+.kal-wrap-home{display:grid;grid-template-columns:1fr 240px;gap:1.5rem;}
+#mini-kal-home-container{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem;}
+.fc{font-family:'DM Sans',sans-serif;}
+.fc .fc-toolbar-title{font-family:'Crimson Pro',serif;font-size:1.2rem;font-weight:400;color:var(--rust);}
+.fc .fc-button-primary{background:var(--rust)!important;border-color:var(--rust)!important;font-size:.72rem!important;border-radius:2px!important;padding:.28rem .6rem!important;}
+.fc .fc-button-primary:hover{background:#a0521a!important;}
+.fc .fc-col-header-cell{background:var(--aged);}
+.fc .fc-col-header-cell-cushion{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:.35rem 0;}
+.fc .fc-daygrid-day-number{font-size:.72rem;color:var(--muted);text-decoration:none;padding:2px 4px;}
+.fc .fc-daygrid-day.fc-day-today{background:rgba(184,134,11,.1)!important;}
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--gold);font-weight:600;}
+.fc-event{border-radius:2px!important;border:none!important;font-size:.7rem!important;padding:1px 3px!important;}
+.fc .fc-daygrid-week-number{font-size:.6rem;color:var(--muted);opacity:.5;padding:2px 3px;}
+
+/* ════════════ NEWS ════════════ */
+.news-toolbar{display:flex;gap:.7rem;margin-bottom:1.2rem;flex-wrap:wrap;}
+.news-grid{display:flex;flex-direction:column;gap:.9rem;margin-bottom:2rem;}
+.news-card{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem 1.4rem;border-left:4px solid var(--rust);}
+.news-card.warnung{border-left-color:var(--warn);}
+.news-card.intern{border-left-color:var(--pine);}
+.news-card.presse{border-left-color:var(--blue);}
+.news-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;}
+.news-titel{font-family:'Crimson Pro',serif;font-size:1.1rem;font-weight:600;}
+.news-date{font-size:.7rem;color:var(--muted);white-space:nowrap;}
+.news-inhalt{font-size:.85rem;color:var(--muted);line-height:1.75;margin-top:.4rem;}
+.news-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.85rem;transition:color .2s;}
+.news-del:hover{color:var(--red);}
+.no-entries{font-size:.85rem;color:var(--muted);font-style:italic;padding:1rem 0;}
+.add-box{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem;margin-top:1.5rem;border-top:3px solid var(--rust);}
+.add-box h4{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.8rem;}
+.add-box.warn-box-add{border-top-color:var(--warn);}
+.add-box.intern-box-add{border-top-color:var(--pine);}
+.add-box.presse-box-add{border-top-color:var(--blue);}
+
+/* ════════════ GEMEINSAME FORMULAR-STILE ════════════ */
+.fg{margin-bottom:.6rem;}
+.fg label{display:block;font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.22rem;}
+.fg label .req{color:var(--rust);}
+.fg input,.fg textarea,.fg select{
+  width:100%;padding:.45rem .6rem;border:1px solid var(--divider);border-radius:2px;
+  background:var(--paper);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:.82rem;
+  transition:border-color .2s;resize:vertical;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--rust);}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.btn{padding:.55rem 1.1rem;border:none;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.78rem;letter-spacing:.08em;cursor:pointer;transition:background .2s;}
+.btn-rust{background:var(--rust);color:#fff;} .btn-rust:hover{background:#a0521a;}
+.btn-pine{background:var(--pine);color:#fff;} .btn-pine:hover{background:#3a6b3a;}
+.btn-blue{background:var(--blue);color:#fff;} .btn-blue:hover{background:#245080;}
+.btn-gray{background:var(--divider);color:var(--muted);} .btn-gray:hover{background:#c5b99e;}
+.btn:disabled{background:var(--muted)!important;cursor:not-allowed;}
+.btn-sm{padding:.35rem .75rem;font-size:.72rem;}
+
+/* ════════════ GÄSTEBUCH ════════════ */
+.gb-liste{display:flex;flex-direction:column;gap:.8rem;margin-bottom:2rem;}
+.gb-eintrag{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1rem 1.2rem;position:relative;}
+.gb-name{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;}
+.gb-datum{font-size:.7rem;color:var(--muted);margin-bottom:.4rem;}
+.gb-text{font-size:.85rem;color:#4a3728;line-height:1.75;}
+.gb-del{position:absolute;top:.6rem;right:.6rem;background:none;border:none;cursor:pointer;color:var(--divider);font-size:.85rem;transition:color .2s;}
+.gb-del:hover{color:var(--red);}
+
+/* ════════════ FILE BROWSER ════════════ */
+.file-section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;flex-wrap:wrap;gap:.7rem;}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.9rem;}
+.file-card{
+  background:#fff;border:1px solid var(--divider);border-radius:2px;
+  padding:.9rem;cursor:pointer;transition:border-color .2s,box-shadow .2s;
+  text-align:center;position:relative;
+}
+.file-card:hover{border-color:var(--rust);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.file-icon{font-size:2rem;margin-bottom:.5rem;display:block;}
+.file-name{font-size:.75rem;color:var(--ink);word-break:break-word;line-height:1.4;margin-bottom:.4rem;}
+.file-size{font-size:.65rem;color:var(--muted);}
+.file-actions{display:flex;gap:.3rem;justify-content:center;margin-top:.6rem;}
+.file-empty{
+  grid-column:1/-1;text-align:center;padding:3rem;
+  background:#fff;border:2px dashed var(--divider);border-radius:4px;
+  color:var(--muted);
+}
+.file-empty .fe-icon{font-size:2.5rem;margin-bottom:.7rem;}
+.file-empty p{font-size:.85rem;line-height:1.7;}
+.file-empty code{font-size:.78rem;background:var(--aged);padding:.15rem .4rem;border-radius:2px;}
+
+/* Bild-Grid (Galerie-Modus) */
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.7rem;}
+.img-thumb{
+  aspect-ratio:4/3;overflow:hidden;border-radius:2px;border:1px solid var(--divider);
+  cursor:pointer;position:relative;
+}
+.img-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .35s,filter .3s;filter:sepia(10%);}
+.img-thumb:hover img{transform:scale(1.06);filter:sepia(0%);}
+.img-thumb .img-overlay{
+  position:absolute;inset:0;background:rgba(30,21,16,0);transition:background .25s;
+  display:flex;align-items:center;justify-content:center;
+}
+.img-thumb:hover .img-overlay{background:rgba(30,21,16,.4);}
+.img-overlay-icon{font-size:1.5rem;color:#fff;opacity:0;transition:opacity .25s;}
+.img-thumb:hover .img-overlay-icon{opacity:1;}
+
+/* Video-Item */
+.video-item{background:#fff;border:1px solid var(--divider);border-radius:2px;overflow:hidden;cursor:pointer;}
+.video-thumb{aspect-ratio:16/9;background:var(--ink);position:relative;display:flex;align-items:center;justify-content:center;}
+.video-thumb video{width:100%;height:100%;object-fit:cover;opacity:.7;}
+.video-play{position:absolute;font-size:2.5rem;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);}
+.video-label{padding:.6rem .8rem;font-size:.78rem;color:var(--muted);}
+
+/* Upload area */
+.upload-area{
+  border:2px dashed var(--divider);border-radius:4px;padding:1.5rem;text-align:center;
+  cursor:pointer;transition:border-color .2s,background .2s;background:#fff;
+}
+.upload-area:hover,.upload-area.drag{border-color:var(--rust);background:rgba(139,69,19,.04);}
+.upload-area p{font-size:.82rem;color:var(--muted);margin-top:.3rem;}
+#upload-file-input{display:none;}
+
+/* ════════════ AKTIVITÄTEN: KALENDER ÜBERSICHT ════════════ */
+.kal-overview{display:grid;grid-template-columns:1fr 280px;gap:1.5rem;align-items:start;}
+#kal-overview-container{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem;}
+.upcoming-list{display:flex;flex-direction:column;gap:.5rem;}
+.upcoming-item{padding:.55rem .7rem;background:var(--paper);border-left:3px solid var(--rust);border-radius:2px;font-size:.8rem;}
+.upcoming-item.ev{border-left-color:var(--blue);}
+.upcoming-name{font-weight:600;}
+.upcoming-dat{color:var(--muted);font-size:.72rem;margin-top:.1rem;}
+.upcoming-pers{font-size:.7rem;color:var(--muted);}
+
+/* ════════════ IFRAME EINBETTUNG ════════════ */
+.panel-iframe{width:100%;height:calc(100vh - var(--nav-h) - var(--sub-h) - 80px);border:1px solid var(--divider);border-radius:2px;}
+
+/* ════════════ CONTENT SECTIONS (Verein etc.) ════════════ */
+.content-card{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.8rem;position:relative;}
+.content-card h3{font-family:'Crimson Pro',serif;font-size:1.5rem;font-weight:400;color:var(--rust);margin-bottom:1rem;}
+.content-editable{min-height:120px;font-size:.88rem;line-height:1.8;color:#4a3728;outline:none;}
+.content-editable[contenteditable="true"]{
+  border:1px dashed var(--divider);padding:.8rem;border-radius:2px;background:rgba(247,242,234,.5);
+}
+.edit-bar{display:flex;gap:.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--divider);}
+.placeholder-hint{
+  background:rgba(184,134,11,.06);border:1px dashed var(--gold);border-radius:3px;
+  padding:1.2rem;text-align:center;color:var(--muted);font-size:.83rem;
+}
+.placeholder-hint .ph-icon{font-size:2rem;margin-bottom:.4rem;}
+.placeholder-hint p{line-height:1.7;}
+.placeholder-hint code{font-size:.75rem;background:var(--aged);padding:.1rem .35rem;border-radius:2px;}
+
+/* ════════════ KONTAKTFORMULAR (Seite unten) ════════════ */
+#contact-section{
+  background:var(--ink);color:var(--aged);padding:3rem 2.5rem;
+  border-top:3px solid var(--rust);margin-top:3rem;
+  position:relative;
+}
+#contact-section.has-bg::before{
+  content:'';position:absolute;inset:0;background:rgba(30,21,16,.88);
+}
+#contact-section > *{position:relative;}
+.contact-inner{max-width:700px;margin:0 auto;}
+.contact-title{font-family:'Crimson Pro',serif;font-size:1.8rem;font-weight:300;color:#fff;margin-bottom:.3rem;}
+.contact-sub{font-size:.82rem;color:rgba(232,223,200,.6);margin-bottom:2rem;}
+.contact-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.contact-form-grid .fg{margin-bottom:0;}
+.contact-form-grid .fg label{color:rgba(232,223,200,.6);}
+.contact-form-grid .fg input{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:#fff;}
+.contact-form-grid .fg input::placeholder{color:rgba(232,223,200,.35);}
+.contact-form-grid .fg input:focus{border-color:var(--gold);}
+.contact-msg label{color:rgba(232,223,200,.6);}
+.contact-msg textarea{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:#fff;min-height:100px;}
+.contact-msg textarea::placeholder{color:rgba(232,223,200,.35);}
+.contact-msg textarea:focus{border-color:var(--gold);}
+.captcha-row{display:flex;align-items:center;gap:.7rem;margin:.8rem 0;}
+.captcha-question{font-size:.85rem;color:var(--aged);}
+.captcha-input{width:80px;padding:.4rem .5rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:2px;color:#fff;font-size:.85rem;text-align:center;}
+.captcha-input:focus{outline:none;border-color:var(--gold);}
+.required-note{font-size:.72rem;color:rgba(232,223,200,.45);margin-top:.8rem;}
+.required-note a{color:var(--gold);}
+.contact-status{font-size:.82rem;margin-top:.6rem;min-height:1.3em;}
+
+/* ════════════ FOOTER ════════════ */
+footer{
+  background:#14100c;color:rgba(232,223,200,.35);
+  padding:1.2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:.5rem;font-size:.72rem;letter-spacing:.08em;
+}
+.footer-links{display:flex;gap:1.2rem;}
+.footer-links a{color:rgba(232,223,200,.5);text-decoration:none;cursor:pointer;transition:color .2s;}
+.footer-links a:hover{color:var(--gold);}
+
+/* ════════════ MODALS ════════════ */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;
+  display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:var(--paper);border-radius:4px;width:100%;max-width:860px;
+  position:relative;min-height:200px;box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+.modal-head{
+  padding:1.5rem 2rem;border-bottom:1px solid var(--divider);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.modal-head h2{font-family:'Crimson Pro',serif;font-size:1.6rem;font-weight:300;color:var(--rust);}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);transition:color .2s;}
+.modal-close:hover{color:var(--ink);}
+.modal-body{padding:2rem;}
+.modal-body p,.modal-body li{font-size:.88rem;color:#4a3728;line-height:1.85;margin-bottom:.7rem;}
+.modal-body h3{font-family:'Crimson Pro',serif;font-size:1.2rem;color:var(--rust);margin:1.5rem 0 .5rem;}
+.modal-body h3:first-child{margin-top:0;}
+
+/* Datei-Vorschau Modal */
+#preview-modal .modal-box{max-width:1000px;height:85vh;}
+#preview-modal .modal-body{padding:0;height:calc(85vh - 80px);}
+#preview-frame{width:100%;height:100%;border:none;border-radius:0 0 4px 4px;}
+#preview-img{max-width:100%;max-height:100%;object-fit:contain;display:block;margin:0 auto;padding:1rem;}
+#preview-video{width:100%;height:100%;background:#000;border-radius:0 0 4px 4px;}
+
+/* Cookie-Einstellungen Modal */
+.cookie-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--divider);}
+.toggle-label h4{font-size:.9rem;font-weight:500;}
+.toggle-label p{font-size:.78rem;color:var(--muted);margin-top:.15rem;}
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+.toggle input{display:none;}
+.toggle-slider{
+  position:absolute;inset:0;background:var(--divider);border-radius:12px;cursor:pointer;transition:background .2s;
+}
+.toggle-slider::after{
+  content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;
+  background:#fff;border-radius:50%;transition:transform .2s;
+}
+.toggle input:checked ~ .toggle-slider{background:var(--pine);}
+.toggle input:checked ~ .toggle-slider::after{transform:translateX(18px);}
+.toggle input:disabled ~ .toggle-slider{opacity:.5;cursor:not-allowed;}
+
+/* Mitglieder */
+.mitglieder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem;margin-bottom:1.5rem;}
+.mitglied-card{background:var(--paper);border:1px solid var(--divider);border-radius:2px;padding:1rem;text-align:center;}
+.mitglied-name{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;}
+.mitglied-rolle{font-size:.72rem;color:var(--muted);letter-spacing:.08em;}
+.mitglied-del{background:none;border:none;cursor:pointer;color:var(--divider);font-size:.78rem;margin-top:.4rem;display:block;width:100%;transition:color .2s;}
+.mitglied-del:hover{color:var(--red);}
+
+/* Vorstand */
+.vorstand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.vorstand-card{background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);border-radius:2px;padding:1.2rem;}
+.vorstand-rolle{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rust);margin-bottom:.3rem;}
+.vorstand-name{font-family:'Crimson Pro',serif;font-size:1.1rem;font-weight:600;}
+.vorstand-kontakt{font-size:.78rem;color:var(--muted);margin-top:.3rem;}
+
+/* ════════════ RESPONSIVE ════════════ */
+@media(max-width:900px){
+  #content{padding:1.5rem;}
+  .kal-wrap-home,.kal-overview{grid-template-columns:1fr;}
+  .contact-form-grid{grid-template-columns:1fr;}
+  .fg-row{grid-template-columns:1fr;}
+  footer{flex-direction:column;text-align:center;}
+  .panel-iframe{height:70vh;}
+}
+@media(max-width:600px){
+  header{padding:0 .8rem;gap:.8rem;}
+  .logo{font-size:1.1rem;}
+  .nav-item{padding:.45rem .6rem;font-size:.72rem;}
+  #content{padding:1rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ PASSWORD GATE ══════════ -->
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-logo">Hütten<span>buch</span></div>
+    <div class="pw-sub">Familieninterne Verwaltung</div>
+    <input type="password" id="pw-input" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')checkPw()" autocomplete="current-password"/>
+    <button onclick="checkPw()">Einloggen</button>
+    <div class="pw-error" id="pw-error"></div>
+    <div class="pw-hint">Bitte Passwort eingeben um fortzufahren.</div>
+  </div>
+</div>
+
+<!-- ══════════ COOKIE BANNER ══════════ -->
+<div id="cookie-banner" style="display:none">
+  <p>Wir verwenden Cookies für essenzielle Funktionen sowie optionale Analyse-Cookies.
+    <a href="#" onclick="openModal('modal-cookie-policy');return false;">Mehr erfahren</a></p>
+  <div class="cookie-btns">
+    <button class="btn-cookie-ess" onclick="cookieChoice('essential')">Nur notwendige</button>
+    <button class="btn-cookie-acc" onclick="cookieChoice('all')">Alle akzeptieren</button>
+    <button class="btn-cookie-acc" style="background:var(--gold);color:var(--ink)" onclick="openModal('modal-cookie-settings')">Einstellungen</button>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <a class="logo" onclick="navigate('uebersicht')">Hütten<span>buch</span></a>
+    <nav id="main-nav"></nav>
+  </header>
+
+  <!-- SUB NAV -->
+  <div id="sub-nav" class="hidden"></div>
+
+  <!-- BILDER SERVER BUTTON -->
+  <div id="bilder-server-bar">
+    <div class="bilder-server-info">
+      <strong>Bildserver</strong> — Alle Fotos und Videos auf dem zentralen Familienserver
+    </div>
+    <a href="#" class="btn-bilder-server" id="bilder-server-link">→ Zum Bildserver öffnen</a>
+  </div>
+
+  <!-- ══════ CONTENT PANELS ══════ -->
+  <div id="content">
+
+    <!-- ▶ ÜBERSICHT -->
+    <div class="panel" id="panel-uebersicht">
+      <div class="panel-title">Willkommen im <em>Hüttenbuch</em></div>
+      <div class="panel-desc">Familieninterne Verwaltung · Übersicht aller aktuellen Daten</div>
+      <div class="bg-section" id="dash-bg">
+        <button class="bg-edit-btn" onclick="editBg('dash-bg')">🖼 Bild ändern</button>
+        <div class="dash-grid">
+          <div class="stat-card"><div class="slabel">Belegungen <span id="sy"></span></div><div class="sval" id="sv-b"><span class="spin">⏳</span></div><div class="snote" id="sn-b">…</div></div>
+          <div class="stat-card g"><div class="slabel">Nächste freie Woche</div><div class="sval sm" id="sv-f"><span class="spin">⏳</span></div><div class="snote" id="sn-f">…</div></div>
+          <div class="stat-card au"><div class="slabel">Nächste Belegung</div><div class="sval sm" id="sv-n"><span class="spin">⏳</span></div><div class="snote" id="sn-n">…</div></div>
+          <div class="stat-card bl"><div class="slabel">Nächste Veranstaltung</div><div class="sval sm" id="sv-e"><span class="spin">⏳</span></div><div class="snote" id="sn-e">…</div></div>
+        </div>
+      </div>
+      <div class="kal-wrap-home">
+        <div id="mini-kal-home-container"><div id="mini-kal-home"></div></div>
+        <div>
+          <div style="background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem;margin-bottom:1rem;">
+            <div style="font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.7rem;">Nächste Termine</div>
+            <div id="home-upcoming"></div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);border-radius:2px;padding:1.2rem;">
+            <div style="font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;">Schnellzugriff</div>
+            <div style="display:flex;flex-direction:column;gap:.4rem;">
+              <a onclick="navigate('aktivitaeten','uebernachtungen')" style="display:block;padding:.5rem .7rem;background:var(--rust);color:#fff;border-radius:2px;font-size:.78rem;text-decoration:none;cursor:pointer;letter-spacing:.06em;">📅 Übernachtung buchen</a>
+              <a onclick="navigate('aktivitaeten','kalender')" style="display:block;padding:.5rem .7rem;background:var(--aged);color:var(--ink);border-radius:2px;font-size:.78rem;text-decoration:none;cursor:pointer;letter-spacing:.06em;">🗓 Kalender ansehen</a>
+              <a onclick="navigate('news','warnung')" style="display:block;padding:.5rem .7rem;background:rgba(230,126,34,.12);color:var(--warn);border-radius:2px;font-size:.78rem;text-decoration:none;cursor:pointer;letter-spacing:.06em;">⚠️ Warnhinweise</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ NEWS: Öffentliche News -->
+    <div class="panel" id="panel-news-oeffentlich">
+      <div class="panel-title">Öffentliche <em>News</em></div>
+      <div class="news-grid" id="ng-oeffentlich"></div>
+      <div class="add-box">
+        <h4>➕ Neue Meldung</h4>
+        <div class="fg"><label>Titel</label><input type="text" id="news-oe-titel"/></div>
+        <div class="fg"><label>Inhalt</label><textarea id="news-oe-inhalt" rows="3"></textarea></div>
+        <button class="btn btn-rust btn-sm" onclick="newsHinzufuegen('oeffentlich')">Veröffentlichen</button>
+      </div>
+    </div>
+
+    <!-- ▶ NEWS: Warnhinweise -->
+    <div class="panel" id="panel-news-warnung">
+      <div class="panel-title">⚠️ <em>Warnhinweise</em></div>
+      <div class="panel-desc">Wichtige Warnungen und dringende Hinweise</div>
+      <div class="news-grid" id="ng-warnung"></div>
+      <div class="add-box warn-box-add">
+        <h4>➕ Neuer Warnhinweis</h4>
+        <div class="fg"><label>Titel</label><input type="text" id="news-w-titel"/></div>
+        <div class="fg"><label>Inhalt</label><textarea id="news-w-inhalt" rows="3"></textarea></div>
+        <button class="btn btn-sm" style="background:var(--warn);color:#fff" onclick="newsHinzufuegen('warnung')">Hinweis veröffentlichen</button>
+      </div>
+    </div>
+
+    <!-- ▶ NEWS: Intern -->
+    <div class="panel" id="panel-news-intern">
+      <div class="panel-title">Interne <em>Nachrichten</em></div>
+      <div class="news-grid" id="ng-intern"></div>
+      <div class="add-box intern-box-add">
+        <h4>➕ Interne Nachricht</h4>
+        <div class="fg"><label>Titel</label><input type="text" id="news-i-titel"/></div>
+        <div class="fg"><label>Inhalt</label><textarea id="news-i-inhalt" rows="3"></textarea></div>
+        <button class="btn btn-pine btn-sm" onclick="newsHinzufuegen('intern')">Nachricht senden</button>
+      </div>
+    </div>
+
+    <!-- ▶ NEWS: Presse -->
+    <div class="panel" id="panel-news-presse">
+      <div class="panel-title">Presse <em>News</em></div>
+      <div class="news-grid" id="ng-presse"></div>
+      <div class="add-box presse-box-add">
+        <h4>➕ Pressemitteilung</h4>
+        <div class="fg"><label>Titel</label><input type="text" id="news-p-titel"/></div>
+        <div class="fg"><label>Inhalt</label><textarea id="news-p-inhalt" rows="3"></textarea></div>
+        <button class="btn btn-blue btn-sm" onclick="newsHinzufuegen('presse')">Meldung einstellen</button>
+      </div>
+    </div>
+
+    <!-- ▶ NEWS: Facebook -->
+    <div class="panel" id="panel-news-facebook">
+      <div class="panel-title"><em>Facebook</em></div>
+      <div class="content-card">
+        <div class="placeholder-hint">
+          <div class="ph-icon">📘</div>
+          <h3>Facebook-Einbindung</h3>
+          <p>Hier kann die Facebook-Seite oder -Gruppe eingebettet werden.<br/>
+          Trage die URL unten ein oder binde einen Facebook-Feed via iframe ein.</p>
+          <div style="margin-top:1rem;display:flex;gap:.6rem;max-width:500px;margin-left:auto;margin-right:auto;">
+            <input type="text" id="fb-url" style="flex:1;padding:.45rem .6rem;border:1px solid var(--divider);border-radius:2px;font-size:.82rem;background:var(--paper);" placeholder="https://www.facebook.com/..."/>
+            <button class="btn btn-blue btn-sm" onclick="document.getElementById('fb-frame').src=document.getElementById('fb-url').value;document.getElementById('fb-placeholder').style.display='none';document.getElementById('fb-frame').style.display='block'">Laden</button>
+          </div>
+          <p style="margin-top:.7rem;font-size:.75rem;color:var(--muted);">Hinweis: Facebook-Einbindungen können Cookies setzen. Dies wird dem Nutzer im Cookie-Banner angezeigt.</p>
+        </div>
+        <div id="fb-placeholder"></div>
+        <iframe id="fb-frame" style="display:none;width:100%;height:600px;border:none;margin-top:1rem;border-radius:2px;"></iframe>
+      </div>
+    </div>
+
+    <!-- ▶ VEREIN: Leitbild -->
+    <div class="panel" id="panel-verein-leitbild">
+      <div class="panel-title">Unser <em>Leitbild</em></div>
+      <div class="content-card bg-section" id="leitbild-bg">
+        <button class="bg-edit-btn" onclick="editBg('leitbild-bg')">🖼 Bild ändern</button>
+        <div class="content-editable" id="leitbild-text" contenteditable="false">Hier steht das Leitbild des Vereins. Klicke auf „Bearbeiten" um den Text anzupassen.</div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="leitbild-edit-btn" onclick="toggleEdit('leitbild-text','leitbild-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ VEREIN: Satzung -->
+    <div class="panel" id="panel-verein-satzung">
+      <div class="panel-title">Die <em>Satzung</em></div>
+      <div class="file-section-header">
+        <p style="font-size:.85rem;color:var(--muted);">Satzungsdokumente des Vereins</p>
+        <button class="btn btn-rust btn-sm" onclick="uploadTrigger('verein','satzung')">⬆ Datei hochladen</button>
+      </div>
+      <div class="file-grid" id="files-verein-satzung"></div>
+    </div>
+
+    <!-- ▶ VEREIN: Vereinshymne -->
+    <div class="panel" id="panel-verein-hymne">
+      <div class="panel-title">Unsere <em>Vereinshymne</em></div>
+      <div class="content-card">
+        <div class="content-editable" id="hymne-text" contenteditable="false" style="font-family:'Crimson Pro',serif;font-size:1.05rem;white-space:pre-wrap;line-height:2.2;">Hier die Vereinshymne eintragen...\n\n</div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="hymne-edit-btn" onclick="toggleEdit('hymne-text','hymne-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ VEREIN: Mitglieder -->
+    <div class="panel" id="panel-verein-mitglieder">
+      <div class="panel-title"><em>Mitglieder</em></div>
+      <div class="mitglieder-grid" id="mitglieder-grid"></div>
+      <div class="add-box">
+        <h4>➕ Mitglied hinzufügen</h4>
+        <div class="fg-row">
+          <div class="fg"><label>Name</label><input type="text" id="m-name"/></div>
+          <div class="fg"><label>Rolle / Info</label><input type="text" id="m-rolle" placeholder="z.B. Gründungsmitglied"/></div>
+        </div>
+        <button class="btn btn-rust btn-sm" onclick="mitgliedHinzufuegen()">Hinzufügen</button>
+      </div>
+    </div>
+
+    <!-- ▶ VEREIN: Mitgliederversammlung -->
+    <div class="panel" id="panel-verein-mv">
+      <div class="panel-title"><em>Mitgliederversammlung</em></div>
+      <div class="file-section-header">
+        <p style="font-size:.85rem;color:var(--muted);">Protokolle und Unterlagen der Mitgliederversammlungen</p>
+        <button class="btn btn-rust btn-sm" onclick="uploadTrigger('verein','mv')">⬆ Datei hochladen</button>
+      </div>
+      <div class="file-grid" id="files-verein-mv"></div>
+    </div>
+
+    <!-- ▶ VEREIN: Stammbaum -->
+    <div class="panel" id="panel-verein-stammbaum">
+      <div class="panel-title"><em>Stammbaum</em></div>
+      <div class="content-card">
+        <div class="placeholder-hint">
+          <div class="ph-icon">🌳</div>
+          <p>Hier kann ein Stammbaum eingebettet oder hochgeladen werden.<br/>
+          Tipp: Stammbaum als PDF oder Bild hochladen, oder ein Tool wie <strong>MyHeritage</strong> per iframe einbinden.</p>
+        </div>
+        <div style="margin-top:1.2rem;">
+          <div class="file-grid" id="files-verein-stammbaum"></div>
+          <button class="btn btn-rust btn-sm" style="margin-top:.7rem" onclick="uploadTrigger('verein','stammbaum')">⬆ Stammbaum hochladen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ VEREIN: Vorstand -->
+    <div class="panel" id="panel-verein-vorstand">
+      <div class="panel-title">Der <em>Vorstand</em></div>
+      <div class="vorstand-grid" id="vorstand-grid"></div>
+      <div class="add-box">
+        <h4>➕ Vorstandsmitglied</h4>
+        <div class="fg-row">
+          <div class="fg"><label>Name</label><input type="text" id="v-name"/></div>
+          <div class="fg"><label>Rolle</label><input type="text" id="v-rolle" placeholder="z.B. 1. Vorsitzender"/></div>
+        </div>
+        <div class="fg"><label>Kontakt (optional)</label><input type="text" id="v-kontakt" placeholder="E-Mail oder Telefon"/></div>
+        <button class="btn btn-rust btn-sm" onclick="vorstandHinzufuegen()">Hinzufügen</button>
+      </div>
+    </div>
+
+    <!-- ▶ VEREIN: Vorlagen -->
+    <div class="panel" id="panel-verein-vorlagen">
+      <div class="panel-title"><em>Vorlagen</em></div>
+      <div class="file-section-header">
+        <p style="font-size:.85rem;color:var(--muted);">Formulare, Vorlagen und Muster-Dokumente</p>
+        <button class="btn btn-rust btn-sm" onclick="uploadTrigger('verein','vorlagen')">⬆ Vorlage hochladen</button>
+      </div>
+      <div class="file-grid" id="files-verein-vorlagen"></div>
+    </div>
+
+    <!-- ▶ VEREIN: Allg. Informationen -->
+    <div class="panel" id="panel-verein-info">
+      <div class="panel-title">Allgemeine <em>Informationen</em></div>
+      <div class="content-card">
+        <div class="content-editable" id="verein-info-text" contenteditable="false">Allgemeine Informationen über den Verein...</div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="verein-info-edit-btn" onclick="toggleEdit('verein-info-text','verein-info-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ KONTAKT: Gästebuch -->
+    <div class="panel" id="panel-kontakt-gaestebuch">
+      <div class="panel-title"><em>Gästebuch</em></div>
+      <div class="gb-liste" id="gb-liste"></div>
+      <div class="add-box">
+        <h4>✍️ Eintrag hinterlassen</h4>
+        <div class="fg"><label>Name <span class="req">*</span></label><input type="text" id="gb-name"/></div>
+        <div class="fg"><label>Nachricht <span class="req">*</span></label><textarea id="gb-text" rows="3"></textarea></div>
+        <button class="btn btn-rust btn-sm" onclick="gbEintragen()">Eintrag speichern</button>
+      </div>
+    </div>
+
+    <!-- ▶ KONTAKT: GoogleGroups -->
+    <div class="panel" id="panel-kontakt-googlegroups">
+      <div class="panel-title"><em>Google Groups</em></div>
+      <div class="content-card">
+        <div class="placeholder-hint">
+          <div class="ph-icon">👥</div>
+          <p>Hier die Google Groups Mailingliste einbinden.<br/>
+          Trage die URL zur Gruppe ein:</p>
+          <div style="margin-top:1rem;display:flex;gap:.6rem;max-width:500px;margin-left:auto;margin-right:auto;">
+            <input type="text" id="gg-url" style="flex:1;padding:.45rem .6rem;border:1px solid var(--divider);border-radius:2px;font-size:.82rem;background:var(--paper);" placeholder="https://groups.google.com/g/..."/>
+            <a id="gg-link" href="#" target="_blank" class="btn btn-blue btn-sm" onclick="document.getElementById('gg-link').href=document.getElementById('gg-url').value">Öffnen</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ KONTAKT: Mail -->
+    <div class="panel" id="panel-kontakt-mail">
+      <div class="panel-title"><em>Mail</em></div>
+      <div class="content-card">
+        <div class="content-editable" id="mail-info-text" contenteditable="false">Hier stehen die E-Mail-Adressen und Postfächer des Vereins...</div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="mail-info-edit-btn" onclick="toggleEdit('mail-info-text','mail-info-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ KONTAKT: Adressen -->
+    <div class="panel" id="panel-kontakt-adressen">
+      <div class="panel-title"><em>Adressen</em></div>
+      <div class="content-card">
+        <div class="content-editable" id="adressen-text" contenteditable="false">Wichtige Adressen des Vereins und der Mitglieder...</div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="adressen-edit-btn" onclick="toggleEdit('adressen-text','adressen-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ KONTAKT: Behörden -->
+    <div class="panel" id="panel-kontakt-behoerden">
+      <div class="panel-title">Behörden <em>Kontakte</em></div>
+      <div class="content-card">
+        <div class="content-editable" id="behoerden-text" contenteditable="false">Wichtige Behördenkontakte: Gemeindeverwaltung, Finanzamt, etc...</div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="behoerden-edit-btn" onclick="toggleEdit('behoerden-text','behoerden-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Kalender (Übersicht) -->
+    <div class="panel" id="panel-aktivitaeten-kalender">
+      <div class="panel-title">Belegungs<em>kalender</em></div>
+      <div class="panel-desc">Übersicht aller aktuellen und kommenden Belegungen. Zum Buchen → "Übernachtungen eintragen".</div>
+      <div class="kal-overview">
+        <div id="kal-overview-container"><div id="kal-overview"></div></div>
+        <div>
+          <div style="background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);border-radius:2px;padding:1.2rem;margin-bottom:1rem;">
+            <div style="font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.8rem;">Legende</div>
+            <div style="font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:.4rem;">
+              <span><span style="display:inline-block;width:10px;height:10px;background:#8b4513;border-radius:2px;margin-right:.4rem;"></span>Belegung</span>
+              <span><span style="display:inline-block;width:10px;height:10px;background:#2c5f8a;border-radius:2px;margin-right:.4rem;"></span>Familienversammlung</span>
+              <span><span style="display:inline-block;width:10px;height:10px;background:#2d4a2d;border-radius:2px;margin-right:.4rem;"></span>Arbeitswochenende</span>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem;">
+            <div style="font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.7rem;">Nächste Belegungen</div>
+            <div id="kal-upcoming"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Termine -->
+    <div class="panel" id="panel-aktivitaeten-termine">
+      <div class="panel-title"><em>Termine</em></div>
+      <div id="termine-events-liste" style="margin-bottom:1.5rem;"></div>
+      <div class="add-box" style="border-top-color:var(--blue)">
+        <h4>➕ Veranstaltung erstellen</h4>
+        <div class="fg"><label>Titel</label><input type="text" id="ev-titel"/></div>
+        <div class="fg"><label>Typ</label>
+          <select id="ev-typ">
+            <option value="familienversammlung">👨‍👩‍👧‍👦 Familienversammlung</option>
+            <option value="arbeitswochenende">🔨 Arbeitswochenende</option>
+            <option value="sonstige">📌 Sonstige Veranstaltung</option>
+          </select>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>Von</label><input type="date" id="ev-von"/></div>
+          <div class="fg"><label>Bis</label><input type="date" id="ev-bis"/></div>
+        </div>
+        <div class="fg"><label>Beschreibung</label><textarea id="ev-beschreibung" rows="2"></textarea></div>
+        <button class="btn btn-blue btn-sm" onclick="eventSpeichern()">Veranstaltung speichern</button>
+        <span id="ev-status" style="font-size:.75rem;margin-left:.7rem;color:var(--muted);"></span>
+      </div>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Übernachtungen eintragen (iframe) -->
+    <div class="panel" id="panel-aktivitaeten-uebernachtungen">
+      <div class="panel-title">Übernachtungen <em>eintragen</em></div>
+      <div class="panel-desc">Belegung buchen, einsehen und verwalten</div>
+      <iframe src="kalender.html" class="panel-iframe" title="Buchungskalender"></iframe>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Freizeittipps -->
+    <div class="panel" id="panel-aktivitaeten-freizeit">
+      <div class="panel-title"><em>Freizeittipps</em></div>
+      <div class="content-card">
+        <div class="content-editable" id="freizeit-text" contenteditable="false">Hier sammeln wir Tipps für Ausflüge, Wanderungen und Aktivitäten rund um die Hütte...</div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="freizeit-edit-btn" onclick="toggleEdit('freizeit-text','freizeit-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Projekte -->
+    <div class="panel" id="panel-aktivitaeten-projekte">
+      <div class="panel-title">Laufende <em>Projekte</em></div>
+      <div class="content-card">
+        <div class="placeholder-hint">
+          <div class="ph-icon">🛠</div>
+          <p>Hier können aktuelle Projekte rund um die Hütte dokumentiert werden.<br/>
+          Bearbeite den Inhalt mit dem Button unten.</p>
+        </div>
+        <div class="content-editable" id="projekte-text" contenteditable="false" style="margin-top:1rem;"></div>
+        <div class="edit-bar">
+          <button class="btn btn-gray btn-sm" id="projekte-edit-btn" onclick="toggleEdit('projekte-text','projekte-edit-btn')">✏️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Zu Erledigen -->
+    <div class="panel" id="panel-aktivitaeten-todo">
+      <div class="panel-title">Zu <em>Erledigen</em></div>
+      <div id="todo-liste" style="margin-bottom:1rem;"></div>
+      <div class="add-box">
+        <h4>➕ Aufgabe hinzufügen</h4>
+        <div class="fg-row">
+          <div class="fg"><label>Aufgabe</label><input type="text" id="todo-text"/></div>
+          <div class="fg"><label>Zuständig</label><input type="text" id="todo-person" placeholder="Name"/></div>
+        </div>
+        <button class="btn btn-rust btn-sm" onclick="todoHinzufuegen()">Hinzufügen</button>
+      </div>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Umfragen -->
+    <div class="panel" id="panel-aktivitaeten-umfragen">
+      <div class="panel-title"><em>Umfragen</em></div>
+      <div class="content-card">
+        <div class="placeholder-hint">
+          <div class="ph-icon">📊</div>
+          <p>Für Umfragen empfehlen wir <strong>Google Forms</strong> (kostenlos).<br/>
+          Erstelle ein Formular und binde es hier via iframe ein:<br/>
+          <code>https://docs.google.com/forms/d/e/FORMULAR-ID/viewform?embedded=true</code></p>
+          <div style="margin-top:1rem;display:flex;gap:.6rem;max-width:600px;margin-left:auto;margin-right:auto;">
+            <input type="text" id="umfrage-url" style="flex:1;padding:.45rem .6rem;border:1px solid var(--divider);border-radius:2px;font-size:.82rem;background:var(--paper);" placeholder="Google Forms URL"/>
+            <button class="btn btn-blue btn-sm" onclick="loadUmfrage()">Laden</button>
+          </div>
+          <iframe id="umfrage-frame" style="display:none;width:100%;height:600px;border:none;margin-top:1rem;border-radius:2px;"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▶ AKTIVITÄTEN: Abfallkalender -->
+    <div class="panel" id="panel-aktivitaeten-abfall">
+      <div class="panel-title"><em>Abfallkalender</em></div>
+      <div class="content-card">
+        <div class="placeholder-hint">
+          <div class="ph-icon">♻️</div>
+          <p>Abfalltermine für die Hütte.<br/>
+          Den Abfallkalender der Gemeinde als PDF hochladen oder direkt verlinken.</p>
+        </div>
+        <div style="margin-top:1rem;"><div class="file-grid" id="files-abfall"></div>
+        <button class="btn btn-rust btn-sm" style="margin-top:.7rem" onclick="uploadTrigger('aktivitaeten','abfall')">⬆ Kalender hochladen</button></div>
+      </div>
+    </div>
+
+    <!-- ▶ BILDER: Panel-Vorlage (wird dynamisch befüllt) -->
+    <div class="panel" id="panel-bilder-diverse">
+      <div class="panel-title">Diverse <em>Bilder</em></div>
+      <div class="file-section-header">
+        <p style="font-size:.85rem;color:var(--muted);">Bilder und Videos verschiedener Kategorien</p>
+        <button class="btn btn-rust btn-sm" onclick="uploadTrigger('bilder','diverse')">⬆ Datei hochladen</button>
+      </div>
+      <div class="image-grid" id="media-bilder-diverse"></div>
+    </div>
+
+    <!-- Bilder Jahrespanels werden dynamisch generiert -->
+
+    <!-- ▶ ARCHIV: Alle Panels (via JS generiert) -->
+
+    <!-- ▶ FINANZEN: Alle Panels (via JS generiert) -->
+
+  </div><!-- /content -->
+
+  <!-- ══════ KONTAKTFORMULAR ══════ -->
+  <section id="contact-section">
+    <div class="contact-inner">
+      <div class="contact-title">Wir sind erreichbar unter:</div>
+      <div class="contact-sub">Schnellkontakt · Direkt an die Verwaltung</div>
+      <div class="contact-form-grid">
+        <div class="fg"><label>Name <span class="req" style="color:var(--gold)">*</span></label><input type="text" id="cf-name" placeholder="Dein Name"/></div>
+        <div class="fg"><label>E-Mail <span class="req" style="color:var(--gold)">*</span></label><input type="email" id="cf-email" placeholder="deine@email.de"/></div>
+      </div>
+      <div class="fg contact-msg"><label>Nachricht <span class="req" style="color:var(--gold)">*</span></label><textarea id="cf-nachricht" rows="4" placeholder="Deine Nachricht..."></textarea></div>
+      <div class="captcha-row">
+        <span class="captcha-question" id="captcha-q"></span>
+        <input type="number" class="captcha-input" id="captcha-a" placeholder="?"/>
+      </div>
+      <button class="btn btn-rust" onclick="kontaktSenden()">ABSENDEN</button>
+      <div class="required-note">Hinweis: Bitte die mit <span style="color:var(--gold)">*</span> gekennzeichneten Felder ausfüllen. Es gilt die <a href="#" onclick="openModal('modal-datenschutz');return false;">Datenschutzerklärung</a>.</div>
+      <div class="contact-status" id="cf-status"></div>
+    </div>
+  </section>
+
+  <!-- ══════ FOOTER ══════ -->
+  <footer>
+    <span>© <span id="footer-year"></span> Hüttenbuch · Familieninterne Verwaltung</span>
+    <div class="footer-links">
+      <a onclick="openModal('modal-impressum')">Impressum</a>
+      <a onclick="openModal('modal-datenschutz')">Datenschutz</a>
+      <a onclick="openModal('modal-cookie-policy')">Cookie-Richtlinie</a>
+      <a onclick="openModal('modal-cookie-settings')">Cookie-Einstellungen</a>
+    </div>
+  </footer>
+
+</div><!-- /app -->
+
+<!-- ══════ MODALS ══════ -->
+
+<!-- Datei-Vorschau -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal-box" style="max-width:1000px;height:85vh;display:flex;flex-direction:column;">
+    <div class="modal-head">
+      <h2 id="preview-title">Vorschau</h2>
+      <div style="display:flex;gap:.7rem;align-items:center;">
+        <a id="preview-download" href="#" download class="btn btn-rust btn-sm">⬇ Herunterladen</a>
+        <button class="modal-close" onclick="closeModal('preview-modal')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" style="flex:1;overflow:hidden;padding:0;">
+      <iframe id="preview-frame" style="width:100%;height:100%;border:none;display:none;"></iframe>
+      <img id="preview-img" style="max-width:100%;max-height:100%;object-fit:contain;display:none;margin:1rem auto;display:none;"/>
+      <video id="preview-video" controls style="width:100%;height:100%;background:#000;display:none;"></video>
+      <div id="preview-other" style="display:none;padding:2rem;text-align:center;color:var(--muted);">
+        <div style="font-size:3rem;margin-bottom:1rem;">📄</div>
+        <p>Diese Datei kann nicht direkt angezeigt werden. Bitte herunterladen.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Impressum -->
+<div class="modal-overlay" id="modal-impressum">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Impressum</h2><button class="modal-close" onclick="closeModal('modal-impressum')">✕</button></div>
+    <div class="modal-body">
+      <h3>Angaben gemäß § 5 TMG</h3>
+      <p><strong>Muster-Familienverein e.V.</strong><br/>Waldweg 7<br/>79123 Musterort</p>
+      <h3>Vertreten durch</h3>
+      <p>Max Mustermann (1. Vorsitzender)</p>
+      <h3>Kontakt</h3>
+      <p>Telefon: +49 123 456 7890<br/>E-Mail: huette@familie.de</p>
+      <h3>Vereinsregister</h3>
+      <p>Eingetragen im Vereinsregister des Amtsgerichts Musterstadt<br/>Registernummer: VR XXXX</p>
+      <h3>Haftungsausschluss</h3>
+      <p>Diese Website dient ausschließlich der familieninternen Verwaltung und ist nicht öffentlich zugänglich. Alle Inhalte sind vertraulich.</p>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:1.5rem;">Bitte Angaben durch echte Vereinsdaten ersetzen.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Datenschutz -->
+<div class="modal-overlay" id="modal-datenschutz">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Datenschutzerklärung</h2><button class="modal-close" onclick="closeModal('modal-datenschutz')">✕</button></div>
+    <div class="modal-body">
+      <h3>1. Verantwortlicher</h3>
+      <p>Muster-Familienverein e.V., Waldweg 7, 79123 Musterort (bitte ersetzen)</p>
+      <h3>2. Erhobene Daten</h3>
+      <p>Auf dieser Website werden folgende Daten erhoben und in einer Supabase-Datenbank gespeichert: Buchungen (Name, E-Mail, Telefon optional), Gästebucheinträge (Name, Text), Kontaktnachrichten (Name, E-Mail, Text), Nachrichteneinträge und Veranstaltungen.</p>
+      <h3>3. Zweck der Verarbeitung</h3>
+      <p>Die Daten dienen ausschließlich der internen Verwaltung des Familienverbunds. Sie werden nicht an Dritte weitergegeben.</p>
+      <h3>4. Datenspeicherung</h3>
+      <p>Daten werden auf Servern von Supabase (EU-Region) gespeichert. Supabase ist DSGVO-konform. Nähere Informationen: supabase.com/privacy</p>
+      <h3>5. Cookies</h3>
+      <p>Diese Website verwendet technisch notwendige Cookies (Session-Verwaltung) sowie optionale Funktions-Cookies. Details in der Cookie-Richtlinie.</p>
+      <h3>6. Ihre Rechte</h3>
+      <p>Sie haben das Recht auf Auskunft, Berichtigung und Löschung Ihrer Daten. Wenden Sie sich dazu an den oben genannten Verantwortlichen.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Cookie-Richtlinie -->
+<div class="modal-overlay" id="modal-cookie-policy">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Cookie-Richtlinie</h2><button class="modal-close" onclick="closeModal('modal-cookie-policy')">✕</button></div>
+    <div class="modal-body">
+      <h3>Notwendige Cookies</h3>
+      <p><strong>session-auth</strong>: Speichert ob das Passwort eingegeben wurde (sessionStorage, wird beim Schließen des Browsers gelöscht).<br/>
+      <strong>cookie-consent</strong>: Speichert Ihre Cookie-Einstellungen (localStorage, 365 Tage).</p>
+      <h3>Funktionale Cookies</h3>
+      <p><strong>bg-settings</strong>: Speichert eingestellte Hintergrundbilder (localStorage).<br/>
+      <strong>content-edits</strong>: Speichert lokale Textänderungen (localStorage).</p>
+      <h3>Drittanbieter</h3>
+      <p>Beim Aktivieren des Facebook-Feeds oder Google Forms können Drittanbieter-Cookies gesetzt werden. Dies passiert nur nach explizitem Klick durch den Nutzer.</p>
+      <h3>Cookies verwalten</h3>
+      <p>Sie können Ihre Cookie-Einstellungen jederzeit über den Link „Cookie-Einstellungen" im Footer anpassen.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Cookie-Einstellungen -->
+<div class="modal-overlay" id="modal-cookie-settings">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Cookie-Einstellungen</h2><button class="modal-close" onclick="closeModal('modal-cookie-settings')">✕</button></div>
+    <div class="modal-body">
+      <div class="cookie-toggle-row">
+        <div class="toggle-label"><h4>Notwendige Cookies</h4><p>Erforderlich für den Betrieb der Website.</p></div>
+        <label class="toggle"><input type="checkbox" checked disabled/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="cookie-toggle-row">
+        <div class="toggle-label"><h4>Funktionale Cookies</h4><p>Hintergrundbilder, Textanpassungen.</p></div>
+        <label class="toggle"><input type="checkbox" id="toggle-functional" checked/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="cookie-toggle-row">
+        <div class="toggle-label"><h4>Drittanbieter (Facebook, Google)</h4><p>Nur bei expliziter Nutzung dieser Features.</p></div>
+        <label class="toggle"><input type="checkbox" id="toggle-third"/><span class="toggle-slider"></span></label>
+      </div>
+      <div style="display:flex;gap:.7rem;margin-top:1.5rem;">
+        <button class="btn btn-pine" onclick="cookieSettingsSave()">Einstellungen speichern</button>
+        <button class="btn btn-gray" onclick="closeModal('modal-cookie-settings')">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- hidden file input -->
+<input type="file" id="upload-file-input" multiple style="display:none" onchange="handleFileUpload(event)"/>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--                     JAVASCRIPT                        -->
+<!-- ══════════════════════════════════════════════════════ -->
+<script>
+// ════════════════════════════════════════
+//  ⚙️  KONFIGURATION – HIER ANPASSEN
+// ════════════════════════════════════════
+const SUPABASE_URL = 'DEINE_SUPABASE_URL';
+const SUPABASE_KEY = 'DEIN_ANON_KEY';
+const APP_PASSWORD = 'familie2026'; // Passwort hier ändern!
+const BILDER_SERVER_URL = 'https://DEIN-BILDSERVER.de'; // URL des Bildservers
+const MAX_SCHLAF = 6;
+// ════════════════════════════════════════
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+const HEUTE = new Date();
+
+// ══════════════════════════════════════════
+//  NAVIGATION KONFIGURATION
+// ══════════════════════════════════════════
+const NAV = [
+  { id:'uebersicht', icon:'🏠', label:'Übersicht' },
+  { id:'news', icon:'📰', label:'News', subs:[
+    { id:'oeffentlich', label:'Öffentliche News' },
+    { id:'warnung',     label:'⚠️ Warnhinweise' },
+    { id:'intern',      label:'Interne Nachrichten' },
+    { id:'presse',      label:'Presse News' },
+    { id:'facebook',    label:'Facebook' },
+  ]},
+  { id:'verein', icon:'🏛', label:'Verein', subs:[
+    { id:'leitbild',   label:'Leitbild' },
+    { id:'satzung',    label:'Satzung' },
+    { id:'hymne',      label:'Vereinshymne' },
+    { id:'mitglieder', label:'Mitglieder' },
+    { id:'mv',         label:'Mitgliederversammlung' },
+    { id:'stammbaum',  label:'Stammbaum' },
+    { id:'vorstand',   label:'Vorstand' },
+    { id:'vorlagen',   label:'Vorlagen' },
+    { id:'info',       label:'Allgemeine Informationen' },
+  ]},
+  { id:'kontakt', icon:'✉️', label:'Kontakt', subs:[
+    { id:'gaestebuch',    label:'Gästebuch' },
+    { id:'googlegroups',  label:'GoogleGroups' },
+    { id:'mail',          label:'Mail' },
+    { id:'adressen',      label:'Adressen' },
+    { id:'behoerden',     label:'Behörden' },
+  ]},
+  { id:'aktivitaeten', icon:'🎯', label:'Aktivitäten', subs:[
+    { id:'kalender',         label:'Kalender' },
+    { id:'termine',          label:'Termine' },
+    { id:'uebernachtungen',  label:'Übernachtungen eintragen' },
+    { id:'freizeit',         label:'Freizeittipps' },
+    { id:'projekte',         label:'Projekte' },
+    { id:'todo',             label:'Zu Erledigen' },
+    { id:'umfragen',         label:'Umfragen' },
+    { id:'abfall',           label:'Abfallkalender' },
+  ]},
+  { id:'bilder', icon:'🖼', label:'Bilder & Videos', isBilder:true, subs:[
+    { id:'diverse', label:'Diverse Bilder' },
+    ...[2025,2024,2023,2022,2021,2020,2019].map(y=>({ id:'y'+y, label:String(y) })),
+    { id:'y2018', label:'2018-10-20' },
+    ...[2017,2016,2015,2014,2013].map(y=>({ id:'y'+y, label:String(y) })),
+  ]},
+  { id:'archiv', icon:'📁', label:'Archiv', subs:[
+    { id:'protokolle',       label:'Protokolle',           bucket:'archiv', folder:'protokolle' },
+    { id:'mv',               label:'Mitgliederversammlungen', bucket:'archiv', folder:'mv' },
+    { id:'grundbuch',        label:'Grundbuchauszüge',     bucket:'archiv', folder:'grundbuch' },
+    { id:'vollmachten',      label:'Vollmachten',          bucket:'archiv', folder:'vollmachten' },
+    { id:'datenschutz',      label:'Datenschutzerklärungen',bucket:'archiv',folder:'datenschutz' },
+    { id:'aufnahme',         label:'Aufnahmeanträge',      bucket:'archiv', folder:'aufnahme' },
+    { id:'kuendigungen',     label:'Kündigungen',          bucket:'archiv', folder:'kuendigungen' },
+    { id:'behoerden',        label:'Behörden',             bucket:'archiv', folder:'behoerden' },
+    { id:'bedienungsanl',    label:'Bedienungsanleitungen',bucket:'archiv', folder:'bedienungsanl' },
+    { id:'briefe',           label:'Briefe',               bucket:'archiv', folder:'briefe' },
+    { id:'diverse',          label:'Diverse Dokumente',    bucket:'archiv', folder:'diverse' },
+  ]},
+  { id:'finanzen', icon:'💰', label:'Finanzen', subs:[
+    { id:'huettenabrech',    label:'Hüttenabrechnungen',   bucket:'finanzen', folder:'huettenabrech' },
+    { id:'bankverbindung',   label:'Bankverbindung',       bucket:'finanzen', folder:'bankverbindung' },
+    { id:'bundesbank',       label:'Deutsche Bundesbank',  bucket:'finanzen', folder:'bundesbank' },
+    { id:'skatbank',         label:'Deutsche Skatbank',    bucket:'finanzen', folder:'skatbank' },
+    { id:'rechnungen',       label:'Rechnungsbelege',      bucket:'finanzen', folder:'rechnungen' },
+    { id:'mahnungen',        label:'Mahnungen',            bucket:'finanzen', folder:'mahnungen' },
+    { id:'versicherungen',   label:'Versicherungen',       bucket:'finanzen', folder:'versicherungen' },
+  ]},
+];
+
+let currentSection = null;
+let currentSub = null;
+let miniKalHome = null;
+let kalOverview = null;
+let uploadTarget = { bucket:'', folder:'' };
+
+// ══════════════════════════════════════════
+//  PASSWORT
+// ══════════════════════════════════════════
+function checkPw() {
+  const val = document.getElementById('pw-input').value;
+  if (val === APP_PASSWORD) {
+    sessionStorage.setItem('auth','1');
+    document.getElementById('pw-gate').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  } else {
+    document.getElementById('pw-error').textContent='Falsches Passwort. Bitte erneut versuchen.';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION AUFBAUEN
+// ══════════════════════════════════════════
+function buildNav() {
+  const nav = document.getElementById('main-nav');
+  NAV.forEach(item => {
+    const el = document.createElement('div');
+    el.className='nav-item'; el.id='nav-'+item.id;
+    el.innerHTML = item.icon+' '+item.label+(item.subs?'<span class="nav-arrow">▾</span>':'');
+    el.onclick = () => navigate(item.id, item.subs ? item.subs[0].id : null);
+    nav.appendChild(el);
+  });
+}
+
+function navigate(section, sub) {
+  // Update main nav
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+section);
+  if (navEl) navEl.classList.add('active');
+
+  const secDef = NAV.find(n=>n.id===section);
+
+  // Sub-nav
+  const subNav = document.getElementById('sub-nav');
+  if (secDef && secDef.subs && secDef.subs.length) {
+    subNav.classList.remove('hidden');
+    subNav.innerHTML = secDef.subs.map(s=>`
+      <div class="sub-item${(sub||secDef.subs[0].id)===s.id?' active':''}"
+        onclick="navigate('${section}','${s.id}')">${s.label}</div>`).join('');
+  } else {
+    subNav.classList.add('hidden');
+  }
+
+  // Bilder-Server-Bar
+  const bar = document.getElementById('bilder-server-bar');
+  const withBar = document.getElementById('content');
+  if (secDef && secDef.isBilder) {
+    bar.classList.add('show');
+    withBar.classList.add('with-bar');
+  } else {
+    bar.classList.remove('show');
+    withBar.classList.remove('with-bar');
+  }
+
+  // Hide all panels
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+
+  // Show correct panel
+  const activeSub = sub || (secDef && secDef.subs ? secDef.subs[0].id : null);
+  const panelId = activeSub ? `panel-${section}-${activeSub}` : `panel-${section}`;
+
+  let panel = document.getElementById(panelId);
+  if (!panel) {
+    panel = createDynamicPanel(section, activeSub, secDef);
+  }
+  if (panel) panel.classList.add('active');
+
+  currentSection = section;
+  currentSub = activeSub;
+
+  // Lazy-load content
+  onPanelShow(section, activeSub);
+  window.scrollTo(0,0);
+}
+
+// Dynamisch Panels erstellen (Archiv, Finanzen, Bilder-Jahre)
+function createDynamicPanel(section, sub, secDef) {
+  const subDef = secDef && secDef.subs ? secDef.subs.find(s=>s.id===sub) : null;
+  if (!subDef) return null;
+
+  const panel = document.createElement('div');
+  panel.className='panel'; panel.id=`panel-${section}-${sub}`;
+
+  if (section === 'archiv' || section === 'finanzen') {
+    panel.innerHTML=`
+      <div class="panel-title">${subDef.label}</div>
+      <div class="file-section-header">
+        <p style="font-size:.85rem;color:var(--muted)">${section==='archiv'?'Archiv-Dokumente':'Finanz-Dokumente'}</p>
+        <button class="btn btn-rust btn-sm" onclick="uploadTrigger('${subDef.bucket}','${subDef.folder}')">⬆ Datei hochladen</button>
+      </div>
+      <div class="file-grid" id="files-${section}-${sub}"></div>`;
+  } else if (section === 'bilder') {
+    const isMedia = true;
+    const year = subDef.label;
+    panel.innerHTML=`
+      <div class="panel-title">Bilder & Videos <em>${year}</em></div>
+      <div class="file-section-header">
+        <p style="font-size:.85rem;color:var(--muted)">Fotos und Videos aus dem Jahr ${year}</p>
+        <button class="btn btn-rust btn-sm" onclick="uploadTrigger('bilder','${sub.replace('y','')}')">⬆ Medien hochladen</button>
+      </div>
+      <div class="image-grid" id="media-bilder-${sub}"></div>`;
+  }
+
+  document.getElementById('content').appendChild(panel);
+  return panel;
+}
+
+// ══════════════════════════════════════════
+//  PANEL AKTIVIERT → INHALTE LADEN
+// ══════════════════════════════════════════
+function onPanelShow(section, sub) {
+  const secDef = NAV.find(n=>n.id===section);
+  const subDef = secDef && secDef.subs ? secDef.subs.find(s=>s.id===sub) : null;
+
+  if (section==='uebersicht')                               loadUebersicht();
+  else if (section==='news')                                loadNews(sub);
+  else if (section==='kontakt' && sub==='gaestebuch')       loadGaestebuch();
+  else if (section==='verein' && sub==='mitglieder')        loadMitglieder();
+  else if (section==='verein' && sub==='vorstand')          loadVorstand();
+  else if (section==='aktivitaeten' && sub==='kalender')    initKalOverview();
+  else if (section==='aktivitaeten' && sub==='termine')     loadTermine();
+  else if (section==='aktivitaeten' && sub==='todo')        loadTodo();
+  else if ((section==='archiv'||section==='finanzen') && subDef) {
+    loadFiles(subDef.bucket, subDef.folder, `files-${section}-${sub}`);
+  }
+  else if (section==='bilder') {
+    const folder = sub==='diverse' ? 'diverse' : sub.replace('y','');
+    loadMediaFiles('bilder', folder, `media-bilder-${sub}`);
+  }
+  else if (section==='verein' && ['satzung','mv','stammbaum','vorlagen'].includes(sub)) {
+    loadFiles('verein', sub, `files-verein-${sub}`);
+  }
+}
+
+// ══════════════════════════════════════════
+//  ÜBERSICHT
+// ══════════════════════════════════════════
+async function loadUebersicht() {
+  document.getElementById('sy').textContent = HEUTE.getFullYear();
+  document.getElementById('footer-year').textContent = HEUTE.getFullYear();
+
+  const jetzt = HEUTE.toISOString().slice(0,10);
+  const [{data:bel},{data:events}] = await Promise.all([
+    db.from('belegungen').select('*').order('von'),
+    db.from('special_events').select('*').order('von')
+  ]);
+
+  const belJahr = (bel||[]).filter(b=>b.von>=HEUTE.getFullYear()+'-01-01');
+  const belKunft = belJahr.filter(b=>b.bis>jetzt);
+  document.getElementById('sv-b').textContent = belJahr.length;
+  document.getElementById('sn-b').textContent = belKunft.length + ' bevorstehend';
+
+  const naechste = (bel||[]).filter(b=>b.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+  document.getElementById('sv-n').textContent = naechste ? naechste.name : '–';
+  document.getElementById('sn-n').textContent = naechste ? datDE(naechste.von,{day:'2-digit',month:'short'})+'–'+datDE(naechste.bis,{day:'2-digit',month:'short'}) : 'Keine';
+
+  const fw = naechsteFreieWoche((bel||[]).filter(b=>b.bis>jetzt));
+  document.getElementById('sv-f').textContent = fw ? 'KW '+fw.kw : '–';
+  document.getElementById('sn-f').textContent = fw ? datDE(fw.von,{day:'2-digit',month:'short'})+'–'+datDE(fw.bis,{day:'2-digit',month:'short'}) : '';
+
+  const ev = (events||[]).filter(e=>e.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+  document.getElementById('sv-e').textContent = ev ? ev.titel : '–';
+  document.getElementById('sn-e').textContent = ev ? datDE(ev.von,{day:'2-digit',month:'short'}) : 'Keine geplant';
+
+  // Mini Kalender
+  if (!miniKalHome) {
+    miniKalHome = new FullCalendar.Calendar(document.getElementById('mini-kal-home'),{
+      initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
+      weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
+      events:[],
+      eventClick:()=>navigate('aktivitaeten','uebernachtungen'),
+      headerToolbar:{left:'prev,next',center:'title',right:''}
+    });
+    miniKalHome.render();
+  }
+  miniKalHome.removeAllEvents();
+  (bel||[]).forEach(b=>miniKalHome.addEvent({title:b.name,start:b.von,end:b.bis,backgroundColor:'#8b4513',borderColor:'#8b4513'}));
+  (events||[]).forEach(e=>{
+    const c=e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+    miniKalHome.addEvent({title:e.titel,start:e.von,end:e.bis,backgroundColor:c,borderColor:c});
+  });
+
+  // Upcoming
+  const alle=[...(bel||[]).filter(b=>b.bis>jetzt).map(b=>({...b,_t:'bel'})),
+              ...(events||[]).filter(e=>e.bis>jetzt).map(e=>({...e,name:e.titel,_t:'ev'}))
+  ].sort((a,b)=>a.von.localeCompare(b.von)).slice(0,5);
+
+  document.getElementById('home-upcoming').innerHTML = alle.map(t=>`
+    <div class="upcoming-item${t._t==='ev'?' ev':''}">
+      <div class="upcoming-name">${t.name}</div>
+      <div class="upcoming-dat">${datDE(t.von,{day:'2-digit',month:'short'})} – ${datDE(t.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
+    </div>`).join('') || '<div style="font-size:.8rem;color:var(--muted);font-style:italic">Keine Termine</div>';
+}
+
+// ══════════════════════════════════════════
+//  KALENDER ÜBERSICHT
+// ══════════════════════════════════════════
+async function initKalOverview() {
+  if (!kalOverview) {
+    kalOverview = new FullCalendar.Calendar(document.getElementById('kal-overview'),{
+      initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
+      weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
+      events:[],
+      eventClick:()=>{}, // Read only
+      headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},
+      buttonText:{today:'Heute',month:'Monat',list:'Liste'}
+    });
+    kalOverview.render();
+  }
+  const jetzt = HEUTE.toISOString().slice(0,10);
+  const [{data:bel},{data:events}] = await Promise.all([
+    db.from('belegungen').select('*').order('von'),
+    db.from('special_events').select('*').order('von')
+  ]);
+  kalOverview.removeAllEvents();
+  (bel||[]).forEach(b=>{
+    const p=(b.erwachsene||0)+(b.kinder||0);
+    kalOverview.addEvent({title:b.name+(p?' ('+p+'P.)':''),start:b.von,end:b.bis,backgroundColor:'#8b4513',borderColor:'#8b4513'});
+  });
+  (events||[]).forEach(e=>{
+    const c=e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+    kalOverview.addEvent({title:'📌 '+e.titel,start:e.von,end:e.bis,backgroundColor:c,borderColor:c});
+  });
+  const upcoming=(bel||[]).filter(b=>b.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
+  document.getElementById('kal-upcoming').innerHTML=upcoming.map(b=>`
+    <div class="upcoming-item">
+      <div class="upcoming-name">${b.name}</div>
+      <div class="upcoming-dat">${datDE(b.von,{day:'2-digit',month:'short'})} – ${datDE(b.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
+      ${b.erwachsene||b.kinder?`<div class="upcoming-pers">${[b.erwachsene?b.erwachsene+' Erw.':'',b.kinder?b.kinder+' Kinder':''].filter(Boolean).join(', ')}</div>`:''}
+    </div>`).join('')||'<div style="font-size:.8rem;color:var(--muted);font-style:italic">Keine Belegungen</div>';
+}
+
+// ══════════════════════════════════════════
+//  NEWS
+// ══════════════════════════════════════════
+async function loadNews(typ) {
+  const {data} = await db.from('nachrichten').select('*').eq('typ',typ).order('erstellt_am',{ascending:false});
+  const el = document.getElementById('ng-'+typ);
+  if (!el) return;
+  el.innerHTML = (data||[]).length ? data.map(n=>`
+    <div class="news-card ${typ}">
+      <div class="news-card-head">
+        <div class="news-titel">${n.titel}</div>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <div class="news-date">${datDE(n.erstellt_am,{day:'2-digit',month:'short',year:'numeric'})}</div>
+          <button class="news-del" onclick="newsDel('${n.id}','${typ}')">✕</button>
+        </div>
+      </div>
+      <div class="news-inhalt">${n.inhalt}</div>
+    </div>`).join('')
+    : '<div class="no-entries">Noch keine Einträge.</div>';
+}
+
+async function newsHinzufuegen(typ) {
+  const tId='news-'+(typ==='oeffentlich'?'oe':typ==='warnung'?'w':typ==='intern'?'i':'p')+'-titel';
+  const iId='news-'+(typ==='oeffentlich'?'oe':typ==='warnung'?'w':typ==='intern'?'i':'p')+'-inhalt';
+  const titel=document.getElementById(tId).value.trim();
+  const inhalt=document.getElementById(iId).value.trim();
+  if (!titel||!inhalt){alert('Bitte Titel und Inhalt ausfüllen.');return;}
+  await db.from('nachrichten').insert({titel,inhalt,typ});
+  document.getElementById(tId).value=''; document.getElementById(iId).value='';
+  loadNews(typ);
+}
+
+async function newsDel(id, typ) {
+  if (!confirm('Eintrag löschen?')) return;
+  await db.from('nachrichten').delete().eq('id',id);
+  loadNews(typ);
+}
+
+// ══════════════════════════════════════════
+//  GÄSTEBUCH
+// ══════════════════════════════════════════
+async function loadGaestebuch() {
+  const {data} = await db.from('gaestebuch').select('*').order('erstellt_am',{ascending:false});
+  const el = document.getElementById('gb-liste');
+  el.innerHTML = (data||[]).length ? data.map(g=>`
+    <div class="gb-eintrag">
+      <div class="gb-name">${g.name}</div>
+      <div class="gb-datum">${datDE(g.erstellt_am,{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="gb-text">${g.nachricht}</div>
+      <button class="gb-del" onclick="gbDel('${g.id}')">✕</button>
+    </div>`).join('')
+    : '<div class="no-entries">Noch keine Einträge.</div>';
+}
+
+async function gbEintragen() {
+  const name=document.getElementById('gb-name').value.trim();
+  const text=document.getElementById('gb-text').value.trim();
+  if (!name||!text){alert('Bitte Name und Nachricht ausfüllen.');return;}
+  await db.from('gaestebuch').insert({name,nachricht:text});
+  document.getElementById('gb-name').value=''; document.getElementById('gb-text').value='';
+  loadGaestebuch();
+}
+
+async function gbDel(id) {
+  if (!confirm('Eintrag löschen?')) return;
+  await db.from('gaestebuch').delete().eq('id',id);
+  loadGaestebuch();
+}
+
+// ══════════════════════════════════════════
+//  MITGLIEDER
+// ══════════════════════════════════════════
+let mitglieder = JSON.parse(localStorage.getItem('mitglieder')||'[]');
+function loadMitglieder() {
+  const el=document.getElementById('mitglieder-grid');
+  el.innerHTML=mitglieder.length?mitglieder.map((m,i)=>`
+    <div class="mitglied-card">
+      <div class="mitglied-name">${m.name}</div>
+      <div class="mitglied-rolle">${m.rolle||''}</div>
+      <button class="mitglied-del" onclick="mitgliedDel(${i})">Entfernen</button>
+    </div>`).join(''):'<div style="grid-column:1/-1;font-size:.85rem;color:var(--muted);font-style:italic">Noch keine Mitglieder eingetragen.</div>';
+}
+function mitgliedHinzufuegen(){
+  const name=document.getElementById('m-name').value.trim();
+  const rolle=document.getElementById('m-rolle').value.trim();
+  if(!name)return;
+  mitglieder.push({name,rolle});
+  localStorage.setItem('mitglieder',JSON.stringify(mitglieder));
+  document.getElementById('m-name').value=''; document.getElementById('m-rolle').value='';
+  loadMitglieder();
+}
+function mitgliedDel(i){
+  if(!confirm('Mitglied entfernen?'))return;
+  mitglieder.splice(i,1);
+  localStorage.setItem('mitglieder',JSON.stringify(mitglieder));
+  loadMitglieder();
+}
+
+// ══════════════════════════════════════════
+//  VORSTAND
+// ══════════════════════════════════════════
+let vorstand = JSON.parse(localStorage.getItem('vorstand')||'[]');
+function loadVorstand(){
+  const el=document.getElementById('vorstand-grid');
+  el.innerHTML=vorstand.length?vorstand.map((v,i)=>`
+    <div class="vorstand-card">
+      <div class="vorstand-rolle">${v.rolle}</div>
+      <div class="vorstand-name">${v.name}</div>
+      ${v.kontakt?`<div class="vorstand-kontakt">${v.kontakt}</div>`:''}
+      <button class="mitglied-del" onclick="vorstandDel(${i})">Entfernen</button>
+    </div>`).join(''):'<div style="font-size:.85rem;color:var(--muted);font-style:italic">Noch kein Vorstand eingetragen.</div>';
+}
+function vorstandHinzufuegen(){
+  const name=document.getElementById('v-name').value.trim();
+  const rolle=document.getElementById('v-rolle').value.trim();
+  const kontakt=document.getElementById('v-kontakt').value.trim();
+  if(!name||!rolle)return;
+  vorstand.push({name,rolle,kontakt});
+  localStorage.setItem('vorstand',JSON.stringify(vorstand));
+  ['v-name','v-rolle','v-kontakt'].forEach(id=>document.getElementById(id).value='');
+  loadVorstand();
+}
+function vorstandDel(i){
+  if(!confirm('Entfernen?'))return;
+  vorstand.splice(i,1);
+  localStorage.setItem('vorstand',JSON.stringify(vorstand));
+  loadVorstand();
+}
+
+// ══════════════════════════════════════════
+//  TERMINE / VERANSTALTUNGEN
+// ══════════════════════════════════════════
+async function loadTermine(){
+  const {data:events}=await db.from('special_events').select('*').order('von');
+  const el=document.getElementById('termine-events-liste');
+  if(!(events&&events.length)){el.innerHTML='<div class="no-entries">Keine Veranstaltungen.</div>';return;}
+  const farbe=t=>t==='familienversammlung'?'#2c5f8a':t==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+  const label=t=>t==='familienversammlung'?'👨‍👩‍👧‍👦 Familienversammlung':t==='arbeitswochenende'?'🔨 Arbeitswochenende':'📌 Sonstige';
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:.7rem">`+events.map(e=>`
+    <div style="background:#fff;border:1px solid var(--divider);border-left:4px solid ${farbe(e.typ)};border-radius:2px;padding:1rem 1.2rem;display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:${farbe(e.typ)};margin-bottom:.2rem">${label(e.typ)}</div>
+        <div style="font-family:'Crimson Pro',serif;font-size:1.1rem;font-weight:600">${e.titel}</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:.15rem">${datDE(e.von,{day:'2-digit',month:'long'})} – ${datDE(e.bis,{day:'2-digit',month:'long',year:'numeric'})}</div>
+        ${e.beschreibung?`<div style="font-size:.82rem;color:var(--muted);margin-top:.3rem">${e.beschreibung}</div>`:''}
+      </div>
+      <button class="news-del" onclick="eventDel('${e.id}')">✕</button>
+    </div>`).join('')+'</div>';
+}
+async function eventSpeichern(){
+  const titel=document.getElementById('ev-titel').value.trim();
+  const typ=document.getElementById('ev-typ').value;
+  const von=document.getElementById('ev-von').value;
+  const bis=document.getElementById('ev-bis').value;
+  const beschr=document.getElementById('ev-beschreibung').value.trim();
+  const stEl=document.getElementById('ev-status');
+  if(!titel||!von||!bis){stEl.textContent='⚠ Felder ausfüllen';return;}
+  if(von>=bis){stEl.textContent='⚠ Enddatum nach Startdatum';return;}
+  const {error}=await db.from('special_events').insert({titel,typ,von,bis,beschreibung:beschr||null,jahr:parseInt(von.slice(0,4))});
+  if(error){stEl.textContent='✗ '+error.message;return;}
+  ['ev-titel','ev-von','ev-bis','ev-beschreibung'].forEach(id=>document.getElementById(id).value='');
+  stEl.textContent='✓ Gespeichert!';setTimeout(()=>stEl.textContent='',3000);
+  loadTermine();
+}
+async function eventDel(id){
+  if(!confirm('Löschen?'))return;
+  await db.from('special_events').delete().eq('id',id);
+  loadTermine();
+}
+
+// ══════════════════════════════════════════
+//  TO-DO
+// ══════════════════════════════════════════
+let todos = JSON.parse(localStorage.getItem('todos')||'[]');
+function loadTodo(){
+  const el=document.getElementById('todo-liste');
+  el.innerHTML=todos.length?todos.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;background:#fff;border:1px solid var(--divider);border-radius:2px;margin-bottom:.4rem;${t.done?'opacity:.5;':''}">
+      <input type="checkbox" ${t.done?'checked':''} onchange="todoDone(${i})" style="cursor:pointer;width:16px;height:16px;accent-color:var(--pine)"/>
+      <div style="flex:1">
+        <div style="font-size:.85rem;${t.done?'text-decoration:line-through':''}">${t.text}</div>
+        ${t.person?`<div style="font-size:.72rem;color:var(--muted)">${t.person}</div>`:''}
+      </div>
+      <button class="news-del" onclick="todoDel(${i})">✕</button>
+    </div>`).join('')+'<div style="font-size:.72rem;color:var(--muted);text-align:right;margin-top:.3rem">'+todos.filter(t=>!t.done).length+' offen'
+    : '<div class="no-entries">Keine offenen Aufgaben.</div>';
+}
+function todoHinzufuegen(){
+  const text=document.getElementById('todo-text').value.trim();
+  const person=document.getElementById('todo-person').value.trim();
+  if(!text)return;
+  todos.unshift({text,person,done:false});
+  localStorage.setItem('todos',JSON.stringify(todos));
+  document.getElementById('todo-text').value=''; document.getElementById('todo-person').value='';
+  loadTodo();
+}
+function todoDone(i){todos[i].done=!todos[i].done;localStorage.setItem('todos',JSON.stringify(todos));loadTodo();}
+function todoDel(i){todos.splice(i,1);localStorage.setItem('todos',JSON.stringify(todos));loadTodo();}
+
+// ══════════════════════════════════════════
+//  DATEI-BROWSER (Supabase Storage)
+// ══════════════════════════════════════════
+function fileIcon(name){
+  const ext=name.split('.').pop().toLowerCase();
+  if(['pdf'].includes(ext)) return '📄';
+  if(['xls','xlsx'].includes(ext)) return '📊';
+  if(['doc','docx'].includes(ext)) return '📝';
+  if(['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return '🖼';
+  if(['mp4','mov','avi','webm'].includes(ext)) return '🎬';
+  if(['mp3','m4a','wav'].includes(ext)) return '🎵';
+  if(['zip','rar','7z'].includes(ext)) return '📦';
+  return '📎';
+}
+function isImage(name){return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(name);}
+function isVideo(name){return /\.(mp4|mov|avi|webm)$/i.test(name);}
+function isPdf(name){return /\.pdf$/i.test(name);}
+function fmtSize(b){if(!b)return'';if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(1)+'KB';return(b/1048576).toFixed(1)+'MB';}
+
+async function loadFiles(bucket, folder, containerId) {
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML='<div class="file-card" style="opacity:.5"><span class="file-icon">⏳</span><div class="file-name">Lädt…</div></div>';
+  const {data,error}=await db.storage.from(bucket).list(folder,{limit:100,sortBy:{column:'name',order:'asc'}});
+  if(error||!data||data.length===0){
+    el.innerHTML=`<div class="file-empty"><div class="fe-icon">📂</div><h4>Noch keine Dateien</h4>
+    <p>Dateien in Supabase Storage hochladen:<br/>
+    <strong>Storage → Bucket "${bucket}" → Ordner "${folder}"</strong><br/>
+    Oder den Button "Datei hochladen" verwenden.</p>
+    <p>Für PDF-Anzeige im Browser: Datei public machen (Supabase Storage → Bucket → Public).</p></div>`;
+    return;
+  }
+  el.innerHTML=data.filter(f=>f.name!=='.emptyFolderPlaceholder').map(f=>{
+    const url=db.storage.from(bucket).getPublicUrl(folder+'/'+f.name).data.publicUrl;
+    return`<div class="file-card" onclick="previewFile('${url}','${f.name}')">
+      <span class="file-icon">${fileIcon(f.name)}</span>
+      <div class="file-name">${f.name}</div>
+      <div class="file-size">${fmtSize(f.metadata?.size)}</div>
+      <div class="file-actions">
+        <a href="${url}" download="${f.name}" onclick="event.stopPropagation()" class="btn btn-gray btn-sm">⬇</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadMediaFiles(bucket, folder, containerId) {
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML='<div style="font-size:.85rem;color:var(--muted)"><span class="spin">⏳</span> Lädt…</div>';
+  const {data,error}=await db.storage.from(bucket).list(folder,{limit:200});
+  if(error||!data||data.length===0){
+    el.innerHTML=`<div class="file-empty" style="grid-column:1/-1"><div class="fe-icon">🖼</div>
+    <h4>Noch keine Medien</h4><p>Bilder und Videos in Supabase Storage unter<br/><code>bilder/${folder}/</code> hochladen.</p></div>`;
+    return;
+  }
+  const files=data.filter(f=>f.name!=='.emptyFolderPlaceholder');
+  el.innerHTML=files.map(f=>{
+    const url=db.storage.from(bucket).getPublicUrl(folder+'/'+f.name).data.publicUrl;
+    if(isVideo(f.name)){
+      return`<div class="video-item" onclick="previewFile('${url}','${f.name}')">
+        <div class="video-thumb"><video src="${url}#t=0.5"></video><div class="video-play">▶</div></div>
+        <div class="video-label">${f.name}</div></div>`;
+    }
+    if(isImage(f.name)){
+      return`<div class="img-thumb" onclick="previewFile('${url}','${f.name}')">
+        <img src="${url}" loading="lazy" alt="${f.name}"/>
+        <div class="img-overlay"><span class="img-overlay-icon">🔍</span></div></div>`;
+    }
+    return`<div class="file-card" onclick="previewFile('${url}','${f.name}')">
+      <span class="file-icon">${fileIcon(f.name)}</span>
+      <div class="file-name">${f.name}</div></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  DATEI-VORSCHAU MODAL
+// ══════════════════════════════════════════
+function previewFile(url, name) {
+  document.getElementById('preview-title').textContent = name;
+  document.getElementById('preview-download').href = url;
+  document.getElementById('preview-download').download = name;
+  ['preview-frame','preview-img','preview-video','preview-other'].forEach(id=>document.getElementById(id).style.display='none');
+  if(isPdf(name)){
+    document.getElementById('preview-frame').src=url;
+    document.getElementById('preview-frame').style.display='block';
+  } else if(isImage(name)){
+    document.getElementById('preview-img').src=url;
+    document.getElementById('preview-img').style.display='block';
+  } else if(isVideo(name)){
+    document.getElementById('preview-video').src=url;
+    document.getElementById('preview-video').style.display='block';
+  } else {
+    document.getElementById('preview-other').style.display='block';
+    window.open(url,'_blank');
+    return;
+  }
+  openModal('preview-modal');
+}
+
+// ══════════════════════════════════════════
+//  DATEI UPLOAD
+// ══════════════════════════════════════════
+function uploadTrigger(bucket, folder) {
+  uploadTarget={bucket,folder};
+  document.getElementById('upload-file-input').click();
+}
+
+async function handleFileUpload(event) {
+  const files=event.target.files;
+  if(!files.length)return;
+  const {bucket,folder}=uploadTarget;
+  for(const file of files){
+    const path=folder+'/'+file.name;
+    const {error}=await db.storage.from(bucket).upload(path,file,{upsert:true});
+    if(error) alert('Fehler beim Hochladen: '+error.message);
+  }
+  event.target.value='';
+  // Reload
+  const sec=currentSection, sub=currentSub;
+  const secDef=NAV.find(n=>n.id===sec);
+  const subDef=secDef?.subs?.find(s=>s.id===sub);
+  if(subDef?.bucket) loadFiles(subDef.bucket,subDef.folder,`files-${sec}-${sub}`);
+  else if(sec==='bilder') loadMediaFiles(bucket,folder,`media-bilder-${sub}`);
+}
+
+// ══════════════════════════════════════════
+//  INHALTE EDITIEREN
+// ══════════════════════════════════════════
+function toggleEdit(textId, btnId) {
+  const el=document.getElementById(textId);
+  const btn=document.getElementById(btnId);
+  if(el.contentEditable==='true'){
+    el.contentEditable='false';
+    btn.textContent='✏️ Bearbeiten';
+    localStorage.setItem('content-'+textId,el.innerHTML);
+  } else {
+    el.contentEditable='true';
+    el.focus();
+    btn.textContent='💾 Speichern';
+  }
+}
+// Gespeicherte Inhalte laden
+function loadSavedContent(){
+  document.querySelectorAll('.content-editable[id]').forEach(el=>{
+    const saved=localStorage.getItem('content-'+el.id);
+    if(saved) el.innerHTML=saved;
+  });
+}
+
+// ══════════════════════════════════════════
+//  HINTERGRUNDBILD
+// ══════════════════════════════════════════
+function editBg(elementId) {
+  const url=prompt('Bild-URL eingeben (leer lassen zum Entfernen):',
+    localStorage.getItem('bg-'+elementId)||'');
+  if(url===null) return;
+  const el=document.getElementById(elementId);
+  if(url.trim()){
+    el.style.backgroundImage='url('+url.trim()+')';
+    localStorage.setItem('bg-'+elementId,url.trim());
+  } else {
+    el.style.backgroundImage='';
+    localStorage.removeItem('bg-'+elementId);
+  }
+}
+function loadSavedBg(){
+  document.querySelectorAll('.bg-section[id]').forEach(el=>{
+    const saved=localStorage.getItem('bg-'+el.id);
+    if(saved) el.style.backgroundImage='url('+saved+')';
+  });
+}
+
+// ══════════════════════════════════════════
+//  KONTAKTFORMULAR
+// ══════════════════════════════════════════
+let captchaA=0, captchaB=0;
+function initCaptcha(){
+  captchaA=Math.floor(Math.random()*10)+1;
+  captchaB=Math.floor(Math.random()*10)+1;
+  document.getElementById('captcha-q').textContent=`Was ist ${captchaA} + ${captchaB} ?`;
+  document.getElementById('captcha-a').value='';
+}
+async function kontaktSenden(){
+  const name=document.getElementById('cf-name').value.trim();
+  const email=document.getElementById('cf-email').value.trim();
+  const nachricht=document.getElementById('cf-nachricht').value.trim();
+  const antwort=parseInt(document.getElementById('captcha-a').value);
+  const stEl=document.getElementById('cf-status');
+  if(!name||!email||!nachricht){stEl.style.color='var(--warn)';stEl.textContent='⚠ Bitte alle Pflichtfelder ausfüllen.';return;}
+  if(!email.includes('@')){stEl.style.color='var(--warn)';stEl.textContent='⚠ Gültige E-Mail eingeben.';return;}
+  if(antwort!==captchaA+captchaB){stEl.style.color='var(--warn)';stEl.textContent='⚠ Sicherheitsfrage falsch beantwortet.';return;}
+  stEl.style.color='var(--aged)';stEl.textContent='Wird gesendet…';
+  const {error}=await db.from('kontakt').insert({name,email,nachricht});
+  if(error){stEl.style.color='var(--warn)';stEl.textContent='✗ Fehler: '+error.message;return;}
+  ['cf-name','cf-email','cf-nachricht'].forEach(id=>document.getElementById(id).value='');
+  initCaptcha();
+  stEl.style.color='#6abf6a';stEl.textContent='✓ Nachricht wurde erfolgreich gesendet!';
+  setTimeout(()=>stEl.textContent='',5000);
+}
+
+// ══════════════════════════════════════════
+//  UMFRAGEN HILFSFUNKTION
+// ══════════════════════════════════════════
+function loadUmfrage(){
+  const url=document.getElementById('umfrage-url').value.trim();
+  if(!url)return;
+  document.getElementById('umfrage-frame').src=url;
+  document.getElementById('umfrage-frame').style.display='block';
+}
+
+// ══════════════════════════════════════════
+//  MODALS
+// ══════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+  if(id==='preview-modal'){
+    document.getElementById('preview-video').pause&&document.getElementById('preview-video').pause();
+    ['preview-frame','preview-video'].forEach(eid=>document.getElementById(eid).src='');
+  }
+}
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
+});
+
+// ══════════════════════════════════════════
+//  COOKIES
+// ══════════════════════════════════════════
+function cookieChoice(type){
+  localStorage.setItem('cookie-consent',type);
+  localStorage.setItem('cookie-date',Date.now());
+  document.getElementById('cookie-banner').style.display='none';
+  if(type==='all') document.getElementById('toggle-functional').checked=true;
+}
+function cookieSettingsSave(){
+  const func=document.getElementById('toggle-functional').checked;
+  const third=document.getElementById('toggle-third').checked;
+  localStorage.setItem('cookie-consent',func&&third?'all':func?'functional':'essential');
+  localStorage.setItem('cookie-date',Date.now());
+  document.getElementById('cookie-banner').style.display='none';
+  closeModal('modal-cookie-settings');
+}
+function checkCookieBanner(){
+  const consent=localStorage.getItem('cookie-consent');
+  const date=parseInt(localStorage.getItem('cookie-date')||'0');
+  const expired=Date.now()-date>365*24*3600*1000;
+  if(!consent||expired) document.getElementById('cookie-banner').style.display='flex';
+}
+
+// ══════════════════════════════════════════
+//  HILFSFUNKTIONEN
+// ══════════════════════════════════════════
+function datDE(str,opt){if(!str)return'–';return new Date(str).toLocaleDateString('de-DE',opt||{day:'2-digit',month:'short',year:'numeric'});}
+
+function naechsteFreieWoche(bel){
+  const belegt=new Set();
+  bel.forEach(b=>{let d=new Date(b.von),e=new Date(b.bis);while(d<e){belegt.add(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}});
+  let mo=new Date(HEUTE);mo.setDate(mo.getDate()+(8-mo.getDay())%7||7);
+  for(let i=0;i<52;i++){
+    let ok=true;
+    for(let t=0;t<7;t++){const d=new Date(mo);d.setDate(d.getDate()+t);if(belegt.has(d.toISOString().slice(0,10))){ok=false;break;}}
+    if(ok){
+      const so=new Date(mo);so.setDate(so.getDate()+6);
+      const tmp=new Date(mo);tmp.setHours(0,0,0,0);tmp.setDate(tmp.getDate()+3-(tmp.getDay()+6)%7);
+      const w1=new Date(tmp.getFullYear(),0,4);
+      const kw=1+Math.round(((tmp-w1)/86400000-3+(w1.getDay()+6)%7)/7);
+      return{kw,von:mo.toISOString().slice(0,10),bis:so.toISOString().slice(0,10)};
+    }
+    mo.setDate(mo.getDate()+7);
+  }
+  return null;
+}
+
+// ══════════════════════════════════════════
+//  APP INITIALISIEREN
+// ══════════════════════════════════════════
+function initApp() {
+  buildNav();
+  loadSavedContent();
+  loadSavedBg();
+  initCaptcha();
+  checkCookieBanner();
+  document.getElementById('footer-year').textContent=HEUTE.getFullYear();
+  document.getElementById('bilder-server-link').href=BILDER_SERVER_URL;
+  navigate('uebersicht');
+}
+
+// Start: Passwort prüfen
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('auth')==='1'){
+    document.getElementById('pw-gate').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  }
+  document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkPw();});
+});
+</script>
+</body>
+</html>
