@@ -3,680 +3,2193 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hüttenbuch – Übersicht</title>
+  <title>Hüttenbuch – Familie Mustermann</title>
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --ink:     #1e1510;
-      --paper:   #f7f2ea;
-      --aged:    #e8dfc8;
-      --rust:    #8b4513;
-      --gold:    #b8860b;
-      --pine:    #2d4a2d;
-      --blue:    #2c5f8a;
-      --muted:   #7a6a58;
-      --divider: #d4c9b0;
-      --red:     #c0392b;
-    }
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior:smooth; }
-    body {
-      font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink);
-      background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(180,160,120,.07) 28px,rgba(180,160,120,.07) 29px);
-    }
+<style>
+:root{
+  --ink:#1e1510;--paper:#f7f2ea;--aged:#e8dfc8;--rust:#8b4513;--gold:#b8860b;
+  --pine:#2d4a2d;--blue:#2c5f8a;--muted:#7a6a58;--divider:#d4c9b0;--red:#c0392b;
+  --warn:#e67e22;--sw:260px;--sw-col:58px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(180,160,120,.06) 28px,rgba(180,160,120,.06) 29px);}
 
-    /* ── SIDEBAR ── */
-    .sidebar {
-      position:fixed; top:0; left:0; bottom:0; width:220px;
-      background:var(--ink); display:flex; flex-direction:column;
-      padding:2.5rem 1.8rem; z-index:100; border-right:3px solid var(--rust);
-    }
-    .sidebar-logo { font-family:'Crimson Pro',serif; font-size:1.4rem; color:var(--aged); line-height:1.3; margin-bottom:.4rem; }
-    .sidebar-logo span { color:var(--gold); font-style:italic; }
-    .sidebar-sub { font-size:.65rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:3rem; }
-    .sidebar nav { display:flex; flex-direction:column; gap:.2rem; }
-    .sidebar nav a {
-      display:flex; align-items:center; gap:.75rem; padding:.6rem .8rem;
-      color:rgba(232,223,200,.65); text-decoration:none; font-size:.82rem;
-      letter-spacing:.04em; border-radius:3px; transition:background .15s,color .15s;
-    }
-    .sidebar nav a:hover,.sidebar nav a.active { background:rgba(139,69,19,.25); color:var(--aged); }
-    .sidebar nav a .ni { font-size:1rem; width:1.2rem; text-align:center; }
-    .sidebar-footer { margin-top:auto; font-size:.65rem; color:rgba(122,106,88,.4); letter-spacing:.1em; }
+/* ═══════════════════ PASSWORD GATE ═══════════════════ */
+#pw-gate{position:fixed;inset:0;background:var(--ink);z-index:9999;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2rem;}
+#pw-gate.hidden{display:none;}
+.pw-box{background:var(--paper);padding:2.5rem 3rem;border-radius:4px;border-top:4px solid var(--rust);
+  max-width:380px;width:90%;text-align:center;}
+.pw-logo{font-family:'Crimson Pro',serif;font-size:2.2rem;font-weight:300;color:var(--rust);margin-bottom:.3rem;}
+.pw-logo em{font-style:italic;color:var(--ink);}
+.pw-sub{font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:2rem;}
+.pw-box input{width:100%;padding:.7rem .9rem;border:1px solid var(--divider);border-radius:2px;
+  background:var(--aged);font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--ink);
+  text-align:center;letter-spacing:.15em;margin-bottom:.8rem;}
+.pw-box input:focus{outline:none;border-color:var(--rust);}
+.pw-box button{width:100%;padding:.7rem;background:var(--rust);color:#fff;border:none;
+  border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.82rem;letter-spacing:.12em;
+  cursor:pointer;transition:background .2s;}
+.pw-box button:hover{background:#a0521a;}
+.pw-err{color:var(--red);font-size:.78rem;margin-top:.5rem;min-height:1em;}
+.pw-footer{font-size:.65rem;color:rgba(232,223,200,.35);letter-spacing:.1em;}
 
-    /* ── MAIN ── */
-    .main { margin-left:220px; min-height:100vh; }
-    .page-header {
-      padding:3.5rem 3.5rem 2rem; border-bottom:1px solid var(--divider);
-      display:flex; justify-content:space-between; align-items:flex-end;
-    }
-    .page-header h1 { font-family:'Crimson Pro',serif; font-size:2.8rem; font-weight:300; color:var(--rust); }
-    .page-header h1 em { font-style:italic; color:var(--ink); }
-    .page-header p { color:var(--muted); font-size:.85rem; margin-top:.4rem; }
-    .header-date { font-size:.75rem; letter-spacing:.18em; color:var(--muted); text-transform:uppercase; text-align:right; }
-    .content { padding:3rem 3.5rem; }
-    .section { margin-bottom:4rem; }
-    .section-heading { display:flex; align-items:center; gap:1rem; margin-bottom:1.8rem; }
-    .section-heading::after { content:''; flex:1; height:1px; background:var(--divider); }
-    .section-heading h2 { font-family:'Crimson Pro',serif; font-size:1.4rem; font-weight:400; color:var(--rust); white-space:nowrap; }
+/* ═══════════════════ COOKIE BANNER ═══════════════════ */
+#cookie-banner{position:fixed;bottom:0;left:0;right:0;z-index:8000;
+  background:var(--ink);border-top:2px solid var(--rust);padding:1rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  transform:translateY(100%);transition:transform .4s;}
+#cookie-banner.show{transform:translateY(0);}
+.cb-text{flex:1;font-size:.78rem;color:var(--aged);line-height:1.6;}
+.cb-text a{color:var(--gold);text-decoration:underline;cursor:pointer;}
+.cb-btns{display:flex;gap:.6rem;flex-wrap:wrap;}
+.cb-btn{padding:.45rem .9rem;border:none;border-radius:2px;font-size:.75rem;
+  font-family:'DM Sans',sans-serif;letter-spacing:.08em;cursor:pointer;transition:background .2s;}
+.cb-accept{background:var(--rust);color:#fff;}
+.cb-accept:hover{background:#a0521a;}
+.cb-settings{background:rgba(232,223,200,.15);color:var(--aged);border:1px solid rgba(232,223,200,.25);}
+.cb-settings:hover{background:rgba(232,223,200,.25);}
 
-    /* ── STATS ── */
-    .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; }
-    .stat-card { background:#fff; border:1px solid var(--divider); border-top:3px solid var(--rust); border-radius:2px; padding:1.4rem 1.6rem; }
-    .stat-card.green { border-top-color:var(--pine); }
-    .stat-card.gold  { border-top-color:var(--gold); }
-    .stat-card.blue  { border-top-color:var(--blue); }
-    .slabel { font-size:.65rem; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
-    .sval { font-family:'Crimson Pro',serif; font-size:2.2rem; font-weight:300; color:var(--ink); line-height:1; }
-    .sval.sm { font-size:1.2rem; padding-top:.35rem; }
-    .snote { font-size:.75rem; color:var(--muted); margin-top:.3rem; }
-    .spin { display:inline-block; animation:spin 1s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+/* Cookie Modal */
+#cookie-modal{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);
+  display:none;align-items:center;justify-content:center;}
+#cookie-modal.open{display:flex;}
+.cm-box{background:var(--paper);max-width:480px;width:90%;border-radius:4px;
+  border-top:4px solid var(--rust);padding:2rem;}
+.cm-box h3{font-family:'Crimson Pro',serif;font-size:1.3rem;font-weight:400;
+  color:var(--rust);margin-bottom:1.2rem;}
+.cm-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.8rem 0;border-bottom:1px solid var(--divider);}
+.cm-row:last-of-type{border:none;}
+.cm-label{font-size:.82rem;font-weight:500;}
+.cm-desc{font-size:.72rem;color:var(--muted);margin-top:.15rem;}
+.toggle-wrap{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle-wrap input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--divider);border-radius:12px;
+  cursor:pointer;transition:background .2s;}
+.toggle-track:before{content:'';position:absolute;width:18px;height:18px;
+  left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+input:checked+.toggle-track{background:var(--rust);}
+input:checked+.toggle-track:before{left:23px;}
+input:disabled+.toggle-track{cursor:not-allowed;opacity:.6;}
+.cm-save{margin-top:1.2rem;width:100%;padding:.65rem;background:var(--rust);color:#fff;
+  border:none;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.82rem;
+  letter-spacing:.1em;cursor:pointer;}
 
-    /* ── KALENDER WIDGET ── */
-    .kal-wrap { display:grid; grid-template-columns:1fr 260px; gap:1.5rem; align-items:start; }
-    #mini-kal-container { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem; }
-    .fc { font-family:'DM Sans',sans-serif; }
-    .fc .fc-toolbar-title { font-family:'Crimson Pro',serif; font-size:1.3rem; font-weight:400; color:var(--rust); }
-    .fc .fc-button-primary { background:var(--rust)!important; border-color:var(--rust)!important; font-size:.75rem!important; border-radius:2px!important; padding:.3rem .7rem!important; }
-    .fc .fc-button-primary:hover { background:#a0521a!important; }
-    .fc .fc-col-header-cell { background:var(--aged); }
-    .fc .fc-col-header-cell-cushion { font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:.4rem 0; }
-    .fc .fc-daygrid-day-number { font-size:.76rem; color:var(--muted); text-decoration:none; padding:3px 5px; }
-    .fc .fc-daygrid-day.fc-day-today { background:rgba(184,134,11,.1)!important; }
-    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number { color:var(--gold); font-weight:600; }
-    .fc-event { border-radius:2px!important; border:none!important; font-size:.72rem!important; padding:1px 3px!important; cursor:pointer; }
-    .fc .fc-daygrid-week-number { font-size:.62rem; color:var(--muted); opacity:.55; padding:2px 3px; }
+/* ═══════════════════ SIDEBAR ═══════════════════ */
+#sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sw);
+  background:var(--ink);display:flex;flex-direction:column;
+  padding:0;z-index:100;border-right:3px solid var(--rust);overflow:hidden;
+  transition:width .25s;}
+#sidebar.collapsed{width:var(--sw-col);}
+.sb-header{padding:1.8rem 1.5rem 1.2rem;border-bottom:1px solid rgba(212,201,176,.1);}
+.sb-logo{font-family:'Crimson Pro',serif;font-size:1.4rem;color:var(--aged);
+  line-height:1.3;margin-bottom:.3rem;white-space:nowrap;overflow:hidden;}
+.sb-logo span{color:var(--gold);font-style:italic;}
+.sb-sub{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;}
+.sb-toggle{position:absolute;top:1rem;right:-14px;width:28px;height:28px;
+  background:var(--rust);border:none;border-radius:50%;cursor:pointer;
+  color:#fff;font-size:.8rem;display:flex;align-items:center;justify-content:center;
+  z-index:10;transition:transform .25s;}
+#sidebar.collapsed .sb-toggle{transform:rotate(180deg);}
+#sidebar.collapsed .sb-logo span,.sb-sub,.sb-logo-text{transition:opacity .2s;}
+#sidebar.collapsed .sb-sub{opacity:0;}
+#sidebar.collapsed .sb-logo-text{display:none;}
+.sb-nav{flex:1;overflow-y:auto;padding:.6rem 0 1rem;}
+.sb-nav::-webkit-scrollbar{width:3px;}
+.sb-nav::-webkit-scrollbar-track{background:transparent;}
+.sb-nav::-webkit-scrollbar-thumb{background:rgba(212,201,176,.2);border-radius:2px;}
+.nav-item{user-select:none;}
+.nav-top{display:flex;align-items:center;gap:.7rem;padding:.55rem 1.3rem;
+  color:rgba(232,223,200,.65);text-decoration:none;font-size:.8rem;
+  letter-spacing:.04em;cursor:pointer;transition:background .15s,color .15s;
+  border-left:3px solid transparent;position:relative;}
+.nav-top:hover{background:rgba(139,69,19,.2);color:var(--aged);}
+.nav-top.active-section{background:rgba(139,69,19,.3);color:var(--aged);
+  border-left-color:var(--rust);}
+.nav-icon{font-size:.95rem;width:1.1rem;text-align:center;flex-shrink:0;}
+.nav-label{white-space:nowrap;overflow:hidden;flex:1;}
+.nav-arrow{font-size:.65rem;opacity:.5;transition:transform .2s;flex-shrink:0;}
+.nav-top.open .nav-arrow{transform:rotate(90deg);}
+.nav-sub{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.nav-sub.open{max-height:600px;}
+.nav-sub a{display:block;padding:.4rem 1.3rem .4rem 3.2rem;
+  font-size:.75rem;color:rgba(232,223,200,.5);text-decoration:none;
+  transition:background .12s,color .12s;white-space:nowrap;overflow:hidden;
+  border-left:3px solid transparent;}
+.nav-sub a:hover{color:var(--aged);background:rgba(139,69,19,.15);}
+.nav-sub a.active{color:var(--gold);border-left-color:var(--gold);
+  background:rgba(184,134,11,.08);}
+.sb-footer{padding:1rem 1.3rem;border-top:1px solid rgba(212,201,176,.1);
+  font-size:.62rem;color:rgba(122,106,88,.4);letter-spacing:.1em;white-space:nowrap;
+  overflow:hidden;}
+#sidebar.collapsed .nav-label,
+#sidebar.collapsed .nav-arrow,
+#sidebar.collapsed .nav-sub{display:none;}
+#sidebar.collapsed .nav-top{justify-content:center;padding:.65rem;}
+#sidebar.collapsed .nav-icon{width:auto;}
+#sidebar.collapsed .sb-footer span{display:none;}
 
-    /* Kalender Sidebar */
-    .kal-side { display:flex; flex-direction:column; gap:1rem; }
-    .kal-card { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem 1.3rem; }
-    .kal-card-title { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.7rem; }
-    .leg { display:flex; align-items:center; gap:.6rem; font-size:.8rem; color:var(--muted); margin-bottom:.4rem; }
-    .leg-dot { width:11px; height:11px; border-radius:2px; flex-shrink:0; }
-    .nb-item { padding:.5rem .7rem; background:var(--paper); border-radius:2px; border-left:3px solid var(--rust); font-size:.8rem; margin-bottom:.5rem; }
-    .nb-item.ev-fam { border-left-color:var(--blue); }
-    .nb-item.ev-arb { border-left-color:var(--pine); }
-    .nb-item.ev-son { border-left-color:var(--muted); }
-    .nb-name { font-weight:600; }
-    .nb-dat  { color:var(--muted); font-size:.72rem; margin-top:.1rem; }
+/* ═══════════════════ MAIN ═══════════════════ */
+#main-wrap{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column;
+  transition:margin-left .25s;}
+#main-wrap.collapsed{margin-left:var(--sw-col);}
 
-    /* ── VERANSTALTUNGEN ── */
-    .events-layout { display:grid; grid-template-columns:1fr 300px; gap:1.5rem; align-items:start; }
+/* Page header */
+.page-hdr{padding:2.8rem 3rem 1.8rem;border-bottom:1px solid var(--divider);
+  display:flex;justify-content:space-between;align-items:flex-end;
+  position:relative;overflow:hidden;background-size:cover;background-position:center;}
+.page-hdr-bg{position:absolute;inset:0;background:rgba(247,242,234,.92);}
+.page-hdr-inner{position:relative;z-index:1;}
+.page-hdr h1{font-family:'Crimson Pro',serif;font-size:2.4rem;font-weight:300;color:var(--rust);}
+.page-hdr h1 em{font-style:italic;color:var(--ink);}
+.page-hdr p{color:var(--muted);font-size:.82rem;margin-top:.3rem;}
+.hdr-right{position:relative;z-index:1;text-align:right;font-size:.72rem;
+  letter-spacing:.15em;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
+.hdr-bg-btn{position:absolute;bottom:.7rem;right:.7rem;z-index:2;
+  background:rgba(255,255,255,.6);border:1px solid var(--divider);border-radius:2px;
+  font-size:.65rem;letter-spacing:.1em;padding:.25rem .6rem;cursor:pointer;color:var(--muted);
+  display:none;}
+.page-hdr:hover .hdr-bg-btn{display:block;}
 
-    /* Event-Liste */
-    .event-liste { display:flex; flex-direction:column; gap:.8rem; }
-    .event-card {
-      background:#fff; border:1px solid var(--divider); border-radius:2px; overflow:hidden;
-      display:flex; align-items:stretch;
-    }
-    .event-stripe { width:4px; flex-shrink:0; }
-    .ev-fam-stripe  { background:var(--blue); }
-    .ev-arb-stripe  { background:var(--pine); }
-    .ev-son-stripe  { background:var(--muted); }
-    .event-body { padding:1rem 1.2rem; flex:1; }
-    .event-head { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; }
-    .event-typ-badge {
-      font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
-      padding:.2rem .5rem; border-radius:10px; font-weight:500; white-space:nowrap;
-    }
-    .badge-fam { background:rgba(44,95,138,.12); color:var(--blue); }
-    .badge-arb { background:rgba(45,74,45,.12);  color:var(--pine); }
-    .badge-son { background:rgba(122,106,88,.12); color:var(--muted); }
-    .event-del { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.85rem; transition:color .2s; }
-    .event-del:hover { color:var(--red); }
-    .event-titel { font-family:'Crimson Pro',serif; font-size:1.1rem; font-weight:600; margin:.25rem 0 .15rem; }
-    .event-datum { font-size:.78rem; color:var(--muted); }
-    .event-desc  { font-size:.82rem; color:var(--muted); margin-top:.4rem; line-height:1.65; }
+/* Sub-navigation */
+.subnav{background:#fff;border-bottom:2px solid var(--divider);
+  padding:0 3rem;display:flex;gap:0;overflow-x:auto;}
+.subnav::-webkit-scrollbar{height:0;}
+.subnav a{padding:.75rem 1.1rem;font-size:.78rem;letter-spacing:.06em;
+  color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;
+  margin-bottom:-2px;white-space:nowrap;transition:color .15s,border-color .15s;cursor:pointer;}
+.subnav a:hover{color:var(--ink);}
+.subnav a.active{color:var(--rust);border-bottom-color:var(--rust);font-weight:500;}
+.bilder-server-bar{background:var(--aged);border-bottom:1px solid var(--divider);
+  padding:.7rem 3rem;display:flex;align-items:center;gap:1rem;}
+.bilder-server-bar span{font-size:.78rem;color:var(--muted);}
+.btn-server{padding:.45rem 1.1rem;background:var(--blue);color:#fff;border:none;
+  border-radius:2px;font-size:.75rem;letter-spacing:.08em;cursor:pointer;
+  font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-block;}
+.btn-server:hover{background:#245080;}
 
-    .leer-events { font-size:.85rem; color:var(--muted); font-style:italic; padding:.5rem 0; }
+/* Content area */
+#content-area{flex:1;padding:2.5rem 3rem;}
 
-    /* Event-Formular */
-    .ev-form-card {
-      background:#fff; border:1px solid var(--divider);
-      border-top:3px solid var(--blue); border-radius:2px; padding:1.3rem;
-      position:sticky; top:1.5rem;
-    }
-    .ev-form-card h3 { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.9rem; }
-    .form-group { margin-bottom:.65rem; }
-    .form-group label { display:block; font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
-    .form-group input, .form-group select, .form-group textarea {
-      width:100%; padding:.5rem .6rem; border:1px solid var(--divider); border-radius:2px;
-      background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; font-size:.82rem;
-      transition:border-color .2s; resize:vertical;
-    }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--blue); }
-    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
-    .btn { width:100%; padding:.6rem; border:none; border-radius:2px; font-family:'DM Sans',sans-serif; font-size:.8rem; letter-spacing:.1em; cursor:pointer; transition:background .2s; margin-top:.3rem; }
-    .btn-blue { background:var(--blue); color:#fff; }
-    .btn-blue:hover { background:#245080; }
-    .btn-blue:disabled { background:var(--muted); cursor:not-allowed; }
+/* Section heading */
+.sec-head{display:flex;align-items:center;gap:1rem;margin-bottom:1.8rem;}
+.sec-head::after{content:'';flex:1;height:1px;background:var(--divider);}
+.sec-head h2{font-family:'Crimson Pro',serif;font-size:1.4rem;font-weight:400;
+  color:var(--rust);white-space:nowrap;}
 
-    /* ── TIMELINE ── */
-    .timeline { position:relative; padding-left:2rem; }
-    .timeline::before { content:''; position:absolute; left:.4rem; top:0; bottom:0; width:2px; background:var(--divider); }
-    .titem { position:relative; margin-bottom:2.2rem; padding-left:1rem; }
-    .titem::before { content:''; position:absolute; left:-1.67rem; top:.45rem; width:10px; height:10px; background:var(--rust); border-radius:50%; border:2px solid var(--paper); }
-    .tyear { font-size:.68rem; letter-spacing:.25em; text-transform:uppercase; color:var(--gold); font-weight:500; margin-bottom:.2rem; }
-    .ttitle { font-family:'Crimson Pro',serif; font-size:1.1rem; font-weight:600; margin-bottom:.3rem; }
-    .ttext { font-size:.88rem; color:var(--muted); line-height:1.75; }
+/* Spinner */
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-    /* ── GALERIE ── */
-    .galerie-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
-    .foto { aspect-ratio:4/3; overflow:hidden; border-radius:2px; border:1px solid var(--divider); }
-    .foto.big { grid-column:span 2; aspect-ratio:16/7; }
-    .foto img { width:100%; height:100%; object-fit:cover; filter:sepia(12%) brightness(.97); transition:filter .3s,transform .35s; }
-    .foto:hover img { filter:sepia(0%) brightness(1.02); transform:scale(1.04); }
+/* ═══════════════════ DASHBOARD ═══════════════════ */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1.1rem;margin-bottom:2rem;}
+.stat-card{background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);
+  border-radius:2px;padding:1.3rem 1.4rem;}
+.stat-card.green{border-top-color:var(--pine);}
+.stat-card.gold{border-top-color:var(--gold);}
+.stat-card.blue{border-top-color:var(--blue);}
+.slabel{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+.sval{font-family:'Crimson Pro',serif;font-size:2rem;font-weight:300;color:var(--ink);line-height:1.1;}
+.sval.sm{font-size:1.1rem;padding-top:.3rem;}
+.snote{font-size:.72rem;color:var(--muted);margin-top:.25rem;}
+.dash-two{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;}
+@media(max-width:1100px){.dash-two{grid-template-columns:1fr;}}
 
-    /* ── REGELN ── */
-    .regeln-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
-    .rcard { background:#fff; border:1px solid var(--divider); border-left:4px solid var(--pine); padding:1.2rem 1.4rem; border-radius:0 2px 2px 0; }
-    .rcard.warn { border-left-color:var(--gold); }
-    .rcard h4 { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.5rem; }
-    .rcard ul { list-style:none; font-size:.84rem; color:var(--muted); line-height:1.9; }
-    .rcard ul li::before { content:'— '; color:var(--rust); }
+/* Mini calendar */
+#mini-kal-wrap{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem;}
+.fc{font-family:'DM Sans',sans-serif;}
+.fc .fc-toolbar-title{font-family:'Crimson Pro',serif;font-size:1.2rem;font-weight:400;color:var(--rust);}
+.fc .fc-button-primary{background:var(--rust)!important;border-color:var(--rust)!important;
+  font-size:.72rem!important;border-radius:2px!important;padding:.28rem .6rem!important;}
+.fc .fc-button-primary:hover{background:#a0521a!important;}
+.fc .fc-col-header-cell{background:var(--aged);}
+.fc .fc-col-header-cell-cushion{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;padding:.35rem 0;}
+.fc .fc-daygrid-day-number{font-size:.72rem;color:var(--muted);text-decoration:none;padding:3px 4px;}
+.fc .fc-daygrid-day.fc-day-today{background:rgba(184,134,11,.1)!important;}
+.fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--gold);font-weight:600;}
+.fc-event{border-radius:2px!important;border:none!important;font-size:.7rem!important;padding:1px 3px!important;cursor:pointer;}
+.fc .fc-daygrid-week-number{font-size:.6rem;color:var(--muted);opacity:.5;padding:2px 3px;}
 
-    /* ── KONTAKT ── */
-    .kontakt-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
-    .kcard { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.4rem; display:flex; gap:1rem; align-items:flex-start; }
-    .kicon { font-size:1.6rem; }
-    .klabel { font-size:.65rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
-    .kval { font-family:'Crimson Pro',serif; font-size:1.05rem; color:var(--ink); }
-    .kval a { color:var(--rust); text-decoration:none; }
-    .kval a:hover { text-decoration:underline; }
+/* Sidebar right on dashboard */
+.dash-side{display:flex;flex-direction:column;gap:1rem;}
+.ds-card{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.1rem 1.2rem;}
+.ds-card-title{font-family:'Crimson Pro',serif;font-size:.95rem;font-weight:600;margin-bottom:.6rem;}
+.nb-item{padding:.45rem .65rem;background:var(--paper);border-radius:2px;
+  border-left:3px solid var(--rust);font-size:.78rem;margin-bottom:.45rem;}
+.nb-item.ev-fam{border-left-color:var(--blue);}
+.nb-item.ev-arb{border-left-color:var(--pine);}
+.nb-name{font-weight:600;}
+.nb-dat{color:var(--muted);font-size:.7rem;margin-top:.1rem;}
+.leg{display:flex;align-items:center;gap:.6rem;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 
-    /* ── FOOTER ── */
-    .site-footer { margin-left:220px; padding:1.2rem 3.5rem; border-top:1px solid var(--divider); font-size:.72rem; color:var(--muted); letter-spacing:.1em; display:flex; justify-content:space-between; }
+/* ═══════════════════ NEWS ═══════════════════ */
+.news-card{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  margin-bottom:1rem;overflow:hidden;}
+.news-stripe{height:4px;}
+.news-body{padding:1rem 1.2rem;}
+.news-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.4rem;}
+.news-title{font-family:'Crimson Pro',serif;font-size:1.1rem;font-weight:600;}
+.news-date{font-size:.7rem;color:var(--muted);}
+.news-text{font-size:.84rem;color:var(--muted);line-height:1.7;}
+.news-add-form{background:#fff;border:1px solid var(--divider);border-top:3px solid var(--blue);
+  border-radius:2px;padding:1.2rem;margin-bottom:1.5rem;}
+.news-add-form h3{font-family:'Crimson Pro',serif;font-size:1rem;margin-bottom:.8rem;}
+.warn-card{background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.2);
+  border-left:4px solid var(--red);border-radius:2px;padding:.9rem 1.1rem;margin-bottom:1rem;}
+.warn-card h4{font-family:'Crimson Pro',serif;font-size:1rem;color:var(--red);margin-bottom:.3rem;}
+.warn-card p{font-size:.82rem;color:var(--muted);line-height:1.65;}
 
-    /* ── RESPONSIVE ── */
-    @media (max-width:1150px) {
-      .kal-wrap { grid-template-columns:1fr; }
-      .events-layout { grid-template-columns:1fr; }
-    }
-    @media (max-width:900px) {
-      .sidebar { width:58px; padding:1.2rem .7rem; }
-      .sidebar-logo,.sidebar-sub,.sidebar nav a span,.sidebar-footer { display:none; }
-      .sidebar nav a { justify-content:center; padding:.7rem; }
-      .main,.site-footer { margin-left:58px; }
-      .content,.page-header { padding-left:1.5rem; padding-right:1.5rem; }
-      .regeln-grid,.kontakt-grid { grid-template-columns:1fr; }
-      .galerie-grid { grid-template-columns:1fr 1fr; }
-      .foto.big { grid-column:span 1; aspect-ratio:4/3; }
-    }
-  </style>
+/* ═══════════════════ FORMS ═══════════════════ */
+.form-group{margin-bottom:.6rem;}
+.form-group label{display:block;font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.22rem;}
+.form-group label .req{color:var(--rust);}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:.48rem .6rem;border:1px solid var(--divider);border-radius:2px;
+  background:var(--paper);color:var(--ink);font-family:'DM Sans',sans-serif;
+  font-size:.81rem;transition:border-color .2s;resize:vertical;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--rust);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
+.btn{padding:.55rem 1rem;border:none;border-radius:2px;font-family:'DM Sans',sans-serif;
+  font-size:.78rem;letter-spacing:.08em;cursor:pointer;transition:background .2s;}
+.btn-rust{background:var(--rust);color:#fff;}
+.btn-rust:hover{background:#a0521a;}
+.btn-rust:disabled{background:var(--muted);cursor:not-allowed;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-blue:hover{background:#245080;}
+.btn-pine{background:var(--pine);color:#fff;}
+.btn-pine:hover{background:#243e24;}
+.btn-w{width:100%;margin-top:.3rem;}
+.form-status{font-size:.75rem;margin-top:.4rem;min-height:1.1em;}
+.form-status.ok{color:var(--pine);}
+.form-status.err{color:var(--red);}
+
+/* ═══════════════════ CALENDAR / BOOKING ═══════════════════ */
+.kal-layout{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;}
+@media(max-width:1100px){.kal-layout{grid-template-columns:1fr;}}
+#kal-container{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.3rem;}
+.statusbar{margin-bottom:.9rem;padding:.6rem .9rem;border-radius:2px;font-size:.8rem;
+  display:flex;align-items:center;gap:.6rem;}
+.statusbar.ok{background:rgba(45,74,45,.08);color:var(--pine);border:1px solid rgba(45,74,45,.2);}
+.statusbar.laden{background:rgba(184,134,11,.08);color:var(--gold);border:1px solid rgba(184,134,11,.2);}
+.statusbar.fehler{background:rgba(192,57,43,.08);color:var(--red);border:1px solid rgba(192,57,43,.2);}
+.warn-box{display:none;margin-top:.4rem;padding:.4rem .6rem;background:rgba(230,126,34,.1);
+  border:1px solid rgba(230,126,34,.3);border-radius:2px;font-size:.73rem;color:var(--warn);}
+.warn-box.aktiv{display:block;}
+.bel-liste{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:.55rem;}
+.bel-item{padding:.6rem .75rem;background:var(--paper);border-radius:2px;
+  border-left:3px solid var(--rust);font-size:.79rem;}
+.bel-item.event-fam{border-left-color:var(--blue);}
+.bel-item.event-arb{border-left-color:var(--pine);}
+.bel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;}
+.bel-name{font-weight:600;font-size:.82rem;}
+.bel-datum{color:var(--muted);font-size:.7rem;margin-top:.1rem;}
+.bel-details{margin-top:.3rem;color:var(--muted);font-size:.7rem;line-height:1.6;}
+.bel-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.82rem;
+  padding:0;flex-shrink:0;transition:color .2s;}
+.bel-del:hover{color:var(--red);}
+.leer{font-size:.8rem;color:var(--muted);font-style:italic;text-align:center;padding:.5rem 0;}
+.info-card{background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);
+  border-radius:2px;padding:1.1rem 1.2rem;margin-bottom:1rem;}
+.info-card.pine{border-top-color:var(--pine);}
+.info-card.blue{border-top-color:var(--blue);}
+.info-card h3{font-family:'Crimson Pro',serif;font-size:.95rem;font-weight:600;margin-bottom:.75rem;}
+
+/* ═══════════════════ EVENTS ═══════════════════ */
+.event-card{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  overflow:hidden;display:flex;align-items:stretch;margin-bottom:.75rem;}
+.event-stripe{width:4px;flex-shrink:0;}
+.event-body{padding:.85rem 1.1rem;flex:1;}
+.event-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;}
+.badge{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;
+  padding:.18rem .45rem;border-radius:10px;font-weight:500;white-space:nowrap;}
+.badge-fam{background:rgba(44,95,138,.12);color:var(--blue);}
+.badge-arb{background:rgba(45,74,45,.12);color:var(--pine);}
+.badge-son{background:rgba(122,106,88,.12);color:var(--muted);}
+.event-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.82rem;transition:color .2s;}
+.event-del:hover{color:var(--red);}
+.event-titel{font-family:'Crimson Pro',serif;font-size:1.05rem;font-weight:600;margin:.2rem 0 .1rem;}
+.event-datum{font-size:.76rem;color:var(--muted);}
+.event-desc{font-size:.8rem;color:var(--muted);margin-top:.35rem;line-height:1.6;}
+
+/* ═══════════════════ FILE VIEWER ═══════════════════ */
+.file-viewer{padding:.2rem 0;}
+.fv-toolbar{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:1.2rem;flex-wrap:wrap;gap:.6rem;}
+.fv-toolbar-left{display:flex;gap:.5rem;align-items:center;}
+.fv-search input{padding:.4rem .7rem;border:1px solid var(--divider);border-radius:2px;
+  background:var(--paper);font-size:.78rem;font-family:'DM Sans',sans-serif;color:var(--ink);width:200px;}
+.fv-search input:focus{outline:none;border-color:var(--rust);}
+.fv-view-btns button{background:none;border:1px solid var(--divider);padding:.35rem .6rem;
+  cursor:pointer;font-size:.85rem;transition:background .15s;}
+.fv-view-btns button.active{background:var(--rust);color:#fff;border-color:var(--rust);}
+.fv-view-btns button:first-child{border-radius:2px 0 0 2px;}
+.fv-view-btns button:last-child{border-radius:0 2px 2px 0;border-left:none;}
+.upload-zone{border:2px dashed var(--divider);border-radius:4px;padding:2rem;
+  text-align:center;background:#fff;cursor:pointer;transition:border-color .2s,background .2s;
+  margin-bottom:1.2rem;}
+.upload-zone:hover{border-color:var(--rust);background:rgba(139,69,19,.03);}
+.upload-zone input[type=file]{display:none;}
+.uz-icon{font-size:2rem;margin-bottom:.5rem;}
+.uz-text{font-size:.82rem;color:var(--muted);}
+.uz-sub{font-size:.7rem;color:var(--muted);margin-top:.25rem;opacity:.7;}
+/* Grid view */
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;}
+.file-tile{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  padding:.8rem;cursor:pointer;transition:box-shadow .2s,border-color .2s;text-align:center;}
+.file-tile:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);border-color:var(--rust);}
+.ft-icon{font-size:2rem;margin-bottom:.4rem;}
+.ft-name{font-size:.72rem;color:var(--ink);word-break:break-word;line-height:1.4;}
+.ft-size{font-size:.65rem;color:var(--muted);margin-top:.15rem;}
+.ft-actions{display:flex;gap:.3rem;justify-content:center;margin-top:.5rem;}
+.ft-btn{background:none;border:1px solid var(--divider);border-radius:2px;
+  padding:.2rem .4rem;font-size:.65rem;cursor:pointer;color:var(--muted);transition:all .15s;}
+.ft-btn:hover{background:var(--rust);color:#fff;border-color:var(--rust);}
+/* List view */
+.file-list{display:flex;flex-direction:column;gap:.4rem;}
+.file-row{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  display:flex;align-items:center;gap:.8rem;padding:.55rem .8rem;cursor:pointer;
+  transition:border-color .2s;}
+.file-row:hover{border-color:var(--rust);}
+.fr-icon{font-size:1.2rem;width:1.4rem;text-align:center;}
+.fr-info{flex:1;}
+.fr-name{font-size:.82rem;font-weight:500;}
+.fr-meta{font-size:.68rem;color:var(--muted);}
+.fr-actions{display:flex;gap:.3rem;}
+.fv-empty{text-align:center;padding:3rem;color:var(--muted);font-size:.85rem;font-style:italic;}
+.fv-note{background:rgba(184,134,11,.08);border:1px solid rgba(184,134,11,.2);
+  border-radius:2px;padding:.8rem 1rem;font-size:.78rem;color:var(--gold);margin-bottom:1rem;line-height:1.6;}
+.fv-note code{font-family:monospace;background:rgba(184,134,11,.12);padding:.1rem .3rem;border-radius:2px;font-size:.75rem;}
+
+/* ═══════════════════ PHOTO GALLERY ═══════════════════ */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem;}
+.photo-tile{aspect-ratio:4/3;overflow:hidden;border-radius:2px;border:1px solid var(--divider);
+  cursor:pointer;background:var(--aged);position:relative;}
+.photo-tile img{width:100%;height:100%;object-fit:cover;filter:sepia(8%) brightness(.98);
+  transition:filter .3s,transform .35s;}
+.photo-tile:hover img{filter:sepia(0%) brightness(1.02);transform:scale(1.06);}
+.photo-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;opacity:.3;}
+.video-tile{aspect-ratio:16/9;overflow:hidden;border-radius:2px;border:1px solid var(--divider);
+  cursor:pointer;background:#1a1a1a;position:relative;display:flex;align-items:center;justify-content:center;}
+.video-play{font-size:2.5rem;color:rgba(255,255,255,.7);}
+.video-tile:hover .video-play{color:#fff;}
+.media-section-head{font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--muted);margin:.3rem 0 .7rem;}
+
+/* ═══════════════════ VEREIN SECTIONS ═══════════════════ */
+.static-content{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.5rem 1.8rem;
+  max-width:720px;line-height:1.85;font-size:.88rem;color:var(--muted);}
+.static-content h3{font-family:'Crimson Pro',serif;font-size:1.2rem;font-weight:600;
+  color:var(--rust);margin-bottom:.8rem;}
+.static-content p{margin-bottom:.8rem;}
+.static-content ul{list-style:none;padding-left:.5rem;}
+.static-content ul li::before{content:'— ';color:var(--rust);}
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.9rem;}
+.member-card{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1rem;
+  display:flex;gap:.8rem;align-items:flex-start;}
+.member-avatar{width:38px;height:38px;border-radius:50%;background:var(--aged);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.member-name{font-weight:600;font-size:.85rem;}
+.member-role{font-size:.72rem;color:var(--muted);}
+.member-contact{font-size:.7rem;color:var(--blue);margin-top:.2rem;}
+.hymne-box{background:var(--ink);color:var(--aged);border-radius:4px;padding:2rem 2.5rem;
+  font-family:'Crimson Pro',serif;font-size:1.05rem;line-height:2.1;max-width:560px;}
+.hymne-box em{color:var(--gold);font-style:italic;}
+
+/* ═══════════════════ GÄSTEBUCH ═══════════════════ */
+.gb-entry{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  padding:1rem 1.2rem;margin-bottom:.75rem;}
+.gb-entry-head{display:flex;justify-content:space-between;margin-bottom:.4rem;}
+.gb-author{font-weight:600;font-size:.85rem;}
+.gb-date{font-size:.7rem;color:var(--muted);}
+.gb-text{font-size:.84rem;color:var(--muted);line-height:1.7;}
+.gb-stars{color:var(--gold);letter-spacing:.1em;font-size:.9rem;}
+
+/* ═══════════════════ TODOS ═══════════════════ */
+.todo-item{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  display:flex;align-items:center;gap:.8rem;padding:.65rem .9rem;margin-bottom:.45rem;}
+.todo-check{width:18px;height:18px;border-radius:2px;border:2px solid var(--divider);
+  cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,border-color .15s;}
+.todo-check.done{background:var(--pine);border-color:var(--pine);color:#fff;font-size:.7rem;}
+.todo-text{flex:1;font-size:.83rem;}
+.todo-text.done-text{text-decoration:line-through;color:var(--muted);}
+.todo-prio{font-size:.65rem;padding:.15rem .4rem;border-radius:10px;}
+.prio-h{background:rgba(192,57,43,.12);color:var(--red);}
+.prio-m{background:rgba(230,126,34,.12);color:var(--warn);}
+.prio-l{background:rgba(45,74,45,.12);color:var(--pine);}
+.todo-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;transition:color .15s;}
+.todo-del:hover{color:var(--red);}
+
+/* ═══════════════════ FINANZEN ═══════════════════ */
+.bank-card{background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem 1.4rem;margin-bottom:1rem;}
+.bank-card h4{font-family:'Crimson Pro',serif;font-size:1rem;margin-bottom:.6rem;}
+.bank-row{display:flex;justify-content:space-between;font-size:.82rem;
+  padding:.3rem 0;border-bottom:1px solid var(--divider);}
+.bank-row:last-child{border:none;}
+.bank-key{color:var(--muted);}
+.bank-val{font-family:monospace;font-size:.85rem;font-weight:600;}
+
+/* ═══════════════════ FREIZEITTIPPS ═══════════════════ */
+.tip-card{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  overflow:hidden;margin-bottom:.75rem;display:flex;align-items:stretch;}
+.tip-accent{width:5px;background:var(--pine);flex-shrink:0;}
+.tip-body{padding:.9rem 1.1rem;flex:1;}
+.tip-title{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.2rem;}
+.tip-meta{font-size:.7rem;color:var(--muted);}
+.tip-desc{font-size:.81rem;color:var(--muted);margin-top:.4rem;line-height:1.65;}
+
+/* ═══════════════════ KONTAKT ═══════════════════ */
+.kcard{background:#fff;border:1px solid var(--divider);border-radius:2px;
+  padding:1.2rem;display:flex;gap:.8rem;align-items:flex-start;margin-bottom:.7rem;}
+.kicon{font-size:1.5rem;}
+.klabel{font-size:.63rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem;}
+.kval{font-family:'Crimson Pro',serif;font-size:1rem;color:var(--ink);}
+.kval a{color:var(--rust);text-decoration:none;}
+.kval a:hover{text-decoration:underline;}
+.kontakt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.8rem;}
+
+/* ═══════════════════ QUICK CONTACT ═══════════════════ */
+#quick-contact{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;}
+#qc-toggle{width:54px;height:54px;border-radius:50%;background:var(--rust);color:#fff;
+  border:none;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);
+  transition:background .2s,transform .2s;display:flex;align-items:center;justify-content:center;}
+#qc-toggle:hover{background:#a0521a;transform:scale(1.05);}
+#qc-form{background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);
+  border-radius:4px;padding:1.2rem;width:280px;box-shadow:0 8px 32px rgba(0,0,0,.12);
+  margin-bottom:.7rem;display:none;}
+#qc-form.open{display:block;}
+#qc-form h4{font-family:'Crimson Pro',serif;font-size:1rem;margin-bottom:.8rem;color:var(--rust);}
+#qc-form textarea{width:100%;padding:.5rem .6rem;border:1px solid var(--divider);
+  border-radius:2px;background:var(--paper);font-family:'DM Sans',sans-serif;
+  font-size:.8rem;color:var(--ink);resize:none;height:80px;}
+#qc-form textarea:focus{outline:none;border-color:var(--rust);}
+.qc-row{display:flex;gap:.4rem;margin-top:.5rem;}
+.qc-row input{flex:1;padding:.45rem .55rem;border:1px solid var(--divider);
+  border-radius:2px;background:var(--paper);font-family:'DM Sans',sans-serif;
+  font-size:.78rem;color:var(--ink);}
+.qc-row input:focus{outline:none;border-color:var(--rust);}
+
+/* ═══════════════════ LIGHTBOX ═══════════════════ */
+#lightbox{position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.9);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
+#lightbox.open{display:flex;}
+#lightbox img{max-width:90vw;max-height:80vh;border-radius:2px;box-shadow:0 8px 40px rgba(0,0,0,.5);}
+.lb-close{position:absolute;top:1rem;right:1.5rem;background:none;border:none;
+  color:#fff;font-size:1.8rem;cursor:pointer;opacity:.7;}
+.lb-close:hover{opacity:1;}
+.lb-caption{color:rgba(255,255,255,.7);font-size:.82rem;}
+
+/* ═══════════════════ PDF MODAL ═══════════════════ */
+#pdf-modal{position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.85);
+  display:none;flex-direction:column;}
+#pdf-modal.open{display:flex;}
+.pdf-header{padding:.7rem 1.2rem;background:var(--ink);display:flex;
+  align-items:center;justify-content:space-between;}
+.pdf-header span{color:var(--aged);font-size:.85rem;}
+.pdf-close{background:none;border:none;color:var(--aged);font-size:1.3rem;cursor:pointer;}
+#pdf-frame{flex:1;border:none;background:#525659;}
+
+/* ═══════════════════ VIDEO MODAL ═══════════════════ */
+#video-modal{position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.92);
+  display:none;align-items:center;justify-content:center;}
+#video-modal.open{display:flex;}
+.vm-inner{position:relative;width:min(860px,90vw);}
+#video-modal video,#video-modal iframe{width:100%;aspect-ratio:16/9;border-radius:2px;}
+.vm-close{position:absolute;top:-2rem;right:0;background:none;border:none;
+  color:#fff;font-size:1.4rem;cursor:pointer;opacity:.7;}
+.vm-close:hover{opacity:1;}
+
+/* ═══════════════════ FOOTER ═══════════════════ */
+#site-footer{padding:1rem 3rem;border-top:1px solid var(--divider);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;
+  font-size:.7rem;color:var(--muted);letter-spacing:.08em;}
+.footer-links{display:flex;gap:1.2rem;}
+.footer-links a{color:var(--muted);text-decoration:none;cursor:pointer;transition:color .15s;}
+.footer-links a:hover{color:var(--rust);}
+
+/* ═══════════════════ LEGAL MODAL ═══════════════════ */
+#legal-modal{position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.6);
+  display:none;align-items:center;justify-content:center;padding:1.5rem;}
+#legal-modal.open{display:flex;}
+.lm-box{background:var(--paper);max-width:640px;width:100%;max-height:85vh;
+  overflow-y:auto;border-radius:4px;border-top:4px solid var(--rust);}
+.lm-header{position:sticky;top:0;background:var(--paper);padding:1.2rem 1.5rem .8rem;
+  border-bottom:1px solid var(--divider);display:flex;justify-content:space-between;align-items:center;}
+.lm-header h3{font-family:'Crimson Pro',serif;font-size:1.3rem;color:var(--rust);}
+.lm-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);}
+.lm-body{padding:1.5rem;}
+.lm-body p{font-size:.84rem;color:var(--muted);line-height:1.8;margin-bottom:.8rem;}
+.lm-body h4{font-family:'Crimson Pro',serif;font-size:1rem;color:var(--rust);margin:1rem 0 .4rem;}
+
+/* Timeline */
+.timeline{position:relative;padding-left:2rem;}
+.timeline::before{content:'';position:absolute;left:.4rem;top:0;bottom:0;width:2px;background:var(--divider);}
+.titem{position:relative;margin-bottom:2rem;padding-left:1rem;}
+.titem::before{content:'';position:absolute;left:-1.67rem;top:.4rem;width:10px;height:10px;
+  background:var(--rust);border-radius:50%;border:2px solid var(--paper);}
+.tyear{font-size:.66rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:.15rem;}
+.ttitle{font-family:'Crimson Pro',serif;font-size:1.05rem;font-weight:600;margin-bottom:.25rem;}
+.ttext{font-size:.85rem;color:var(--muted);line-height:1.75;}
+
+/* Regeln */
+.rcard{background:#fff;border:1px solid var(--divider);border-left:4px solid var(--pine);
+  padding:1.1rem 1.3rem;border-radius:0 2px 2px 0;}
+.rcard.warn{border-left-color:var(--gold);}
+.rcard h4{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.45rem;}
+.rcard ul{list-style:none;font-size:.82rem;color:var(--muted);line-height:1.9;}
+.rcard ul li::before{content:'— ';color:var(--rust);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+/* BG image hints */
+.bg-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--muted);font-style:italic;pointer-events:none;opacity:0;}
+.page-hdr:hover .bg-hint{opacity:.5;}
+
+/* ═══════════════════ RESPONSIVE ═══════════════════ */
+@media(max-width:900px){
+  #main-wrap{margin-left:var(--sw-col)!important;}
+  #content-area{padding:1.5rem;}
+  .subnav{padding:0 1rem;}
+  .page-hdr{padding:1.8rem 1.5rem 1.2rem;}
+  #site-footer{padding:.8rem 1.5rem;}
+}
+@media(max-width:640px){
+  .form-row{grid-template-columns:1fr;}
+  .dash-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
 </head>
 <body>
 
-  <aside class="sidebar">
-    <div class="sidebar-logo">Hütten<span>buch</span></div>
-    <div class="sidebar-sub">Verwaltung</div>
-    <nav>
-      <a href="#uebersicht" class="active"><span class="ni">🏠</span><span>Übersicht</span></a>
-      <a href="#kalender"><span class="ni">📅</span><span>Kalender</span></a>
-      <a href="#veranstaltungen"><span class="ni">🎉</span><span>Veranstaltungen</span></a>
-      <a href="#geschichte"><span class="ni">📖</span><span>Geschichte</span></a>
-      <a href="#galerie"><span class="ni">🖼</span><span>Galerie</span></a>
-      <a href="#regeln"><span class="ni">📋</span><span>Regeln & Infos</span></a>
-      <a href="#kontakt"><span class="ni">✉️</span><span>Kontakt</span></a>
-    </nav>
-    <div class="sidebar-footer">© 2026 Familie Mustermann</div>
+<!-- ════════════════════════════════════════════
+     PASSWORD GATE
+════════════════════════════════════════════ -->
+<div id="pw-gate">
+  <div class="pw-box">
+    <div class="pw-logo">Hütten<em>buch</em></div>
+    <div class="pw-sub">Familieninterne Verwaltung · Schwarzwald</div>
+    <input type="password" id="pw-input" placeholder="Passwort eingeben …"
+      onkeydown="if(event.key==='Enter')checkPw()"/>
+    <button onclick="checkPw()">→ Einloggen</button>
+    <div class="pw-err" id="pw-err"></div>
+  </div>
+  <div class="pw-footer">© 2026 Familie Mustermann · Nur für Familienmitglieder</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     COOKIE BANNER
+════════════════════════════════════════════ -->
+<div id="cookie-banner">
+  <div class="cb-text">
+    🍪 Wir nutzen notwendige Cookies für den Betrieb dieser Seite. Optionale Cookies
+    (für eingebettete Inhalte wie Videos & Facebook) erst nach Ihrer Zustimmung.
+    <a onclick="openCookieModal()">Einstellungen</a>
+  </div>
+  <div class="cb-btns">
+    <button class="cb-btn cb-settings" onclick="openCookieModal()">Einstellungen</button>
+    <button class="cb-btn cb-accept" onclick="acceptAllCookies()">Alle akzeptieren</button>
+  </div>
+</div>
+
+<!-- Cookie Settings Modal -->
+<div id="cookie-modal">
+  <div class="cm-box">
+    <h3>🍪 Cookie-Einstellungen</h3>
+    <div class="cm-row">
+      <div><div class="cm-label">Notwendige Cookies</div>
+        <div class="cm-desc">Login-Session, Grundfunktionen (nicht deaktivierbar)</div></div>
+      <label class="toggle-wrap"><input type="checkbox" checked disabled>
+        <span class="toggle-track"></span></label>
+    </div>
+    <div class="cm-row">
+      <div><div class="cm-label">Funktionale Cookies</div>
+        <div class="cm-desc">Kalender, Supabase-Verbindung, gespeicherte Ansichten</div></div>
+      <label class="toggle-wrap"><input type="checkbox" id="ck-func" checked>
+        <span class="toggle-track"></span></label>
+    </div>
+    <div class="cm-row">
+      <div><div class="cm-label">Eingebettete Inhalte</div>
+        <div class="cm-desc">Facebook-Feed, YouTube-Videos, externe Karten</div></div>
+      <label class="toggle-wrap"><input type="checkbox" id="ck-embed">
+        <span class="toggle-track"></span></label>
+    </div>
+    <button class="cm-save" onclick="saveCookies()">Auswahl speichern</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════ -->
+<div id="app" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">Hütten<span>buch</span></div>
+      <div class="sb-sub">Verwaltung · Schwarzwald</div>
+    </div>
+    <button class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()">‹</button>
+    <nav class="sb-nav" id="sb-nav"></nav>
+    <div class="sb-footer"><span>© 2026 Familie Mustermann</span></div>
   </aside>
 
-  <main class="main">
-    <header class="page-header" id="uebersicht">
-      <div>
-        <h1>Unsere <em>Ferienhütte</em></h1>
-        <p>Familieninterne Verwaltung · Schwarzwald</p>
+  <!-- MAIN CONTENT -->
+  <div id="main-wrap">
+
+    <!-- Page header -->
+    <header class="page-hdr" id="page-hdr">
+      <div class="page-hdr-bg" id="page-hdr-bg"></div>
+      <div class="page-hdr-inner">
+        <h1 id="page-title">Unsere <em>Ferienhütte</em></h1>
+        <p id="page-subtitle">Familieninterne Verwaltung · Schwarzwald</p>
       </div>
-      <div class="header-date" id="current-date"></div>
+      <div class="hdr-right" id="current-date"></div>
+      <button class="hdr-bg-btn" onclick="changeBgImage()" title="Hintergrundbild ändern">🖼 Bild</button>
     </header>
 
-    <div class="content">
-
-      <!-- ── STATS ── -->
-      <section class="section">
-        <div class="section-heading"><span>📊</span><h2>Auf einen Blick</h2></div>
-        <div class="dashboard-grid">
-          <div class="stat-card">
-            <div class="slabel">Belegungen <span id="stat-jahr">2026</span></div>
-            <div class="sval" id="stat-anz"><span class="spin">⏳</span></div>
-            <div class="snote" id="stat-anz-note">wird geladen…</div>
-          </div>
-          <div class="stat-card">
-            <div class="slabel">Personen gesamt</div>
-            <div class="sval" id="stat-pers"><span class="spin">⏳</span></div>
-            <div class="snote" id="stat-pers-note">wird geladen…</div>
-          </div>
-          <div class="stat-card green">
-            <div class="slabel">Nächste freie Woche</div>
-            <div class="sval sm" id="stat-frei"><span class="spin">⏳</span></div>
-            <div class="snote" id="stat-frei-note">wird geladen…</div>
-          </div>
-          <div class="stat-card gold">
-            <div class="slabel">Nächste Belegung</div>
-            <div class="sval sm" id="stat-naechste"><span class="spin">⏳</span></div>
-            <div class="snote" id="stat-naechste-note">wird geladen…</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="slabel">Nächste Veranstaltung</div>
-            <div class="sval sm" id="stat-event"><span class="spin">⏳</span></div>
-            <div class="snote" id="stat-event-note">wird geladen…</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── MINI KALENDER ── -->
-      <section class="section" id="kalender">
-        <div class="section-heading"><span>📅</span><h2>Belegungskalender</h2></div>
-        <div class="kal-wrap">
-          <div id="mini-kal-container">
-            <div id="mini-kal"></div>
-          </div>
-          <div class="kal-side">
-            <!-- Legende -->
-            <div class="kal-card">
-              <div class="kal-card-title">Legende</div>
-              <div class="leg"><div class="leg-dot" style="background:#8b4513"></div> Belegung</div>
-              <div class="leg"><div class="leg-dot" style="background:#2c5f8a"></div> Familienversammlung</div>
-              <div class="leg"><div class="leg-dot" style="background:#2d4a2d"></div> Arbeitswochenende</div>
-              <div class="leg"><div class="leg-dot" style="background:#7a6a58"></div> Sonstige Veranstaltung</div>
-              <div style="margin-top:1rem;">
-                <a href="kalender.html" style="display:inline-block;padding:.5rem 1rem;background:var(--rust);color:#fff;text-decoration:none;font-size:.78rem;letter-spacing:.08em;border-radius:2px;">
-                  → Buchen & Vollansicht
-                </a>
-              </div>
-            </div>
-            <!-- Nächste Termine -->
-            <div class="kal-card">
-              <div class="kal-card-title">Nächste Termine</div>
-              <div id="nb-liste"><div style="font-size:.8rem;color:var(--muted);font-style:italic;">Lädt…</div></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── VERANSTALTUNGEN ── -->
-      <section class="section" id="veranstaltungen">
-        <div class="section-heading"><span>🎉</span><h2>Jahresveranstaltungen</h2></div>
-        <div class="events-layout">
-          <!-- Liste -->
-          <div>
-            <div id="events-liste"><div style="font-size:.85rem;color:var(--muted);font-style:italic;"><span class="spin">⏳</span> Lädt…</div></div>
-          </div>
-          <!-- Formular -->
-          <div class="ev-form-card">
-            <h3>➕ Veranstaltung erstellen</h3>
-            <div class="form-group">
-              <label>Titel</label>
-              <input type="text" id="ev-titel" placeholder="z.B. Familienversammlung 2026"/>
-            </div>
-            <div class="form-group">
-              <label>Typ</label>
-              <select id="ev-typ">
-                <option value="familienversammlung">👨‍👩‍👧‍👦 Familienversammlung</option>
-                <option value="arbeitswochenende">🔨 Arbeitswochenende</option>
-                <option value="sonstige">📌 Sonstige Veranstaltung</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Von</label>
-                <input type="date" id="ev-von"/>
-              </div>
-              <div class="form-group">
-                <label>Bis</label>
-                <input type="date" id="ev-bis"/>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Beschreibung (optional)</label>
-              <textarea id="ev-beschreibung" rows="3" placeholder="Kurze Beschreibung…"></textarea>
-            </div>
-            <button class="btn btn-blue" id="ev-btn" onclick="eventSpeichern()">Veranstaltung speichern</button>
-            <div id="ev-status" style="font-size:.78rem;margin-top:.5rem;color:var(--muted);min-height:1.2em;"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── GESCHICHTE ── -->
-      <section class="section" id="geschichte">
-        <div class="section-heading"><span>📖</span><h2>Geschichte der Hütte</h2></div>
-        <div class="timeline">
-          <div class="titem"><div class="tyear">1978</div><div class="ttitle">Der Bau</div><div class="ttext">Opa Hermann baut die Hütte in Eigenregie über zwei Sommer. Die Holzbalken stammen aus dem eigenen Waldstück, der Kamin wird gemeinsam mit den Nachbarn gemauert.</div></div>
-          <div class="titem"><div class="tyear">1985</div><div class="ttitle">Erste Erweiterung</div><div class="ttext">Ein zweites Schlafzimmer und die Veranda werden angebaut. Ab jetzt können auch Großfamilienurlaube stattfinden.</div></div>
-          <div class="titem"><div class="tyear">2003</div><div class="ttitle">Renovierung</div><div class="ttext">Neue Küche, neues Bad, neue Elektrik. Die Hütte erhält außerdem einen Holzofen im Wohnzimmer als Herzstück.</div></div>
-          <div class="titem"><div class="tyear">2019</div><div class="ttitle">Übergabe an die nächste Generation</div><div class="ttext">Die Verwaltung geht an Kinder und Enkel über. WLAN wird installiert. Die Tradition lebt weiter.</div></div>
-          <div class="titem"><div class="tyear">2026</div><div class="ttitle">Dieses digitale Hüttenbuch</div><div class="ttext">Zur besseren Koordination innerhalb der Familie entsteht diese Website. Wer wann? Ab jetzt alles auf einen Blick.</div></div>
-        </div>
-      </section>
-
-      <!-- ── GALERIE ── -->
-      <section class="section" id="galerie">
-        <div class="section-heading"><span>🖼</span><h2>Galerie</h2></div>
-        <div class="galerie-grid">
-          <div class="foto big"><img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=900&q=80" alt="Hütte"/></div>
-          <div class="foto"><img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Außen"/></div>
-          <div class="foto"><img src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=500&q=80" alt="Umgebung"/></div>
-          <div class="foto"><img src="https://images.unsplash.com/photo-1520637836993-a072955a31e1?w=500&q=80" alt="Innen"/></div>
-          <div class="foto"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80" alt="Wohnzimmer"/></div>
-          <div class="foto"><img src="https://images.unsplash.com/photo-1586105449897-20b5efeb3233?w=500&q=80" alt="Natur"/></div>
-        </div>
-        <p style="font-size:.75rem;color:var(--muted);margin-top:.8rem;">💡 Eigene Fotos: URL durch lokale Dateinamen ersetzen, z.B. <code>fotos/huette1.jpg</code></p>
-      </section>
-
-      <!-- ── REGELN ── -->
-      <section class="section" id="regeln">
-        <div class="section-heading"><span>📋</span><h2>Regeln & Wichtige Infos</h2></div>
-        <div class="regeln-grid">
-          <div class="rcard"><h4>🔑 Anreise & Schlüssel</h4><ul><li>Anreise ab 15:00 Uhr</li><li>Schlüssel bei Familie Mustermann</li><li>Abreise bis 11:00 Uhr</li><li>Schlüssel im Briefkasten</li></ul></div>
-          <div class="rcard"><h4>🧹 Reinigung</h4><ul><li>Hütte besenrein hinterlassen</li><li>Bettwäsche in den Wäschebeutel</li><li>Kühlschrank leeren</li><li>Müll zur Tonne bringen</li></ul></div>
-          <div class="rcard warn"><h4>⚠️ Wichtige Hinweise</h4><ul><li>Kamin nur mit trocknem Holz</li><li>Lüftung bei Abreise schließen</li><li>Wasser im Winter absperren</li><li>Notfall Heizung: 0800 123 456</li></ul></div>
-          <div class="rcard"><h4>🐾 Sonstiges</h4><ul><li>Haustiere willkommen</li><li>Rauchen nur im Außenbereich</li><li>WLAN-Passwort: HütteXXXX</li><li>Holz im Schuppen nachfüllen</li></ul></div>
-        </div>
-      </section>
-
-      <!-- ── KONTAKT ── -->
-      <section class="section" id="kontakt">
-        <div class="section-heading"><span>✉️</span><h2>Kontakt & Verwaltung</h2></div>
-        <div class="kontakt-grid">
-          <div class="kcard"><div class="kicon">👤</div><div><div class="klabel">Ansprechpartner</div><div class="kval">Max Mustermann</div></div></div>
-          <div class="kcard"><div class="kicon">📞</div><div><div class="klabel">Telefon</div><div class="kval"><a href="tel:+491234567890">+49 123 456 7890</a></div></div></div>
-          <div class="kcard"><div class="kicon">📧</div><div><div class="klabel">E-Mail</div><div class="kval"><a href="mailto:huette@familie.de">huette@familie.de</a></div></div></div>
-          <div class="kcard"><div class="kicon">📍</div><div><div class="klabel">Adresse</div><div class="kval">Waldweg 7, 79123 Musterort</div></div></div>
-        </div>
-      </section>
-
+    <!-- Bilder & Videos: external server button -->
+    <div id="bilder-server-bar" class="bilder-server-bar" style="display:none;">
+      <span>📸 Alle Fotos befinden sich auf dem Bildserver:</span>
+      <a class="btn-server" href="#" id="bilder-server-link" target="_blank"
+        onclick="openBilderServer(event)">→ Zum Bildserver</a>
+      <span style="font-size:.7rem;color:var(--muted);">(URL in CONFIG anpassen)</span>
     </div>
-  </main>
 
-  <footer class="site-footer">
-    <span>Hüttenbuch · Familieninterne Verwaltung</span>
-    <span id="fyear"></span>
-  </footer>
+    <!-- Sub-navigation -->
+    <nav class="subnav" id="subnav" style="display:none;"></nav>
 
-  <script>
-    // ══════════════════════════════════════
-    //  ⚙️  ZUGANGSDATEN
-    // ══════════════════════════════════════
-    const SUPABASE_URL = 'https://jvxlhlpqsiipplrwozje.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A';
-    // ══════════════════════════════════════
+    <!-- Content area -->
+    <div id="content-area"></div>
 
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const HEUTE = new Date();
-    let miniKal;
+    <!-- Footer -->
+    <footer id="site-footer">
+      <span>Hüttenbuch · Familieninterne Verwaltung · Schwarzwald</span>
+      <div class="footer-links">
+        <a onclick="openLegal('impressum')">Impressum</a>
+        <a onclick="openLegal('datenschutz')">Datenschutz</a>
+        <a onclick="openLegal('cookies')">Cookie-Richtlinie</a>
+        <a onclick="openCookieModal()">Cookie-Einstellungen</a>
+      </div>
+    </footer>
+  </div>
+</div>
 
-    document.getElementById('current-date').textContent =
-      HEUTE.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    document.getElementById('fyear').textContent = '© ' + HEUTE.getFullYear();
-    document.getElementById('stat-jahr').textContent = HEUTE.getFullYear();
+<!-- ════════════════════════════════════════════
+     QUICK CONTACT (fixed bottom right)
+════════════════════════════════════════════ -->
+<div id="quick-contact" style="display:none;">
+  <div id="qc-form">
+    <h4>✉️ Schnellkontakt</h4>
+    <div class="qc-row">
+      <input type="text" id="qc-name" placeholder="Ihr Name"/>
+    </div>
+    <div style="margin-top:.4rem;">
+      <textarea id="qc-msg" placeholder="Ihre Nachricht an die Verwaltung …"></textarea>
+    </div>
+    <div class="qc-row" style="margin-top:.5rem;">
+      <input type="email" id="qc-email" placeholder="E-Mail (optional)"/>
+      <button class="btn btn-rust" style="padding:.45rem .8rem;font-size:.75rem;"
+        onclick="sendQuickContact()">Senden</button>
+    </div>
+    <div id="qc-status" style="font-size:.72rem;margin-top:.35rem;min-height:1em;color:var(--muted);"></div>
+  </div>
+  <button id="qc-toggle" onclick="toggleQC()">✉️</button>
+</div>
 
-    // ── Hilfsfunktionen ──
-    function datDE(str, opt) {
-      if (!str) return '–';
-      return new Date(str).toLocaleDateString('de-DE', opt || {day:'2-digit',month:'short',year:'numeric'});
+<!-- ════════════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════════ -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" src="" alt=""/>
+  <div class="lb-caption" id="lb-cap"></div>
+</div>
+
+<!-- PDF MODAL -->
+<div id="pdf-modal">
+  <div class="pdf-header">
+    <span id="pdf-name"></span>
+    <button class="pdf-close" onclick="closePdf()">✕ Schließen</button>
+  </div>
+  <iframe id="pdf-frame" src=""></iframe>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="video-modal" onclick="closeVideo()">
+  <div class="vm-inner" onclick="event.stopPropagation()">
+    <button class="vm-close" onclick="closeVideo()">✕</button>
+    <video id="vid-player" controls></video>
+  </div>
+</div>
+
+<!-- LEGAL MODAL -->
+<div id="legal-modal">
+  <div class="lm-box">
+    <div class="lm-header">
+      <h3 id="lm-title">Impressum</h3>
+      <button class="lm-close" onclick="closeLegal()">✕</button>
+    </div>
+    <div class="lm-body" id="lm-body"></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   ⚙️  KONFIGURATION – hier anpassen!
+════════════════════════════════════════════ */
+const CONFIG = {
+  password: 'Hütte2026',          // ← Passwort ändern!
+  supabaseUrl: 'https://jvxlhlpqsiipplrwozje.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A',
+  bilderServerUrl: 'https://EUER-BILDSERVER.de',  // ← URL zum Bildserver eintragen
+  maxSchlafplaetze: 6,
+  // Hintergrundbilder für Sektionen (URL oder leer lassen)
+  bgImages: {
+    uebersicht: '',
+    aktivitaeten: '',
+    bilder: '',
+    verein: '',
+    news: '',
+    archiv: '',
+    finanzen: '',
+    kontakt: '',
+  }
+};
+
+/* ════════════════════════════════════════════
+   NAVIGATION STRUKTUR
+════════════════════════════════════════════ */
+const NAV = [
+  { id:'uebersicht', icon:'🏠', label:'Übersicht' },
+  { id:'news', icon:'📰', label:'News', subs:[
+    { id:'oeffentlich', label:'Öffentliche News' },
+    { id:'warnhinweise', label:'Wichtige Warnhinweise' },
+    { id:'intern', label:'Interne Nachrichten' },
+    { id:'presse', label:'Presse News' },
+    { id:'facebook', label:'Facebook' },
+  ]},
+  { id:'verein', icon:'🏛', label:'Verein', subs:[
+    { id:'leitbild', label:'Leitbild' },
+    { id:'satzung', label:'Satzung' },
+    { id:'hymne', label:'Vereinshymne' },
+    { id:'mitglieder', label:'Mitglieder' },
+    { id:'mvsammlung', label:'Mitgliederversammlung' },
+    { id:'stammbaum', label:'Stammbaum' },
+    { id:'vorstand', label:'Vorstand' },
+    { id:'vorlagen', label:'Vorlagen' },
+    { id:'infos', label:'Allgemeine Informationen' },
+  ]},
+  { id:'aktivitaeten', icon:'🎯', label:'Aktivitäten', subs:[
+    { id:'kalender', label:'Kalender' },
+    { id:'termine', label:'Termine' },
+    { id:'uebernachtungen', label:'Übernachtungen eintragen' },
+    { id:'freizeittipps', label:'Freizeittipps' },
+    { id:'projekte', label:'Projekte' },
+    { id:'todos', label:'Zu Erledigen' },
+    { id:'umfragen', label:'Umfragen' },
+    { id:'abfall', label:'Abfallkalender' },
+  ]},
+  { id:'bilder', icon:'🖼', label:'Bilder & Videos', serverBtn:true, subs:[
+    { id:'diverse', label:'Diverse Bilder' },
+    { id:'y2025', label:'2025' },
+    { id:'y2024', label:'2024' },
+    { id:'y2023', label:'2023' },
+    { id:'y2022', label:'2022' },
+    { id:'y2021', label:'2021' },
+    { id:'y2020', label:'2020' },
+    { id:'y2019', label:'2019' },
+    { id:'y2018', label:'2018-10-20' },
+    { id:'y2017', label:'2017' },
+    { id:'y2016', label:'2016' },
+    { id:'y2015', label:'2015' },
+    { id:'y2014', label:'2014' },
+    { id:'y2013', label:'2013' },
+  ]},
+  { id:'archiv', icon:'📁', label:'Archiv', subs:[
+    { id:'protokolle', label:'Protokolle' },
+    { id:'mvdocs', label:'Mitgliederversammlungen' },
+    { id:'grundbuch', label:'Grundbuchauszüge' },
+    { id:'vollmachten', label:'Vollmachten' },
+    { id:'datenschutz_dok', label:'Datenschutzerklärungen' },
+    { id:'aufnahme', label:'Aufnahmeanträge' },
+    { id:'kuendigungen', label:'Kündigungen' },
+    { id:'behoerden_dok', label:'Behörden' },
+    { id:'anleitungen', label:'Bedienungsanleitungen' },
+    { id:'briefe', label:'Briefe' },
+    { id:'diverse_dok', label:'Diverse Dokumente' },
+  ]},
+  { id:'finanzen', icon:'💰', label:'Finanzen', subs:[
+    { id:'abrechnungen', label:'Hüttenabrechnungen' },
+    { id:'bankverbindung', label:'Bankverbindung' },
+    { id:'bundesbank', label:'Deutsche Bundesbank' },
+    { id:'skatbank', label:'Deutsche Skatbank' },
+    { id:'belege', label:'Rechnungsbelege' },
+    { id:'mahnungen', label:'Mahnungen' },
+    { id:'versicherungen', label:'Versicherungen' },
+  ]},
+  { id:'kontakt', icon:'✉️', label:'Kontakt', subs:[
+    { id:'gaestebuch', label:'Gästebuch' },
+    { id:'googlegroups', label:'GoogleGroups' },
+    { id:'mail', label:'Mail' },
+    { id:'adressen', label:'Adressen' },
+    { id:'behoerden', label:'Behörden' },
+  ]},
+];
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+let curSection = 'uebersicht', curSub = null;
+let db, miniKal, mainKal;
+const HEUTE = new Date();
+let cookieSettings = { func: true, embed: false };
+let qcOpen = false;
+let todoData = [];
+
+/* ════════════════════════════════════════════
+   PASSWORD
+════════════════════════════════════════════ */
+function checkPw() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw === CONFIG.password) {
+    sessionStorage.setItem('hb_auth', '1');
+    document.getElementById('pw-gate').classList.add('hidden');
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('quick-contact').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('pw-err').textContent = '✗ Falsches Passwort. Bitte erneut versuchen.';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+// Auto-login if session active
+if (sessionStorage.getItem('hb_auth') === '1') {
+  document.getElementById('pw-gate').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('quick-contact').style.display = 'block';
+  document.addEventListener('DOMContentLoaded', initApp);
+}
+
+/* ════════════════════════════════════════════
+   COOKIES
+════════════════════════════════════════════ */
+function loadCookieSettings() {
+  const s = localStorage.getItem('hb_cookies');
+  if (s) { cookieSettings = JSON.parse(s); return true; }
+  return false;
+}
+function openCookieModal() {
+  document.getElementById('cookie-modal').classList.add('open');
+  document.getElementById('ck-func').checked = cookieSettings.func;
+  document.getElementById('ck-embed').checked = cookieSettings.embed;
+}
+function saveCookies() {
+  cookieSettings.func  = document.getElementById('ck-func').checked;
+  cookieSettings.embed = document.getElementById('ck-embed').checked;
+  localStorage.setItem('hb_cookies', JSON.stringify(cookieSettings));
+  document.getElementById('cookie-modal').classList.remove('open');
+  document.getElementById('cookie-banner').classList.remove('show');
+}
+function acceptAllCookies() {
+  cookieSettings = { func:true, embed:true };
+  localStorage.setItem('hb_cookies', JSON.stringify(cookieSettings));
+  document.getElementById('cookie-banner').classList.remove('show');
+}
+if (!loadCookieSettings()) {
+  setTimeout(()=>document.getElementById('cookie-banner').classList.add('show'), 1200);
+}
+document.getElementById('cookie-modal').addEventListener('click', function(e){
+  if(e.target===this) this.classList.remove('open');
+});
+
+/* ════════════════════════════════════════════
+   SIDEBAR BUILD
+════════════════════════════════════════════ */
+function buildSidebar() {
+  const nav = document.getElementById('sb-nav');
+  nav.innerHTML = NAV.map(sec => {
+    if (!sec.subs) return `
+      <div class="nav-item">
+        <div class="nav-top" id="nt-${sec.id}" onclick="goto('${sec.id}')">
+          <span class="nav-icon">${sec.icon}</span>
+          <span class="nav-label">${sec.label}</span>
+        </div>
+      </div>`;
+    const subLinks = sec.subs.map(s =>
+      `<a id="ns-${sec.id}-${s.id}" onclick="goto('${sec.id}','${s.id}')">${s.label}</a>`
+    ).join('');
+    return `
+      <div class="nav-item">
+        <div class="nav-top" id="nt-${sec.id}" onclick="toggleGroup('${sec.id}')">
+          <span class="nav-icon">${sec.icon}</span>
+          <span class="nav-label">${sec.label}</span>
+          <span class="nav-arrow">›</span>
+        </div>
+        <div class="nav-sub" id="ng-${sec.id}">${subLinks}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleGroup(id) {
+  const sec = NAV.find(s=>s.id===id);
+  const grp = document.getElementById('ng-'+id);
+  const top  = document.getElementById('nt-'+id);
+  if (!grp) { goto(id); return; }
+  const isOpen = grp.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.nav-sub.open').forEach(el=>el.classList.remove('open'));
+  document.querySelectorAll('.nav-top.open').forEach(el=>el.classList.remove('open'));
+  if (!isOpen) {
+    grp.classList.add('open');
+    top.classList.add('open');
+    // Auto-navigate to first sub
+    if (sec.subs && sec.subs.length) goto(id, sec.subs[0].id);
+  } else {
+    goto(id, sec.subs?sec.subs[0].id:null);
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('main-wrap').classList.toggle('collapsed');
+}
+
+/* ════════════════════════════════════════════
+   ROUTING
+════════════════════════════════════════════ */
+function goto(sectionId, subId) {
+  const sec = NAV.find(s=>s.id===sectionId);
+  if (!sec) return;
+  curSection = sectionId;
+  curSub = subId || (sec.subs ? sec.subs[0].id : null);
+
+  // Update sidebar active states
+  document.querySelectorAll('.nav-top').forEach(el=>el.classList.remove('active-section'));
+  document.querySelectorAll('.nav-sub a').forEach(el=>el.classList.remove('active'));
+  const nt = document.getElementById('nt-'+sectionId);
+  if(nt) nt.classList.add('active-section');
+  if(curSub) {
+    const ns = document.getElementById('ns-'+sectionId+'-'+curSub);
+    if(ns) ns.classList.add('active');
+  }
+  // Ensure group open
+  if (sec.subs) {
+    const grp = document.getElementById('ng-'+sectionId);
+    if(grp && !grp.classList.contains('open')) {
+      grp.classList.add('open');
+      if(nt) nt.classList.add('open');
     }
+  }
 
-    function kwVonDatum(datStr) {
-      const d = new Date(datStr);
-      d.setHours(0,0,0,0);
-      d.setDate(d.getDate() + 3 - (d.getDay()+6)%7);
-      const w = new Date(d.getFullYear(),0,4);
-      return 1 + Math.round(((d-w)/86400000 - 3 + (w.getDay()+6)%7)/7);
-    }
+  // Update page header
+  const titles = {
+    uebersicht:   ['Unsere <em>Ferienhütte</em>', 'Familieninterne Verwaltung · Schwarzwald'],
+    news:         ['<em>News</em> & Aktuelles', 'Informationen für die Familie'],
+    verein:       ['Unser <em>Verein</em>', 'Geschichte, Struktur & Dokumente'],
+    aktivitaeten: ['<em>Aktivitäten</em> & Kalender', 'Termine, Buchungen & mehr'],
+    bilder:       ['Bilder & <em>Videos</em>', 'Unsere Erinnerungen'],
+    archiv:       ['<em>Archiv</em>', 'Dokumente & Unterlagen'],
+    finanzen:     ['<em>Finanzen</em>', 'Abrechnungen, Bankverbindungen & mehr'],
+    kontakt:      ['<em>Kontakt</em> & Kommunikation', 'Gästebuch, Adressen & mehr'],
+  };
+  const [t,s] = titles[sectionId] || ['Hüttenbuch',''];
+  document.getElementById('page-title').innerHTML = t;
+  document.getElementById('page-subtitle').textContent = s;
 
-    function naechsteFreieWoche(belegungen) {
-      const belegt = new Set();
-      belegungen.forEach(b => {
-        let d = new Date(b.von), end = new Date(b.bis);
-        while (d < end) { belegt.add(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); }
-      });
-      let mo = new Date(HEUTE);
-      mo.setDate(mo.getDate() + (8 - mo.getDay()) % 7 || 7);
-      for (let i=0; i<52; i++) {
-        let frei = true;
-        for (let t=0; t<7; t++) {
-          const d = new Date(mo); d.setDate(d.getDate()+t);
-          if (belegt.has(d.toISOString().slice(0,10))) { frei=false; break; }
-        }
-        if (frei) {
-          const so = new Date(mo); so.setDate(so.getDate()+6);
-          return { kw: kwVonDatum(mo.toISOString().slice(0,10)), von: mo.toISOString().slice(0,10), bis: so.toISOString().slice(0,10) };
-        }
-        mo.setDate(mo.getDate()+7);
-      }
-      return null;
-    }
+  // Background image
+  const bg = CONFIG.bgImages[sectionId];
+  const hdrBg = document.getElementById('page-hdr-bg');
+  if(bg) { hdrBg.style.backgroundImage=`url('${bg}')`; hdrBg.style.backgroundSize='cover'; hdrBg.style.backgroundPosition='center'; }
+  else { hdrBg.style.backgroundImage=''; }
 
-    function eventFarbe(typ) {
-      return typ === 'familienversammlung' ? '#2c5f8a'
-           : typ === 'arbeitswochenende'   ? '#2d4a2d'
-           : '#7a6a58';
-    }
-    function eventKlasse(typ) {
-      return typ === 'familienversammlung' ? 'ev-fam'
-           : typ === 'arbeitswochenende'   ? 'ev-arb'
-           : 'ev-son';
-    }
-    function badgeKlasse(typ) {
-      return typ === 'familienversammlung' ? 'badge-fam'
-           : typ === 'arbeitswochenende'   ? 'badge-arb'
-           : 'badge-son';
-    }
-    function typLabel(typ) {
-      return typ === 'familienversammlung' ? '👨‍👩‍👧‍👦 Familienversammlung'
-           : typ === 'arbeitswochenende'   ? '🔨 Arbeitswochenende'
-           : '📌 Sonstige Veranstaltung';
-    }
+  // Bilder server bar
+  document.getElementById('bilder-server-bar').style.display = (sectionId==='bilder'&&sec.serverBtn) ? 'flex' : 'none';
 
-    // ══════════════════════════════════════
-    //  ALLES LADEN
-    // ══════════════════════════════════════
-    async function alleNeuLaden() {
-      const jetzt   = HEUTE.toISOString().slice(0,10);
-      const jarAnf  = HEUTE.getFullYear() + '-01-01';
-      const jarEnd  = HEUTE.getFullYear() + '-12-31';
+  // Sub-navigation
+  const subnavEl = document.getElementById('subnav');
+  if(sec.subs && sec.subs.length) {
+    subnavEl.style.display='flex';
+    subnavEl.innerHTML = sec.subs.map(s=>
+      `<a id="sn-${s.id}" class="${s.id===curSub?'active':''}"
+        onclick="goto('${sectionId}','${s.id}')">${s.label}</a>`
+    ).join('');
+  } else {
+    subnavEl.style.display='none';
+  }
 
-      const [{ data: bel }, { data: events }] = await Promise.all([
-        db.from('belegungen').select('*').order('von'),
-        db.from('special_events').select('*').order('von')
-      ]);
+  renderContent();
+}
 
-      // ── Stats ──
-      const belJahr = (bel||[]).filter(b => b.von >= jarAnf && b.von <= jarEnd);
-      const belKunft = belJahr.filter(b => b.bis > jetzt);
-      document.getElementById('stat-anz').textContent = belJahr.length;
-      document.getElementById('stat-anz-note').textContent =
-        belKunft.length + ' noch bevorstehend';
+/* ════════════════════════════════════════════
+   CONTENT RENDERING
+════════════════════════════════════════════ */
+function renderContent() {
+  const area = document.getElementById('content-area');
+  area.innerHTML = '<div style="color:var(--muted);padding:2rem;">⏳ Lädt…</div>';
 
-      const gesPers = belJahr.reduce((s,b) => s + (b.erwachsene||0) + (b.kinder||0), 0);
-      document.getElementById('stat-pers').textContent = gesPers;
-      document.getElementById('stat-pers-note').textContent =
-        belJahr.reduce((s,b) => s+(b.erwachsene||0),0) + ' Erw. · ' +
-        belJahr.reduce((s,b) => s+(b.kinder||0),0) + ' Kinder';
+  const key = curSection === 'uebersicht' ? 'uebersicht' : `${curSection}_${curSub}`;
+  const fn = RENDERERS[key] || RENDERERS[`${curSection}_default`] || (() => {
+    area.innerHTML = renderPlaceholder(curSection, curSub);
+  });
+  fn(area);
+}
 
-      const naechsteBel = (bel||[]).filter(b => b.bis > jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
-      if (naechsteBel) {
-        document.getElementById('stat-naechste').textContent = naechsteBel.name;
-        document.getElementById('stat-naechste-note').textContent =
-          datDE(naechsteBel.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(naechsteBel.bis,{day:'2-digit',month:'short'});
-      } else {
-        document.getElementById('stat-naechste').textContent = '–';
-        document.getElementById('stat-naechste-note').textContent = 'Keine bevorstehend';
-      }
+/* ════════════════════════════════════════════
+   HELPER FUNCTIONS
+════════════════════════════════════════════ */
+function datDE(str, opt) {
+  if(!str) return '–';
+  return new Date(str + 'T12:00:00').toLocaleDateString('de-DE',
+    opt || {day:'2-digit',month:'short',year:'numeric'});
+}
+function fcEnd(bisStr) {
+  // FullCalendar uses exclusive end: add 1 day so 3rd is shown as OCCUPIED through EOD 3rd
+  const d = new Date(bisStr + 'T12:00:00');
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0,10);
+}
+function kwVonDatum(str) {
+  const d=new Date(str);d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);
+  const w=new Date(d.getFullYear(),0,4);
+  return 1+Math.round(((d-w)/86400000-3+(w.getDay()+6)%7)/7);
+}
+function naechsteFreieWoche(bel) {
+  const belegt=new Set();
+  bel.forEach(b=>{let d=new Date(b.von),e=new Date(b.bis);
+    while(d<e){belegt.add(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}});
+  let mo=new Date(HEUTE);mo.setDate(mo.getDate()+(8-mo.getDay())%7||7);
+  for(let i=0;i<52;i++){let ok=true;
+    for(let t=0;t<7;t++){const d=new Date(mo);d.setDate(d.getDate()+t);
+      if(belegt.has(d.toISOString().slice(0,10))){ok=false;break;}}
+    if(ok){const so=new Date(mo);so.setDate(so.getDate()+6);
+      return{kw:kwVonDatum(mo.toISOString().slice(0,10)),von:mo.toISOString().slice(0,10),bis:so.toISOString().slice(0,10)};}
+    mo.setDate(mo.getDate()+7);}return null;
+}
+function eventFarbe(typ){return typ==='familienversammlung'?'#2c5f8a':typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';}
+function eventKlasse(typ){return typ==='familienversammlung'?'ev-fam':typ==='arbeitswochenende'?'ev-arb':'ev-son';}
+function typLabel(typ){return typ==='familienversammlung'?'👨‍👩‍👧‍👦 Familienversammlung':typ==='arbeitswochenende'?'🔨 Arbeitswochenende':'📌 Sonstige';}
+function fileIcon(name){
+  const ext=(name||'').split('.').pop().toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','svg'].includes(ext)) return '🖼';
+  if(['mp4','mov','avi','mkv','webm'].includes(ext)) return '🎬';
+  if(ext==='pdf') return '📄';
+  if(['xlsx','xls','ods','csv'].includes(ext)) return '📊';
+  if(['docx','doc'].includes(ext)) return '📝';
+  if(['zip','rar','7z'].includes(ext)) return '🗜';
+  return '📎';
+}
 
-      const fw = naechsteFreieWoche((bel||[]).filter(b => b.bis > jetzt));
-      if (fw) {
-        document.getElementById('stat-frei').textContent = 'KW ' + fw.kw;
-        document.getElementById('stat-frei-note').textContent =
-          datDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(fw.bis,{day:'2-digit',month:'short'});
-      } else {
-        document.getElementById('stat-frei').textContent = '–';
-        document.getElementById('stat-frei-note').textContent = 'Keine gefunden';
-      }
+function renderPlaceholder(sec, sub) {
+  const subInfo = NAV.find(s=>s.id===sec)?.subs?.find(s=>s.id===sub);
+  return `
+    <div class="sec-head"><h2>${subInfo?.label || sub || sec}</h2></div>
+    <div class="fv-note">
+      💡 Dieser Bereich ist noch nicht eingerichtet. Inhalte können hier per
+      Supabase Storage oder direkt im Code hinterlegt werden.<br>
+      Bucket-Pfad vorgeschlagen: <code>${sec}/${sub}/</code>
+    </div>
+    ${renderFileViewer(sec, sub)}`;
+}
 
-      const naechstesEvent = (events||[]).filter(e => e.bis > jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
-      if (naechstesEvent) {
-        document.getElementById('stat-event').textContent = naechstesEvent.titel;
-        document.getElementById('stat-event-note').textContent =
-          datDE(naechstesEvent.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(naechstesEvent.bis,{day:'2-digit',month:'short'});
-      } else {
-        document.getElementById('stat-event').textContent = '–';
-        document.getElementById('stat-event-note').textContent = 'Keine geplant';
-      }
+/* ════════════════════════════════════════════
+   FILE VIEWER COMPONENT
+════════════════════════════════════════════ */
+function renderFileViewer(bucket, folder) {
+  return `
+    <div class="file-viewer" id="fv-${bucket}-${folder}">
+      <div class="fv-note" style="background:rgba(44,95,138,.07);border-color:rgba(44,95,138,.2);color:var(--blue);">
+        📁 Dateiverwaltung via Supabase Storage. Bucket: <code>${bucket}</code> / Ordner: <code>${folder}</code><br>
+        Einrichten: Supabase → Storage → Neuen Bucket anlegen → Dateien hochladen.<br>
+        Dann in CONFIG.supabaseUrl die Zugangsdaten prüfen. Videos bis 50MB können direkt abgespielt werden.
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('file-upload-${bucket}-${folder}').click()">
+        <input type="file" id="file-upload-${bucket}-${folder}" multiple
+          onchange="handleFileUpload('${bucket}','${folder}',this.files)"/>
+        <div class="uz-icon">📤</div>
+        <div class="uz-text">Dateien hierher ziehen oder klicken zum Auswählen</div>
+        <div class="uz-sub">PDF, Excel, Word, Bilder, Videos (max. 50 MB pro Datei)</div>
+      </div>
+      <div class="fv-toolbar">
+        <div class="fv-toolbar-left">
+          <div class="fv-search"><input type="text" placeholder="Suchen…"
+            oninput="filterFiles('${bucket}','${folder}',this.value)"/></div>
+          <div class="fv-view-btns">
+            <button class="active" id="fvb-grid-${bucket}-${folder}"
+              onclick="setFileView('${bucket}','${folder}','grid')">▦</button>
+            <button id="fvb-list-${bucket}-${folder}"
+              onclick="setFileView('${bucket}','${folder}','list')">☰</button>
+          </div>
+        </div>
+        <button class="btn btn-rust" style="padding:.4rem .8rem;font-size:.73rem;"
+          onclick="loadFiles('${bucket}','${folder}')">↺ Aktualisieren</button>
+      </div>
+      <div id="fv-files-${bucket}-${folder}" class="file-grid">
+        <div class="fv-empty">Klicken Sie auf "Aktualisieren" um Dateien zu laden.</div>
+      </div>
+    </div>`;
+}
 
-      // ── Kalender ──
+async function loadFiles(bucket, folder) {
+  const el = document.getElementById(`fv-files-${bucket}-${folder}`);
+  if (!el) return;
+  el.innerHTML = '<div class="fv-empty"><span class="spin">⏳</span> Lädt…</div>';
+  try {
+    const { data, error } = await db.storage.from(bucket).list(folder, { sortBy:{column:'name'} });
+    if (error) throw error;
+    if (!data || !data.length) { el.innerHTML='<div class="fv-empty">Keine Dateien vorhanden.</div>'; return; }
+    window._fvData = window._fvData || {};
+    window._fvData[`${bucket}_${folder}`] = data;
+    renderFileList(bucket, folder, data, 'grid');
+  } catch(e) {
+    el.innerHTML = `<div class="fv-empty" style="color:var(--muted);">
+      Bucket <strong>${bucket}</strong> nicht gefunden oder Zugriff verweigert.<br>
+      <span style="font-size:.72rem;">Bitte Supabase Storage Bucket anlegen und RLS-Policies prüfen.</span></div>`;
+  }
+}
+
+function renderFileList(bucket, folder, files, mode) {
+  const el = document.getElementById(`fv-files-${bucket}-${folder}`);
+  if(!el) return;
+  el.className = mode === 'grid' ? 'file-grid' : 'file-list';
+  el.innerHTML = files.map(f => {
+    const icon = fileIcon(f.name);
+    const size = f.metadata?.size ? `${Math.round(f.metadata.size/1024)} KB` : '';
+    const ext = f.name.split('.').pop().toLowerCase();
+    const isImg = ['jpg','jpeg','png','gif','webp'].includes(ext);
+    const isVid = ['mp4','mov','webm'].includes(ext);
+    const isPdf = ext === 'pdf';
+    if (mode === 'grid') return `
+      <div class="file-tile" onclick="previewFile('${bucket}','${folder}','${f.name}')">
+        <div class="ft-icon">${icon}</div>
+        <div class="ft-name">${f.name}</div>
+        <div class="ft-size">${size}</div>
+        <div class="ft-actions">
+          ${isImg ? `<button class="ft-btn" onclick="event.stopPropagation();previewFile('${bucket}','${folder}','${f.name}')">👁</button>` : ''}
+          ${isPdf ? `<button class="ft-btn" onclick="event.stopPropagation();openPdf('${bucket}','${folder}','${f.name}')">📄</button>` : ''}
+          ${isVid ? `<button class="ft-btn" onclick="event.stopPropagation();playVideo('${bucket}','${folder}','${f.name}')">▶</button>` : ''}
+          <button class="ft-btn" onclick="event.stopPropagation();downloadFile('${bucket}','${folder}','${f.name}')">⬇</button>
+        </div>
+      </div>`;
+    return `
+      <div class="file-row" onclick="previewFile('${bucket}','${folder}','${f.name}')">
+        <div class="fr-icon">${icon}</div>
+        <div class="fr-info">
+          <div class="fr-name">${f.name}</div>
+          <div class="fr-meta">${size}</div>
+        </div>
+        <div class="fr-actions">
+          ${isPdf?`<button class="ft-btn" onclick="event.stopPropagation();openPdf('${bucket}','${folder}','${f.name}')">📄</button>`:''}
+          ${isVid?`<button class="ft-btn" onclick="event.stopPropagation();playVideo('${bucket}','${folder}','${f.name}')">▶</button>`:''}
+          <button class="ft-btn" onclick="event.stopPropagation();downloadFile('${bucket}','${folder}','${f.name}')">⬇</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setFileView(bucket,folder,mode) {
+  document.getElementById(`fvb-grid-${bucket}-${folder}`)?.classList.toggle('active',mode==='grid');
+  document.getElementById(`fvb-list-${bucket}-${folder}`)?.classList.toggle('active',mode==='list');
+  const data = (window._fvData||{})[`${bucket}_${folder}`];
+  if(data) renderFileList(bucket,folder,data,mode);
+}
+function filterFiles(bucket,folder,q){
+  const data=(window._fvData||{})[`${bucket}_${folder}`]||[];
+  const filtered = q ? data.filter(f=>f.name.toLowerCase().includes(q.toLowerCase())) : data;
+  renderFileList(bucket,folder,filtered,'grid');
+}
+
+async function getFileUrl(bucket,folder,name) {
+  const { data } = await db.storage.from(bucket).getPublicUrl(`${folder}/${name}`);
+  return data?.publicUrl;
+}
+async function previewFile(bucket,folder,name) {
+  const ext=name.split('.').pop().toLowerCase();
+  const url = await getFileUrl(bucket,folder,name);
+  if(!url) return;
+  if(['jpg','jpeg','png','gif','webp'].includes(ext)) {
+    document.getElementById('lb-img').src=url;
+    document.getElementById('lb-cap').textContent=name;
+    document.getElementById('lightbox').classList.add('open');
+  } else if(ext==='pdf') openPdfUrl(url,name);
+  else if(['mp4','mov','webm'].includes(ext)) playVideoUrl(url);
+  else downloadFile(bucket,folder,name);
+}
+async function downloadFile(bucket,folder,name) {
+  const url = await getFileUrl(bucket,folder,name);
+  if(!url) return;
+  const a=document.createElement('a');a.href=url;a.download=name;a.target='_blank';a.click();
+}
+async function openPdf(bucket,folder,name) {
+  const url = await getFileUrl(bucket,folder,name);
+  openPdfUrl(url,name);
+}
+function openPdfUrl(url,name) {
+  document.getElementById('pdf-name').textContent=name;
+  document.getElementById('pdf-frame').src=url;
+  document.getElementById('pdf-modal').classList.add('open');
+}
+function closePdf(){document.getElementById('pdf-modal').classList.remove('open');document.getElementById('pdf-frame').src='';}
+async function playVideo(bucket,folder,name) {
+  const url=await getFileUrl(bucket,folder,name);playVideoUrl(url);
+}
+function playVideoUrl(url){
+  document.getElementById('vid-player').src=url;
+  document.getElementById('video-modal').classList.add('open');
+}
+function closeVideo(){document.getElementById('video-modal').classList.remove('open');document.getElementById('vid-player').src='';}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+
+async function handleFileUpload(bucket,folder,files) {
+  if(!files||!files.length) return;
+  const statusEl = document.querySelector(`#fv-${bucket}-${folder} .fv-note`);
+  for(const file of files) {
+    const { error } = await db.storage.from(bucket).upload(`${folder}/${file.name}`, file, {upsert:true});
+    if(error) { alert('Fehler beim Upload von '+file.name+': '+error.message); }
+  }
+  await loadFiles(bucket,folder);
+}
+
+/* ════════════════════════════════════════════
+   ALL RENDERERS
+════════════════════════════════════════════ */
+const RENDERERS = {};
+
+/* ── ÜBERSICHT ── */
+RENDERERS['uebersicht'] = async (area) => {
+  const jetzt=HEUTE.toISOString().slice(0,10);
+  const jarAnf=HEUTE.getFullYear()+'-01-01', jarEnd=HEUTE.getFullYear()+'-12-31';
+  area.innerHTML=`
+    <div class="sec-head"><h2>Auf einen Blick</h2></div>
+    <div class="dash-grid">
+      <div class="stat-card"><div class="slabel">Belegungen ${HEUTE.getFullYear()}</div>
+        <div class="sval" id="st-anz"><span class="spin">⏳</span></div><div class="snote" id="st-anz-n"></div></div>
+      <div class="stat-card"><div class="slabel">Personen gesamt</div>
+        <div class="sval" id="st-pers"><span class="spin">⏳</span></div><div class="snote" id="st-pers-n"></div></div>
+      <div class="stat-card green"><div class="slabel">Nächste freie Woche</div>
+        <div class="sval sm" id="st-frei"><span class="spin">⏳</span></div><div class="snote" id="st-frei-n"></div></div>
+      <div class="stat-card gold"><div class="slabel">Nächste Belegung</div>
+        <div class="sval sm" id="st-naechste"><span class="spin">⏳</span></div><div class="snote" id="st-naechste-n"></div></div>
+      <div class="stat-card blue"><div class="slabel">Nächste Veranstaltung</div>
+        <div class="sval sm" id="st-event"><span class="spin">⏳</span></div><div class="snote" id="st-event-n"></div></div>
+    </div>
+    <div class="dash-two">
+      <div>
+        <div class="sec-head"><h2>Belegungskalender</h2></div>
+        <div id="mini-kal-wrap"><div id="mini-kal"></div></div>
+      </div>
+      <div class="dash-side">
+        <div class="ds-card">
+          <div class="ds-card-title">Legende</div>
+          <div class="leg"><div class="leg-dot" style="background:#8b4513"></div> Belegung</div>
+          <div class="leg"><div class="leg-dot" style="background:#2c5f8a"></div> Familienversammlung</div>
+          <div class="leg"><div class="leg-dot" style="background:#2d4a2d"></div> Arbeitswochenende</div>
+          <div class="leg"><div class="leg-dot" style="background:#7a6a58"></div> Sonstige</div>
+          <div style="margin-top:.9rem;">
+            <button class="btn btn-rust" style="width:100%;font-size:.75rem;"
+              onclick="goto('aktivitaeten','uebernachtungen')">→ Belegung eintragen</button>
+          </div>
+        </div>
+        <div class="ds-card">
+          <div class="ds-card-title">Nächste Termine</div>
+          <div id="nb-liste"><span class="spin">⏳</span></div>
+        </div>
+        <div class="ds-card">
+          <div class="ds-card-title">📖 Geschichte</div>
+          <div class="timeline" style="margin-top:.5rem;">
+            <div class="titem"><div class="tyear">1978</div><div class="ttitle">Der Bau</div>
+              <div class="ttext">Opa Hermann baut die Hütte in Eigenregie über zwei Sommer.</div></div>
+            <div class="titem"><div class="tyear">1985</div><div class="ttitle">Erste Erweiterung</div>
+              <div class="ttext">Zweites Schlafzimmer und Veranda werden angebaut.</div></div>
+            <div class="titem"><div class="tyear">2003</div><div class="ttitle">Renovierung</div>
+              <div class="ttext">Neue Küche, Bad, Elektrik und Holzofen.</div></div>
+            <div class="titem"><div class="tyear">2019</div><div class="ttitle">Übergabe</div>
+              <div class="ttext">WLAN installiert. Die Tradition lebt weiter.</div></div>
+            <div class="titem"><div class="tyear">2026</div><div class="ttitle">Dieses Hüttenbuch</div>
+              <div class="ttext">Digitale Verwaltung für die ganze Familie.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Init mini calendar
+  miniKal = new FullCalendar.Calendar(document.getElementById('mini-kal'), {
+    initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
+    weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW', events:[],
+    eventClick:()=>goto('aktivitaeten','uebernachtungen'),
+    headerToolbar:{left:'prev,next',center:'title',right:''}
+  });
+  miniKal.render();
+  loadDashboardData(jetzt, jarAnf, jarEnd);
+};
+
+async function loadDashboardData(jetzt, jarAnf, jarEnd) {
+  try {
+    const [{data:bel},{data:events}] = await Promise.all([
+      db.from('belegungen').select('*').order('von'),
+      db.from('special_events').select('*').order('von')
+    ]);
+    const belJ=(bel||[]).filter(b=>b.von>=jarAnf&&b.von<=jarEnd);
+    const belK=belJ.filter(b=>b.bis>jetzt);
+    document.getElementById('st-anz').textContent=belJ.length;
+    document.getElementById('st-anz-n').textContent=belK.length+' bevorstehend';
+    const gP=belJ.reduce((s,b)=>s+(b.erwachsene||0)+(b.kinder||0),0);
+    document.getElementById('st-pers').textContent=gP;
+    document.getElementById('st-pers-n').textContent=
+      belJ.reduce((s,b)=>s+(b.erwachsene||0),0)+' Erw. · '+belJ.reduce((s,b)=>s+(b.kinder||0),0)+' Kinder';
+    const nB=(bel||[]).filter(b=>b.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+    if(nB){document.getElementById('st-naechste').textContent=nB.name;
+      document.getElementById('st-naechste-n').textContent=datDE(nB.von,{day:'2-digit',month:'short'})+' – '+datDE(nB.bis,{day:'2-digit',month:'short'});}
+    else{document.getElementById('st-naechste').textContent='–';document.getElementById('st-naechste-n').textContent='Keine';}
+    const fw=naechsteFreieWoche((bel||[]).filter(b=>b.bis>jetzt));
+    if(fw){document.getElementById('st-frei').textContent='KW '+fw.kw;
+      document.getElementById('st-frei-n').textContent=datDE(fw.von,{day:'2-digit',month:'short'})+' – '+datDE(fw.bis,{day:'2-digit',month:'short'});}
+    else{document.getElementById('st-frei').textContent='–';}
+    const nE=(events||[]).filter(e=>e.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+    if(nE){document.getElementById('st-event').textContent=nE.titel;
+      document.getElementById('st-event-n').textContent=datDE(nE.von,{day:'2-digit',month:'short'})+' – '+datDE(nE.bis,{day:'2-digit',month:'short'});}
+    else{document.getElementById('st-event').textContent='–';document.getElementById('st-event-n').textContent='Keine geplant';}
+    // Calendar events
+    if(miniKal){
       miniKal.removeAllEvents();
-      (bel||[]).forEach(b => miniKal.addEvent({
-        title: b.name, start: b.von, end: b.bis,
-        backgroundColor:'#8b4513', borderColor:'#8b4513'
-      }));
-      (events||[]).forEach(e => miniKal.addEvent({
-        title: e.titel, start: e.von, end: e.bis,
-        backgroundColor: eventFarbe(e.typ), borderColor: eventFarbe(e.typ)
-      }));
-
-      // ── Nächste Termine Sidebar ──
-      const alleTermine = [
-        ...(bel||[]).filter(b => b.bis > jetzt).map(b => ({...b, _art:'bel'})),
-        ...(events||[]).filter(e => e.bis > jetzt).map(e => ({...e, name:e.titel, _art:'event'}))
-      ].sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
-
-      const nbEl = document.getElementById('nb-liste');
-      nbEl.innerHTML = alleTermine.length
-        ? alleTermine.map(t => {
-            const cls = t._art==='event' ? eventKlasse(t.typ) : '';
-            return `<div class="nb-item ${cls}">
-              <div class="nb-name">${t.name}</div>
-              <div class="nb-dat">${datDE(t.von,{day:'2-digit',month:'short'})} – ${datDE(t.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
-            </div>`;
-          }).join('')
-        : '<div style="font-size:.8rem;color:var(--muted);font-style:italic;">Keine bevorstehenden Termine.</div>';
-
-      // ── Veranstaltungsliste ──
-      renderEventListe(events||[]);
+      (bel||[]).forEach(b=>miniKal.addEvent({title:b.name,start:b.von,end:fcEnd(b.bis),backgroundColor:'#8b4513',borderColor:'#8b4513'}));
+      (events||[]).forEach(e=>miniKal.addEvent({title:e.titel,start:e.von,end:fcEnd(e.bis),backgroundColor:eventFarbe(e.typ),borderColor:eventFarbe(e.typ)}));
     }
+    // Nächste Termine
+    const alle=[
+      ...(bel||[]).filter(b=>b.bis>jetzt).map(b=>({...b,_art:'bel'})),
+      ...(events||[]).filter(e=>e.bis>jetzt).map(e=>({...e,name:e.titel,_art:'event'}))
+    ].sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
+    document.getElementById('nb-liste').innerHTML=alle.length
+      ? alle.map(t=>`<div class="nb-item ${t._art==='event'?eventKlasse(t.typ):''}">
+          <div class="nb-name">${t.name}</div>
+          <div class="nb-dat">${datDE(t.von,{day:'2-digit',month:'short'})} – ${datDE(t.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
+        </div>`).join('')
+      : '<div style="font-size:.78rem;color:var(--muted);font-style:italic;">Keine bevorstehenden Termine.</div>';
+  } catch(e) {
+    console.error('Dashboard load error:', e);
+  }
+}
 
-    // ══════════════════════════════════════
-    //  VERANSTALTUNGEN RENDERN
-    // ══════════════════════════════════════
-    function renderEventListe(events) {
-      const el = document.getElementById('events-liste');
-      if (!events.length) {
-        el.innerHTML = '<div class="leer-events">Noch keine Veranstaltungen erstellt.</div>';
-        return;
-      }
+/* ── NEWS ── */
+function newsRenderer(cat, label, color='var(--rust)', icon='📰') {
+  return async (area) => {
+    area.innerHTML=`
+      <div class="sec-head"><h2>${icon} ${label}</h2></div>
+      ${cat==='warnhinweise'?`
+        <div class="warn-card">
+          <h4>⚠️ Kamin-Sicherheit beachten</h4>
+          <p>Bitte nur trockenes Holz verwenden. Bei Abreise Ofenklappe schließen und Asche vollständig erkalten lassen.</p>
+        </div>
+        <div class="warn-card">
+          <h4>⚠️ Wasserleitung im Winter</h4>
+          <p>Beim letzten Besuch vor dem Winter: Haupthahn absperren und alle Leitungen entleeren!</p>
+        </div>` : ''}
+      ${cat==='facebook'?`
+        <div class="fv-note" style="background:rgba(44,95,138,.08);border-color:rgba(44,95,138,.25);color:var(--blue);">
+          ℹ️ Für eingebettete Facebook-Inhalte müssen "Eingebettete Inhalte" in den <a onclick="openCookieModal()" style="cursor:pointer;text-decoration:underline;">Cookie-Einstellungen</a> aktiviert sein.
+        </div>
+        ${cookieSettings.embed?`<iframe src="https://www.facebook.com/plugins/page.php?href=EURE_SEITE&width=500&height=600&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true"
+          width="100%" height="500" style="border:none;overflow:hidden;border-radius:4px;" scrolling="no" allowfullscreen></iframe>`
+        :'<div class="fv-empty">Facebook-Einbettung ist deaktiviert. Bitte Cookie-Einstellungen anpassen.</div>'}` : ''}
+      ${cat!=='warnhinweise'&&cat!=='facebook'?`
+        <div class="news-add-form">
+          <h3>➕ Neuen Beitrag erstellen</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Titel</label>
+              <input type="text" id="news-titel" placeholder="Betreff …"/></div>
+            <div class="form-group"><label>Datum</label>
+              <input type="date" id="news-datum" value="${HEUTE.toISOString().slice(0,10)}"/></div>
+          </div>
+          <div class="form-group"><label>Text</label>
+            <textarea id="news-text" rows="3" placeholder="Nachrichtentext …"></textarea></div>
+          <button class="btn btn-blue" onclick="saveNews('${cat}')">Beitrag speichern</button>
+          <div class="form-status" id="news-status"></div>
+        </div>
+        <div id="news-liste-${cat}"><span class="spin">⏳</span></div>` : ''}`;
+    if(cat!=='warnhinweise'&&cat!=='facebook') loadNews(cat);
+  };
+}
+RENDERERS['news_oeffentlich'] = newsRenderer('oeffentlich','Öffentliche News');
+RENDERERS['news_warnhinweise'] = newsRenderer('warnhinweise','Wichtige Warnhinweise','var(--red)','⚠️');
+RENDERERS['news_intern'] = newsRenderer('intern','Interne Nachrichten','var(--pine)','🔒');
+RENDERERS['news_presse'] = newsRenderer('presse','Presse News','var(--blue)','📰');
+RENDERERS['news_facebook'] = newsRenderer('facebook','Facebook','#1877f2','👍');
 
-      // Nach Jahr gruppieren
-      const gruppen = {};
-      events.forEach(e => {
-        const j = e.jahr || new Date(e.von).getFullYear();
-        if (!gruppen[j]) gruppen[j] = [];
-        gruppen[j].push(e);
-      });
+async function saveNews(cat) {
+  const titel=document.getElementById('news-titel').value.trim();
+  const datum=document.getElementById('news-datum').value;
+  const text=document.getElementById('news-text').value.trim();
+  const st=document.getElementById('news-status');
+  if(!titel||!text){st.textContent='⚠ Titel und Text ausfüllen.';st.className='form-status err';return;}
+  const {error}=await db.from('news').insert({kategorie:cat,titel,datum,text}).catch(()=>({error:{message:'Tabelle "news" nicht vorhanden – bitte in Supabase anlegen.'}}));
+  if(error){st.textContent='✗ '+error.message;st.className='form-status err';return;}
+  st.textContent='✓ Gespeichert!';st.className='form-status ok';
+  document.getElementById('news-titel').value='';document.getElementById('news-text').value='';
+  loadNews(cat);
+}
+async function loadNews(cat) {
+  const el=document.getElementById('news-liste-'+cat);
+  if(!el)return;
+  const {data,error}=await db.from('news').select('*').eq('kategorie',cat).order('datum',{ascending:false}).catch(()=>({data:null,error:{message:'Tabelle "news" nicht vorhanden.'}}));
+  if(error||!data){el.innerHTML=`<div class="fv-note">Tabelle "news" in Supabase anlegen:<br><code>CREATE TABLE news (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, kategorie text, titel text, datum date, text text, created_at timestamptz DEFAULT now());</code></div>`;return;}
+  if(!data.length){el.innerHTML='<div class="leer">Noch keine Beiträge.</div>';return;}
+  el.innerHTML=data.map(n=>`
+    <div class="news-card">
+      <div class="news-stripe" style="background:${cat==='intern'?'var(--pine)':cat==='presse'?'var(--blue)':'var(--rust)'}"></div>
+      <div class="news-body">
+        <div class="news-head">
+          <div class="news-title">${n.titel}</div>
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <div class="news-date">${datDE(n.datum)}</div>
+            <button class="event-del" onclick="deleteNews('${n.id}','${cat}')">✕</button>
+          </div>
+        </div>
+        <div class="news-text">${n.text}</div>
+      </div>
+    </div>`).join('');
+}
+async function deleteNews(id,cat){
+  if(!confirm('Beitrag löschen?'))return;
+  await db.from('news').delete().eq('id',id);loadNews(cat);
+}
 
-      let html = '';
-      Object.keys(gruppen).sort().reverse().forEach(jahr => {
-        html += `<div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem;margin-top:${html?'1.5rem':'0'}">${jahr}</div>`;
-        html += '<div class="event-liste">';
-        gruppen[jahr].forEach(e => {
-          html += `
-            <div class="event-card">
-              <div class="event-stripe ${eventKlasse(e.typ)}-stripe" style="background:${eventFarbe(e.typ)}"></div>
-              <div class="event-body">
-                <div class="event-head">
-                  <span class="event-typ-badge ${badgeKlasse(e.typ)}">${typLabel(e.typ)}</span>
-                  <button class="event-del" onclick="eventLoeschen('${e.id}')" title="Löschen">✕</button>
-                </div>
-                <div class="event-titel">${e.titel}</div>
-                <div class="event-datum">
-                  ${datDE(e.von,{weekday:'short',day:'2-digit',month:'long'})} –
-                  ${datDE(e.bis,{weekday:'short',day:'2-digit',month:'long',year:'numeric'})}
-                </div>
-                ${e.beschreibung ? `<div class="event-desc">${e.beschreibung}</div>` : ''}
-              </div>
-            </div>`;
-        });
-        html += '</div>';
-      });
-      el.innerHTML = html;
-    }
+/* ── VEREIN ── */
+RENDERERS['verein_leitbild'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🎯 Leitbild</h2></div>
+    <div class="static-content">
+      <h3>Unsere Grundwerte</h3>
+      <p>Die Ferienhütte ist ein Ort der Begegnung, Erholung und Gemeinschaft für die gesamte Familie. Wir pflegen unsere Traditionen und geben sie von Generation zu Generation weiter.</p>
+      <h3>Unsere Ziele</h3>
+      <ul><li>Erhalt und Pflege der Hütte für kommende Generationen</li>
+        <li>Förderung des Zusammenhalts in der Familie</li>
+        <li>Gemeinsame Entscheidungen im Konsens</li>
+        <li>Offene und transparente Kommunikation</li></ul>
+      <p style="margin-top:1rem;font-size:.78rem;font-style:italic;color:var(--muted);">
+        💡 Diesen Text bitte anpassen. Einfach den HTML direkt bearbeiten.</p>
+    </div>`;
+};
+RENDERERS['verein_satzung'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>📜 Satzung</h2></div>
+    ${renderFileViewer('verein','satzung')}`;
+};
+RENDERERS['verein_hymne'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🎵 Vereinshymne</h2></div>
+    <div class="hymne-box">
+      <em>Platzhalter für eure Vereinshymne</em><br><br>
+      Dieser Text kann hier hinterlegt werden,<br>
+      Vers für Vers, wie es passt.<br>
+      <em>Im Schwarzwald, da steht unsre Hütte,</em><br>
+      Ein Ort für uns – und das für immer!
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);margin-top:1rem;">💡 Text im HTML ersetzen oder als Audio-Datei hochladen:</p>
+    ${renderFileViewer('verein','hymne')}`;
+};
+RENDERERS['verein_mitglieder'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>👥 Mitglieder</h2></div>
+    <div style="margin-bottom:1.5rem;">
+      <div class="fv-note">💡 Mitgliederliste – Daten aus Supabase (Tabelle "mitglieder") oder hier statisch hinterlegen.</div>
+      <div class="member-grid">
+        ${['Max Mustermann','Maria Mustermann','Peter Mustermann','Anna Schmidt'].map((n,i)=>`
+          <div class="member-card">
+            <div class="member-avatar">${n[0]}</div>
+            <div><div class="member-name">${n}</div>
+              <div class="member-role">${['Verwalter','Mitglied','Mitglied','Mitglied'][i]}</div>
+              <div class="member-contact">mustermann@familie.de</div></div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+};
+RENDERERS['verein_mvsammlung'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🏛 Mitgliederversammlung</h2></div>
+    ${renderFileViewer('verein','mitgliederversammlung')}`;
+};
+RENDERERS['verein_stammbaum'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🌳 Stammbaum</h2></div>
+    <div class="fv-note">💡 Stammbaum-Bilder oder PDF hochladen, oder externe Stammbaumsoftware verlinken.</div>
+    ${renderFileViewer('verein','stammbaum')}`;
+};
+RENDERERS['verein_vorstand'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>👔 Vorstand</h2></div>
+    <div class="kontakt-grid">
+      <div class="kcard"><div class="kicon">👤</div><div>
+        <div class="klabel">1. Vorsitzender</div><div class="kval">Max Mustermann</div>
+        <div class="klabel" style="margin-top:.5rem;">Telefon</div>
+        <div class="kval"><a href="tel:+491234567890">+49 123 456 7890</a></div></div></div>
+      <div class="kcard"><div class="kicon">👤</div><div>
+        <div class="klabel">2. Vorsitzende</div><div class="kval">Maria Mustermann</div>
+        <div class="klabel" style="margin-top:.5rem;">Telefon</div>
+        <div class="kval"><a href="tel:+491234567891">+49 123 456 7891</a></div></div></div>
+      <div class="kcard"><div class="kicon">💼</div><div>
+        <div class="klabel">Kassenwart</div><div class="kval">Peter Mustermann</div></div></div>
+      <div class="kcard"><div class="kicon">✍️</div><div>
+        <div class="klabel">Schriftführer</div><div class="kval">Anna Schmidt</div></div></div>
+    </div>`;
+};
+RENDERERS['verein_vorlagen'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>📋 Vorlagen</h2></div>
+    ${renderFileViewer('verein','vorlagen')}`;
+};
+RENDERERS['verein_infos'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>ℹ️ Allgemeine Informationen</h2></div>
+    <div class="two-col" style="margin-bottom:1.5rem;">
+      <div class="rcard"><h4>🔑 Anreise & Schlüssel</h4><ul>
+        <li>Anreise ab 15:00 Uhr</li><li>Schlüssel bei Familie Mustermann</li>
+        <li>Abreise bis 11:00 Uhr</li><li>Schlüssel im Briefkasten hinterlassen</li></ul></div>
+      <div class="rcard"><h4>🧹 Reinigung</h4><ul>
+        <li>Hütte besenrein hinterlassen</li><li>Bettwäsche in den Wäschebeutel</li>
+        <li>Kühlschrank leeren</li><li>Müll zur Tonne bringen</li></ul></div>
+      <div class="rcard warn"><h4>⚠️ Wichtige Hinweise</h4><ul>
+        <li>Kamin nur mit trockenem Holz</li><li>Lüftung bei Abreise schließen</li>
+        <li>Wasser im Winter absperren</li><li>Notfall Heizung: 0800 123 456</li></ul></div>
+      <div class="rcard"><h4>🐾 Sonstiges</h4><ul>
+        <li>Haustiere willkommen</li><li>Rauchen nur im Außenbereich</li>
+        <li>WLAN-Passwort: HütteXXXX</li><li>Holz im Schuppen nachfüllen</li></ul></div>
+    </div>
+    <div class="sec-head"><h2>Weitere Dokumente</h2></div>
+    ${renderFileViewer('verein','allgemein')}`;
+};
 
-    // ══════════════════════════════════════
-    //  VERANSTALTUNG SPEICHERN
-    // ══════════════════════════════════════
-    async function eventSpeichern() {
-      const titel = document.getElementById('ev-titel').value.trim();
-      const typ   = document.getElementById('ev-typ').value;
-      const von   = document.getElementById('ev-von').value;
-      const bis   = document.getElementById('ev-bis').value;
-      const beschr = document.getElementById('ev-beschreibung').value.trim();
-      const stEl  = document.getElementById('ev-status');
+/* ── AKTIVITÄTEN: KALENDER (read-only) ── */
+RENDERERS['aktivitaeten_kalender'] = async (area) => {
+  area.innerHTML=`
+    <div class="sec-head"><h2>📅 Kalenderübersicht</h2></div>
+    <div style="background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.5rem;">
+      <div id="akt-kal"></div>
+    </div>
+    <div class="ds-card" style="margin-top:1.2rem;max-width:360px;">
+      <div class="ds-card-title">Legende</div>
+      <div class="leg"><div class="leg-dot" style="background:#8b4513"></div> Belegung</div>
+      <div class="leg"><div class="leg-dot" style="background:#2c5f8a"></div> Familienversammlung</div>
+      <div class="leg"><div class="leg-dot" style="background:#2d4a2d"></div> Arbeitswochenende</div>
+      <div class="leg"><div class="leg-dot" style="background:#7a6a58"></div> Sonstige</div>
+    </div>`;
 
-      if (!titel || !von || !bis) { stEl.textContent = '⚠ Bitte Titel und Datum ausfüllen.'; stEl.style.color='var(--red)'; return; }
-      if (von >= bis) { stEl.textContent = '⚠ Enddatum muss nach Startdatum liegen.'; stEl.style.color='var(--red)'; return; }
+  mainKal = new FullCalendar.Calendar(document.getElementById('akt-kal'), {
+    initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
+    weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW', events:[],
+    headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},
+    buttonText:{today:'Heute',month:'Monat',list:'Liste'}
+  });
+  mainKal.render();
 
-      const btn = document.getElementById('ev-btn');
-      btn.disabled = true; btn.textContent = 'Speichern…';
-      stEl.textContent = ''; 
+  const [{data:bel},{data:events}] = await Promise.all([
+    db.from('belegungen').select('*'),
+    db.from('special_events').select('*')
+  ]);
+  (bel||[]).forEach(b=>mainKal.addEvent({title:b.name,start:b.von,end:fcEnd(b.bis),backgroundColor:'#8b4513',borderColor:'#8b4513'}));
+  (events||[]).forEach(e=>mainKal.addEvent({title:e.titel,start:e.von,end:fcEnd(e.bis),backgroundColor:eventFarbe(e.typ),borderColor:eventFarbe(e.typ)}));
+};
 
-      const { error } = await db.from('special_events').insert({
-        titel, typ, von, bis,
-        beschreibung: beschr || null,
-        jahr: parseInt(von.slice(0,4))
-      });
+/* ── AKTIVITÄTEN: TERMINE (Veranstaltungen) ── */
+RENDERERS['aktivitaeten_termine'] = async (area) => {
+  area.innerHTML=`
+    <div class="sec-head"><h2>🎉 Jahresveranstaltungen</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 290px;gap:1.4rem;align-items:start;">
+      <div id="ev-liste"><span class="spin">⏳</span></div>
+      <div class="info-card blue" style="position:sticky;top:1.5rem;">
+        <h3>➕ Veranstaltung erstellen</h3>
+        <div class="form-group"><label>Titel</label>
+          <input type="text" id="ev-titel" placeholder="z.B. Familienversammlung 2026"/></div>
+        <div class="form-group"><label>Typ</label>
+          <select id="ev-typ">
+            <option value="familienversammlung">👨‍👩‍👧‍👦 Familienversammlung</option>
+            <option value="arbeitswochenende">🔨 Arbeitswochenende</option>
+            <option value="sonstige">📌 Sonstige</option>
+          </select></div>
+        <div class="form-row">
+          <div class="form-group"><label>Von</label><input type="date" id="ev-von"/></div>
+          <div class="form-group"><label>Bis</label><input type="date" id="ev-bis"/></div>
+        </div>
+        <div class="form-group"><label>Beschreibung</label>
+          <textarea id="ev-beschr" rows="3" placeholder="Optional …"></textarea></div>
+        <button class="btn btn-blue btn-w" onclick="saveEvent()">Speichern</button>
+        <div class="form-status" id="ev-status"></div>
+      </div>
+    </div>`;
+  loadEvents();
+};
 
-      btn.disabled = false; btn.textContent = 'Veranstaltung speichern';
+async function loadEvents() {
+  const el=document.getElementById('ev-liste');if(!el)return;
+  const {data:events}=await db.from('special_events').select('*').order('von');
+  const jetzt=HEUTE.toISOString().slice(0,10);
+  if(!events||!events.length){el.innerHTML='<div class="leer">Noch keine Veranstaltungen.</div>';return;}
+  const gruppen={};
+  events.forEach(e=>{const j=e.jahr||new Date(e.von+'T12:00:00').getFullYear();(gruppen[j]=gruppen[j]||[]).push(e);});
+  el.innerHTML=Object.keys(gruppen).sort().reverse().map(j=>`
+    <div style="font-size:.68rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;">${j}</div>
+    ${gruppen[j].map(e=>`
+      <div class="event-card">
+        <div class="event-stripe" style="background:${eventFarbe(e.typ)}"></div>
+        <div class="event-body">
+          <div class="event-head">
+            <span class="badge badge-${eventKlasse(e.typ).replace('ev-','')}">${typLabel(e.typ)}</span>
+            <button class="event-del" onclick="deleteEvent('${e.id}')">✕</button>
+          </div>
+          <div class="event-titel">${e.titel}</div>
+          <div class="event-datum">${datDE(e.von,{weekday:'short',day:'2-digit',month:'long'})} – ${datDE(e.bis,{weekday:'short',day:'2-digit',month:'long',year:'numeric'})}</div>
+          ${e.beschreibung?`<div class="event-desc">${e.beschreibung}</div>`:''}
+        </div>
+      </div>`).join('')}`).join('');
+}
+async function saveEvent() {
+  const titel=document.getElementById('ev-titel').value.trim();
+  const typ=document.getElementById('ev-typ').value;
+  const von=document.getElementById('ev-von').value;
+  const bis=document.getElementById('ev-bis').value;
+  const beschr=document.getElementById('ev-beschr').value.trim();
+  const st=document.getElementById('ev-status');
+  if(!titel||!von||!bis){st.textContent='⚠ Pflichtfelder ausfüllen.';st.className='form-status err';return;}
+  if(von>=bis){st.textContent='⚠ Enddatum muss nach Startdatum liegen.';st.className='form-status err';return;}
+  const {error}=await db.from('special_events').insert({titel,typ,von,bis,beschreibung:beschr||null,jahr:parseInt(von.slice(0,4))});
+  if(error){st.textContent='✗ '+error.message;st.className='form-status err';return;}
+  ['ev-titel','ev-von','ev-bis','ev-beschr'].forEach(id=>document.getElementById(id).value='');
+  st.textContent='✓ Gespeichert!';st.className='form-status ok';setTimeout(()=>st.textContent='',3000);
+  loadEvents();
+}
+async function deleteEvent(id){
+  if(!confirm('Veranstaltung löschen?'))return;
+  await db.from('special_events').delete().eq('id',id);loadEvents();
+}
 
-      if (error) { stEl.textContent = '✗ Fehler: ' + error.message; stEl.style.color='var(--red)'; return; }
+/* ── AKTIVITÄTEN: ÜBERNACHTUNGEN (full booking) ── */
+RENDERERS['aktivitaeten_uebernachtungen'] = async (area) => {
+  area.innerHTML=`
+    <div class="sec-head"><h2>🏕 Übernachtungen eintragen</h2></div>
+    <div id="bel-statusbar" class="statusbar laden"><span class="spin">⏳</span> Verbinde…</div>
+    <div class="kal-layout">
+      <div id="kal-container"><div id="kal-main"></div></div>
+      <div>
+        <div class="info-card">
+          <h3>➕ Belegung eintragen</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Von <span class="req">*</span></label>
+              <input type="date" id="b-von"/></div>
+            <div class="form-group"><label>Bis (Abreisetag) <span class="req">*</span></label>
+              <input type="date" id="b-bis"/></div>
+          </div>
+          <div class="form-group"><label>Name / Vertreter <span class="req">*</span></label>
+            <input type="text" id="b-name" placeholder="z.B. Familie Müller"/></div>
+          <div class="form-row">
+            <div class="form-group"><label>Erwachsene <span class="req">*</span></label>
+              <input type="number" id="b-erw" min="0" value="2"/></div>
+            <div class="form-group"><label>Kinder</label>
+              <input type="number" id="b-kind" min="0" value="0"/></div>
+          </div>
+          <div class="form-group"><label>Schlafplätze <span class="req">*</span></label>
+            <input type="number" id="b-schlaf" min="1" value="2" oninput="schlafCheck()"/>
+            <div class="warn-box" id="warn-schlaf">⚠️ Max. ${CONFIG.maxSchlafplaetze} Schlafplätze! Bitte vorher absprechen.</div>
+          </div>
+          <div class="form-group"><label>E-Mail <span class="req">*</span></label>
+            <input type="email" id="b-email" placeholder="max@beispiel.de"/></div>
+          <div class="form-group"><label>Telefon</label>
+            <input type="tel" id="b-tel" placeholder="+49 123 …"/></div>
+          <button class="btn btn-rust btn-w" id="btn-buchen" onclick="buchungSpeichern()">Belegung speichern</button>
+        </div>
+        <div class="info-card pine">
+          <h3>📋 Alle Belegungen</h3>
+          <div class="bel-liste" id="bel-liste"><div class="leer">Lädt…</div></div>
+        </div>
+      </div>
+    </div>`;
 
-      ['ev-titel','ev-von','ev-bis','ev-beschreibung'].forEach(id => document.getElementById(id).value='');
-      stEl.textContent = '✓ Gespeichert!'; stEl.style.color='var(--pine)';
-      setTimeout(() => stEl.textContent='', 3000);
-      alleNeuLaden();
-    }
+  const kal = new FullCalendar.Calendar(document.getElementById('kal-main'), {
+    initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
+    weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW', events:[],
+    eventClick: async (info) => {
+      if(info.event.extendedProps.typ==='event') return;
+      if(confirm('"'+info.event.title+'" löschen?')) await buchungLoeschen(info.event.extendedProps.dbId);
+    },
+    headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},
+    buttonText:{today:'Heute',month:'Monat',list:'Liste'}
+  });
+  kal.render();
+  window._buchungsKal = kal;
+  ladeBelegungen();
+};
 
-    // ══════════════════════════════════════
-    //  VERANSTALTUNG LÖSCHEN
-    // ══════════════════════════════════════
-    async function eventLoeschen(id) {
-      if (!confirm('Veranstaltung wirklich löschen?')) return;
-      const { error } = await db.from('special_events').delete().eq('id', id);
-      if (error) { alert('Fehler: ' + error.message); return; }
-      alleNeuLaden();
-    }
+function schlafCheck(){
+  const v=parseInt(document.getElementById('b-schlaf')?.value)||0;
+  document.getElementById('warn-schlaf')?.classList.toggle('aktiv',v>CONFIG.maxSchlafplaetze);
+}
 
-    // ══════════════════════════════════════
-    //  INIT
-    // ══════════════════════════════════════
-    document.addEventListener('DOMContentLoaded', () => {
-      miniKal = new FullCalendar.Calendar(document.getElementById('mini-kal'), {
-        initialView:   'dayGridMonth',
-        locale:        'de',
-        firstDay:      1,
-        height:        'auto',
-        weekNumbers:   true,
-        weekNumberFormat: { week:'numeric' },
-        weekText:      'KW',
-        events:        [],
-        eventClick:    () => window.location.href = 'kalender.html',
-        headerToolbar: { left:'prev,next', center:'title', right:'' }
-      });
-      miniKal.render();
-      alleNeuLaden();
+function stBel(text,typ='ok'){
+  const el=document.getElementById('bel-statusbar');if(!el)return;
+  el.className='statusbar '+typ;el.innerHTML=text;
+}
+async function ladeBelegungen() {
+  try {
+    const jetzt=HEUTE.toISOString().slice(0,10);
+    const [{data:bel,error:e1},{data:events,error:e2}]=await Promise.all([
+      db.from('belegungen').select('*').order('von'),
+      db.from('special_events').select('*').order('von')
+    ]);
+    if(e1)throw e1;if(e2)throw e2;
+    const kal=window._buchungsKal;if(!kal)return;
+    kal.removeAllEvents();
+    (bel||[]).forEach(b=>{const p=(b.erwachsene||0)+(b.kinder||0);kal.addEvent({
+      id:'b-'+b.id,title:b.name+(p?' ('+p+' P.)':''),start:b.von,end:fcEnd(b.bis),
+      backgroundColor:'#8b4513',borderColor:'#8b4513',extendedProps:{typ:'belegung',dbId:b.id}});});
+    (events||[]).forEach(e=>kal.addEvent({
+      id:'e-'+e.id,title:'📌 '+e.titel,start:e.von,end:fcEnd(e.bis),
+      backgroundColor:eventFarbe(e.typ),borderColor:eventFarbe(e.typ),extendedProps:{typ:'event'}}));
+    // Liste
+    const el=document.getElementById('bel-liste');if(!el)return;
+    const bev=[...(bel||[]).filter(b=>b.bis>jetzt).map(b=>({...b,_art:'bel'})),
+      ...(events||[]).filter(e=>e.bis>jetzt).map(e=>({...e,name:e.titel,_art:'event'}))
+    ].sort((a,b)=>a.von.localeCompare(b.von));
+    const verg=(bel||[]).filter(b=>b.bis<=jetzt).sort((a,b)=>b.von.localeCompare(a.von)).slice(0,5);
+    let html='';
+    if(bev.length){html+='<div style="font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;">Bevorstehend</div>';
+      html+=bev.map(b=>belEintragHTML(b)).join('');}
+    if(verg.length){html+='<div style="font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:.8rem 0 .4rem;">Vergangen</div>';
+      html+=verg.map(b=>belEintragHTML(b,true)).join('');}
+    if(!html)html='<div class="leer">Noch keine Einträge.</div>';
+    el.innerHTML=html;
+    stBel('✓ Verbunden · '+(bel||[]).length+' Belegung(en) geladen');
+  } catch(e){stBel('✗ Fehler: '+e.message,'fehler');}
+}
+function belEintragHTML(b,alt=false){
+  if(b._art==='event') return `<div class="bel-item event-${b.typ==='familienversammlung'?'fam':b.typ==='arbeitswochenende'?'arb':''}" style="opacity:${alt?.7:1}">
+    <div class="bel-head"><div><div class="bel-name">📌 ${b.name}</div>
+    <div class="bel-datum">${datDE(b.von,{day:'2-digit',month:'short'})} – ${datDE(b.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div></div></div>`;
+  const p=[];if(b.erwachsene)p.push(b.erwachsene+' Erw.');if(b.kinder)p.push(b.kinder+' Kinder');
+  const sw=b.schlafplaetze>CONFIG.maxSchlafplaetze?`<span style="color:var(--warn)">⚠️ ${b.schlafplaetze} Schlafpl.</span>`:b.schlafplaetze+' Schlafpl.';
+  return `<div class="bel-item" style="opacity:${alt?.7:1}">
+    <div class="bel-head"><div><div class="bel-name">${b.name}</div>
+      <div class="bel-datum">${datDE(b.von,{day:'2-digit',month:'short'})} – ${datDE(b.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>
+      ${!alt?`<button class="bel-del" onclick="buchungLoeschen('${b.id}')">✕</button>`:''}
+    </div>
+    <div class="bel-details">${p.length?p.join(', ')+' · ':''}${sw}<br>📧 ${b.email}${b.telefon?' · 📞 '+b.telefon:''}</div>
+  </div>`;
+}
+async function buchungSpeichern(){
+  const name=document.getElementById('b-name')?.value.trim();
+  const von=document.getElementById('b-von')?.value;
+  const bis=document.getElementById('b-bis')?.value;
+  const erw=parseInt(document.getElementById('b-erw')?.value)||0;
+  const kind=parseInt(document.getElementById('b-kind')?.value)||0;
+  const schlaf=parseInt(document.getElementById('b-schlaf')?.value)||0;
+  const email=document.getElementById('b-email')?.value.trim();
+  const tel=document.getElementById('b-tel')?.value.trim();
+  const fehler=[];
+  if(!name)fehler.push('Name fehlt');if(!von||!bis)fehler.push('Datum fehlt');
+  if(von&&bis&&von>=bis)fehler.push('Enddatum nach Startdatum');
+  if(!email||!email.includes('@'))fehler.push('Gültige E-Mail');if(schlaf<1)fehler.push('Schlafplätze fehlen');
+  if(fehler.length){stBel('✗ '+fehler.join(' · '),'fehler');return;}
+  const btn=document.getElementById('btn-buchen');btn.disabled=true;btn.textContent='Speichern…';
+  stBel('<span class="spin">⏳</span> Wird gespeichert…','laden');
+  const {error}=await db.from('belegungen').insert({name,von,bis,erwachsene:erw,kinder:kind,schlafplaetze:schlaf,email,telefon:tel||null});
+  btn.disabled=false;btn.textContent='Belegung speichern';
+  if(error){stBel('✗ Fehler: '+error.message,'fehler');return;}
+  ['b-name','b-von','b-bis','b-email','b-tel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('b-erw').value='2';document.getElementById('b-kind').value='0';document.getElementById('b-schlaf').value='2';
+  stBel('✓ Belegung gespeichert!');ladeBelegungen();
+}
+async function buchungLoeschen(id){
+  if(!confirm('Belegung löschen?'))return;
+  await db.from('belegungen').delete().eq('id',id);ladeBelegungen();
+}
 
-      // Nav aktiv beim Scrollen
-      const links = document.querySelectorAll('.sidebar nav a');
-      const secs  = document.querySelectorAll('[id]');
-      window.addEventListener('scroll', () => {
-        let cur='';
-        secs.forEach(s => { if (window.scrollY >= s.offsetTop-140) cur=s.id; });
-        links.forEach(a => a.classList.toggle('active', a.getAttribute('href')==='#'+cur));
-      });
-    });
-  </script>
+/* ── AKTIVITÄTEN: weitere ── */
+RENDERERS['aktivitaeten_freizeittipps'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🏔 Freizeittipps</h2></div>
+    ${[
+      ['Wanderung Feldberg','ca. 3h · Mittel','Der höchste Berg im Schwarzwald – atemberaubende Aussicht!','🏕'],
+      ['Titisee','ca. 20 Min.','Wunderschöner See mit Strandbad, Tretbootverleih und Restaurants.','🚣'],
+      ['Triberg Wasserfälle','ca. 30 Min.','Höchste Wasserfälle Deutschlands. Immer ein Erlebnis!','💧'],
+      ['Europa-Park Rust','ca. 1h','Deutschlands größter Freizeitpark für Groß und Klein.','🎢'],
+    ].map(([t,m,d,i])=>`<div class="tip-card"><div class="tip-accent"></div><div class="tip-body">
+      <div class="tip-title">${i} ${t}</div><div class="tip-meta">⏱ ${m}</div>
+      <div class="tip-desc">${d}</div></div></div>`).join('')}
+    <div style="margin-top:1rem;"><div class="fv-note">💡 Eigene Tipps hier ergänzen oder Dateien (Wanderkarten, PDFs) hochladen:</div>
+    ${renderFileViewer('aktivitaeten','freizeittipps')}</div>`;
+};
+RENDERERS['aktivitaeten_projekte'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🔨 Projekte</h2></div>
+    <div class="fv-note">Laufende und geplante Projekte rund um die Hütte.</div>
+    ${renderFileViewer('aktivitaeten','projekte')}`;
+};
+RENDERERS['aktivitaeten_todos'] = async (area) => {
+  area.innerHTML=`
+    <div class="sec-head"><h2>✅ Zu Erledigen</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:1.2rem;align-items:start;">
+      <div id="todo-liste"><span class="spin">⏳</span></div>
+      <div class="info-card blue">
+        <h3>+ Aufgabe hinzufügen</h3>
+        <div class="form-group"><label>Aufgabe <span class="req">*</span></label>
+          <input type="text" id="todo-text" placeholder="Was ist zu tun?"/></div>
+        <div class="form-group"><label>Priorität</label>
+          <select id="todo-prio"><option value="h">🔴 Hoch</option>
+            <option value="m" selected>🟡 Mittel</option><option value="l">🟢 Niedrig</option></select></div>
+        <button class="btn btn-blue btn-w" onclick="addTodo()">Hinzufügen</button>
+      </div>
+    </div>`;
+  loadTodos();
+};
+async function loadTodos(){
+  const el=document.getElementById('todo-liste');if(!el)return;
+  const {data,error}=await db.from('todos').select('*').order('created_at',{ascending:false}).catch(()=>({data:null,error:{}}));
+  if(!data){el.innerHTML=`<div class="fv-note">Tabelle "todos" anlegen:<br><code>CREATE TABLE todos (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, text text, prio char(1) DEFAULT 'm', done boolean DEFAULT false, created_at timestamptz DEFAULT now());</code></div>`;return;}
+  if(!data.length){el.innerHTML='<div class="leer">Keine Aufgaben. ✨</div>';return;}
+  el.innerHTML=data.map(t=>`
+    <div class="todo-item">
+      <div class="todo-check ${t.done?'done':''}" onclick="toggleTodo('${t.id}',${t.done})">${t.done?'✓':''}</div>
+      <div class="todo-text ${t.done?'done-text':''}">${t.text}</div>
+      <span class="todo-prio prio-${t.prio}">${t.prio==='h'?'Hoch':t.prio==='l'?'Niedrig':'Mittel'}</span>
+      <button class="todo-del" onclick="deleteTodo('${t.id}')">✕</button>
+    </div>`).join('');
+}
+async function addTodo(){
+  const text=document.getElementById('todo-text')?.value.trim();
+  const prio=document.getElementById('todo-prio')?.value;
+  if(!text)return;
+  await db.from('todos').insert({text,prio}).catch(()=>{});
+  document.getElementById('todo-text').value='';loadTodos();
+}
+async function toggleTodo(id,done){await db.from('todos').update({done:!done}).eq('id',id).catch(()=>{});loadTodos();}
+async function deleteTodo(id){await db.from('todos').delete().eq('id',id).catch(()=>{});loadTodos();}
+
+RENDERERS['aktivitaeten_umfragen'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>📊 Umfragen</h2></div>
+    <div class="fv-note">💡 Umfragen-Tool: Empfohlen wird <a href="https://www.strawpoll.me" target="_blank" style="color:var(--blue)">StrawPoll</a> oder
+    <a href="https://doodle.com" target="_blank" style="color:var(--blue)">Doodle</a> für einfache Terminumfragen.
+    Direktlink hier einfügen oder iframe einbetten.<br>
+    Alternativ: Eigene Umfrage-Tabelle in Supabase anlegen.</div>
+    ${renderFileViewer('aktivitaeten','umfragen')}`;
+};
+RENDERERS['aktivitaeten_abfall'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🗑 Abfallkalender</h2></div>
+    <div class="fv-note">💡 Abfallkalender der Gemeinde als PDF hochladen oder iFrame einbinden.
+    Viele Gemeinden bieten einen iCal-Export an → in FullCalendar integrierbar.</div>
+    ${renderFileViewer('aktivitaeten','abfall')}`;
+};
+
+/* ── BILDER & VIDEOS ── */
+function bilderRenderer(folder, label) {
+  return (area) => {
+    area.innerHTML=`<div class="sec-head"><h2>🖼 ${label}</h2></div>
+      <div class="fv-note" style="background:rgba(45,74,45,.07);border-color:rgba(45,74,45,.2);color:var(--pine);">
+        💡 Bilder per Drag & Drop hochladen. Fotos können direkt in der Galerie angesehen werden.
+        Videos bis 50 MB lassen sich direkt abspielen. Für größere Mengen: Bildserver verwenden (Button oben).
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('img-upload-${folder}').click()">
+        <input type="file" id="img-upload-${folder}" multiple accept="image/*,video/*,.pdf"
+          onchange="handleFileUpload('bilder','${folder}',this.files)"/>
+        <div class="uz-icon">📸</div>
+        <div class="uz-text">Bilder oder Videos hochladen</div>
+        <div class="uz-sub">JPG, PNG, MP4, MOV, PDF – Klicken oder per Drag & Drop</div>
+      </div>
+      <div class="fv-toolbar">
+        <button class="btn btn-rust" style="padding:.4rem .8rem;font-size:.73rem;"
+          onclick="loadBilder('${folder}')">↺ Aktualisieren</button>
+      </div>
+      <div id="bilder-grid-${folder}" class="photo-grid">
+        <div class="fv-empty">Auf "Aktualisieren" klicken um Dateien zu laden.</div>
+      </div>`;
+  };
+}
+['diverse','y2025','y2024','y2023','y2022','y2021','y2020','y2019','y2018','y2017','y2016','y2015','y2014','y2013'].forEach(y=>{
+  const lbl=y==='diverse'?'Diverse Bilder':y.replace('y','');
+  RENDERERS[`bilder_${y}`]=bilderRenderer(y,lbl);
+});
+
+async function loadBilder(folder) {
+  const el=document.getElementById(`bilder-grid-${folder}`);if(!el)return;
+  el.innerHTML='<div class="fv-empty"><span class="spin">⏳</span></div>';
+  try {
+    const {data,error}=await db.storage.from('bilder').list(folder,{sortBy:{column:'name'}});
+    if(error)throw error;
+    if(!data||!data.length){el.innerHTML='<div class="fv-empty">Noch keine Dateien in diesem Ordner.</div>';return;}
+    const imgs=data.filter(f=>['jpg','jpeg','png','gif','webp'].includes(f.name.split('.').pop().toLowerCase()));
+    const vids=data.filter(f=>['mp4','mov','webm'].includes(f.name.split('.').pop().toLowerCase()));
+    const rest=data.filter(f=>!imgs.includes(f)&&!vids.includes(f));
+    let html='';
+    if(imgs.length){html+=`<div class="media-section-head">📸 Bilder (${imgs.length})</div>`;
+      html+=imgs.map(f=>`<div class="photo-tile" onclick="previewFile('bilder','${folder}','${f.name}')">
+        <div class="photo-placeholder">🖼</div></div>`).join('');}
+    if(vids.length){html+=`<div class="media-section-head">🎬 Videos (${vids.length})</div>`;
+      html+=vids.map(f=>`<div class="video-tile" onclick="playVideo('bilder','${folder}','${f.name}')">
+        <div class="video-play">▶</div></div>`).join('');}
+    if(rest.length){html+=`<div class="media-section-head">📎 Sonstige Dateien (${rest.length})</div>`;
+      html+=rest.map(f=>`<div class="file-tile" onclick="previewFile('bilder','${folder}','${f.name}')">
+        <div class="ft-icon">${fileIcon(f.name)}</div><div class="ft-name">${f.name}</div></div>`).join('');}
+    el.innerHTML=html;
+  } catch(e){el.innerHTML=`<div class="fv-empty">Bucket "bilder" nicht vorhanden.<br><span style="font-size:.72rem;">In Supabase Storage anlegen.</span></div>`;}
+}
+function openBilderServer(e){
+  e.preventDefault();
+  if(CONFIG.bilderServerUrl==='https://EUER-BILDSERVER.de'){alert('Bitte CONFIG.bilderServerUrl in der index.html anpassen!');return;}
+  window.open(CONFIG.bilderServerUrl,'_blank');
+}
+
+/* ── ARCHIV ── */
+const ARCHIV_SUBS={protokolle:'Protokolle',mvdocs:'Mitgliederversammlungen',grundbuch:'Grundbuchauszüge',
+  vollmachten:'Vollmachten',datenschutz_dok:'Datenschutzerklärungen',aufnahme:'Aufnahmeanträge',
+  kuendigungen:'Kündigungen',behoerden_dok:'Behörden',anleitungen:'Bedienungsanleitungen',
+  briefe:'Briefe',diverse_dok:'Diverse Dokumente'};
+Object.keys(ARCHIV_SUBS).forEach(k=>{
+  RENDERERS[`archiv_${k}`]=(area)=>{area.innerHTML=`
+    <div class="sec-head"><h2>📁 ${ARCHIV_SUBS[k]}</h2></div>
+    ${renderFileViewer('archiv',k)}`; };
+});
+
+/* ── FINANZEN ── */
+RENDERERS['finanzen_bankverbindung'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🏦 Bankverbindung</h2></div>
+    <div class="bank-card"><h4>Hauptkonto</h4>
+      <div class="bank-row"><span class="bank-key">Kontoinhaber</span><span class="bank-val">Familie Mustermann</span></div>
+      <div class="bank-row"><span class="bank-key">IBAN</span><span class="bank-val">DE00 0000 0000 0000 0000 00</span></div>
+      <div class="bank-row"><span class="bank-key">BIC</span><span class="bank-val">XXXXXXXX</span></div>
+      <div class="bank-row"><span class="bank-key">Bank</span><span class="bank-val">Musterbank</span></div>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);">💡 Kontodaten bitte im HTML ersetzen.</p>`;
+};
+RENDERERS['finanzen_bundesbank'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🏛 Deutsche Bundesbank</h2></div>
+    <div class="fv-note">Dokumente und Korrespondenz mit der Deutschen Bundesbank.</div>
+    ${renderFileViewer('finanzen','bundesbank')}`;
+};
+RENDERERS['finanzen_skatbank'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🏦 Deutsche Skatbank</h2></div>
+    <div class="fv-note">Dokumente und Kontoauszüge der Deutschen Skatbank.</div>
+    ${renderFileViewer('finanzen','skatbank')}`;
+};
+['abrechnungen','belege','mahnungen','versicherungen'].forEach(k=>{
+  const labels={abrechnungen:'Hüttenabrechnungen',belege:'Rechnungsbelege',mahnungen:'Mahnungen',versicherungen:'Versicherungen'};
+  RENDERERS[`finanzen_${k}`]=(area)=>{area.innerHTML=`
+    <div class="sec-head"><h2>💰 ${labels[k]}</h2></div>
+    ${renderFileViewer('finanzen',k)}`; };
+});
+
+/* ── KONTAKT ── */
+RENDERERS['kontakt_gaestebuch'] = async (area) => {
+  area.innerHTML=`
+    <div class="sec-head"><h2>📝 Gästebuch</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:1.2rem;align-items:start;">
+      <div id="gb-eintraege"><span class="spin">⏳</span></div>
+      <div class="info-card blue">
+        <h3>✍️ Eintrag hinterlassen</h3>
+        <div class="form-group"><label>Name <span class="req">*</span></label>
+          <input type="text" id="gb-name" placeholder="Dein Name …"/></div>
+        <div class="form-group"><label>Bewertung</label>
+          <select id="gb-sterne">
+            <option>⭐⭐⭐⭐⭐</option><option>⭐⭐⭐⭐</option>
+            <option>⭐⭐⭐</option><option>⭐⭐</option><option>⭐</option>
+          </select></div>
+        <div class="form-group"><label>Nachricht <span class="req">*</span></label>
+          <textarea id="gb-text" rows="4" placeholder="Deine Erfahrungen …"></textarea></div>
+        <button class="btn btn-blue btn-w" onclick="saveGaestebuch()">Eintragen</button>
+        <div class="form-status" id="gb-status"></div>
+      </div>
+    </div>`;
+  loadGaestebuch();
+};
+async function loadGaestebuch(){
+  const el=document.getElementById('gb-eintraege');if(!el)return;
+  const {data,error}=await db.from('gaestebuch').select('*').order('created_at',{ascending:false}).catch(()=>({data:null,error:{}}));
+  if(!data){el.innerHTML=`<div class="fv-note">Tabelle "gaestebuch" anlegen:<br><code>CREATE TABLE gaestebuch (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, name text, sterne text, text text, created_at timestamptz DEFAULT now());</code></div>`;return;}
+  if(!data.length){el.innerHTML='<div class="leer">Noch keine Einträge.</div>';return;}
+  el.innerHTML=data.map(e=>`<div class="gb-entry">
+    <div class="gb-entry-head"><span class="gb-author">${e.name}</span>
+      <span class="gb-date">${datDE(e.created_at?.slice(0,10))}</span></div>
+    <div class="gb-stars">${e.sterne}</div>
+    <div class="gb-text">${e.text}</div>
+  </div>`).join('');
+}
+async function saveGaestebuch(){
+  const name=document.getElementById('gb-name')?.value.trim();
+  const sterne=document.getElementById('gb-sterne')?.value;
+  const text=document.getElementById('gb-text')?.value.trim();
+  const st=document.getElementById('gb-status');
+  if(!name||!text){st.textContent='⚠ Name und Nachricht erforderlich.';st.className='form-status err';return;}
+  const {error}=await db.from('gaestebuch').insert({name,sterne,text}).catch(e=>({error:e}));
+  if(error){st.textContent='✗ '+error.message;st.className='form-status err';return;}
+  document.getElementById('gb-name').value='';document.getElementById('gb-text').value='';
+  st.textContent='✓ Danke für deinen Eintrag!';st.className='form-status ok';
+  loadGaestebuch();
+}
+RENDERERS['kontakt_googlegroups'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>💬 GoogleGroups</h2></div>
+    <div class="kcard"><div class="kicon">🔗</div><div>
+      <div class="klabel">Familien-Gruppe</div>
+      <div class="kval"><a href="https://groups.google.com/EURE-GRUPPE" target="_blank">→ Zur Google Groups Seite</a></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem;">Bitte URL in der index.html anpassen.</div>
+    </div></div>`;
+};
+RENDERERS['kontakt_mail'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>📧 Mail</h2></div>
+    <div class="kontakt-grid">
+      <div class="kcard"><div class="kicon">📧</div><div>
+        <div class="klabel">Verwaltung</div>
+        <div class="kval"><a href="mailto:huette@familie.de">huette@familie.de</a></div></div></div>
+      <div class="kcard"><div class="kicon">📧</div><div>
+        <div class="klabel">Vorsitzender</div>
+        <div class="kval"><a href="mailto:max@familie.de">max@familie.de</a></div></div></div>
+    </div>`;
+};
+RENDERERS['kontakt_adressen'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>📍 Adressen</h2></div>
+    <div class="kontakt-grid">
+      <div class="kcard"><div class="kicon">🏠</div><div>
+        <div class="klabel">Hütte</div><div class="kval">Waldweg 7, 79123 Musterort</div></div></div>
+      <div class="kcard"><div class="kicon">👤</div><div>
+        <div class="klabel">Verwalter</div>
+        <div class="kval">Max Mustermann<br><span style="font-size:.85rem;">Musterstraße 1, 12345 Stadt</span></div></div></div>
+      <div class="kcard"><div class="kicon">📞</div><div>
+        <div class="klabel">Telefon</div>
+        <div class="kval"><a href="tel:+491234567890">+49 123 456 7890</a></div></div></div>
+      <div class="kcard"><div class="kicon">🚑</div><div>
+        <div class="klabel">Notruf Heizung</div>
+        <div class="kval"><a href="tel:0800123456">0800 123 456</a></div></div></div>
+    </div>`;
+};
+RENDERERS['kontakt_behoerden'] = (area) => {
+  area.innerHTML=`<div class="sec-head"><h2>🏛 Behörden</h2></div>
+    <div class="kontakt-grid">
+      <div class="kcard"><div class="kicon">🏛</div><div>
+        <div class="klabel">Gemeindeverwaltung</div>
+        <div class="kval"><a href="tel:+4976161234">+49 7616 1234</a></div></div></div>
+      <div class="kcard"><div class="kicon">🚒</div><div>
+        <div class="klabel">Feuerwehr</div>
+        <div class="kval"><a href="tel:112">112</a></div></div></div>
+      <div class="kcard"><div class="kicon">🚔</div><div>
+        <div class="klabel">Polizei</div>
+        <div class="kval"><a href="tel:110">110</a></div></div></div>
+      <div class="kcard"><div class="kicon">🏥</div><div>
+        <div class="klabel">Ärztlicher Notdienst</div>
+        <div class="kval"><a href="tel:116117">116 117</a></div></div></div>
+    </div>
+    <div style="margin-top:1.2rem;"><div class="fv-note">Weitere Behördendokumente:</div>
+    ${renderFileViewer('kontakt','behoerden')}</div>`;
+};
+
+/* ════════════════════════════════════════════
+   QUICK CONTACT
+════════════════════════════════════════════ */
+function toggleQC(){
+  qcOpen=!qcOpen;
+  document.getElementById('qc-form').classList.toggle('open',qcOpen);
+  document.getElementById('qc-toggle').textContent=qcOpen?'✕':'✉️';
+}
+async function sendQuickContact(){
+  const name=document.getElementById('qc-name').value.trim();
+  const msg=document.getElementById('qc-msg').value.trim();
+  const email=document.getElementById('qc-email').value.trim();
+  const st=document.getElementById('qc-status');
+  if(!name||!msg){st.textContent='⚠ Name und Nachricht ausfüllen.';return;}
+  const {error}=await db.from('kontakt_nachrichten').insert({name,email:email||null,nachricht:msg,gelesen:false})
+    .catch(()=>({error:{message:'Tabelle "kontakt_nachrichten" anlegen.'}}));
+  if(error){st.textContent='✗ '+error.message;return;}
+  document.getElementById('qc-name').value='';document.getElementById('qc-msg').value='';
+  document.getElementById('qc-email').value='';
+  st.textContent='✓ Nachricht gesendet!';setTimeout(()=>{st.textContent='';},3000);
+}
+
+/* ════════════════════════════════════════════
+   BACKGROUND IMAGE CHANGER
+════════════════════════════════════════════ */
+function changeBgImage(){
+  const url=prompt('Hintergrundbild-URL eingeben (leer = kein Bild):', CONFIG.bgImages[curSection]||'');
+  if(url===null)return;
+  CONFIG.bgImages[curSection]=url;
+  const hdrBg=document.getElementById('page-hdr-bg');
+  if(url){hdrBg.style.backgroundImage=`url('${url}')`;hdrBg.style.backgroundSize='cover';hdrBg.style.backgroundPosition='center';}
+  else{hdrBg.style.backgroundImage='';}
+}
+
+/* ════════════════════════════════════════════
+   LEGAL MODALS
+════════════════════════════════════════════ */
+const LEGAL_CONTENT = {
+  impressum: {
+    title:'Impressum',
+    body:`<h4>Angaben gemäß § 5 TMG</h4>
+      <p>Max Mustermann<br>Musterstraße 1<br>12345 Musterstadt</p>
+      <h4>Kontakt</h4>
+      <p>Telefon: +49 123 456 7890<br>E-Mail: huette@familie.de</p>
+      <h4>Hinweis</h4>
+      <p>Diese Website dient der familieninternen Verwaltung und ist nicht öffentlich zugänglich.
+      Alle Inhalte sind ausschließlich für Familienmitglieder bestimmt.</p>
+      <p style="font-size:.75rem;font-style:italic;">💡 Bitte durch echte Angaben ersetzen.</p>`
+  },
+  datenschutz: {
+    title:'Datenschutzerklärung',
+    body:`<h4>1. Verantwortlicher</h4>
+      <p>Verantwortlich für die Datenverarbeitung ist Max Mustermann (Kontakt siehe Impressum).</p>
+      <h4>2. Welche Daten wir speichern</h4>
+      <p>Im Rahmen der Nutzung dieser Website werden folgende Daten gespeichert:</p>
+      <p>• Buchungsdaten (Name, Zeitraum, Personenanzahl, E-Mail, Telefon)<br>
+      • Veranstaltungsdaten<br>• Gästebucheinträge<br>• To-Do-Einträge<br>• Nachrichten</p>
+      <h4>3. Rechtsgrundlage</h4>
+      <p>Die Verarbeitung erfolgt auf Grundlage des Art. 6 Abs. 1 lit. a DSGVO (Einwilligung)
+      sowie Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an familiärer Organisation).</p>
+      <h4>4. Datenspeicherung</h4>
+      <p>Daten werden über Supabase (Supabase Inc., 970 Trestle Glen Rd, Oakland, CA 94610, USA)
+      gespeichert. Weitere Informationen: supabase.com/privacy</p>
+      <h4>5. Ihre Rechte</h4>
+      <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung Ihrer
+      gespeicherten Daten. Wenden Sie sich hierzu an den Verantwortlichen.</p>`
+  },
+  cookies: {
+    title:'Cookie-Richtlinie',
+    body:`<h4>Was sind Cookies?</h4>
+      <p>Cookies sind kleine Textdateien, die auf Ihrem Gerät gespeichert werden.</p>
+      <h4>Welche Cookies nutzen wir?</h4>
+      <p><strong>Notwendige Cookies</strong><br>
+      Session-Cookie für den Passwort-Login (sessionStorage – wird beim Schließen des Browsers gelöscht).</p>
+      <p><strong>Funktionale Cookies</strong><br>
+      Speichert Ihre Cookie-Präferenzen (localStorage). Kein Tracking.</p>
+      <p><strong>Eingebettete Inhalte</strong><br>
+      Nur nach Ihrer Einwilligung: Cookies von Drittanbietern (z.B. Facebook, YouTube)
+      beim Anzeigen eingebetteter Inhalte.</p>
+      <h4>Cookies verwalten</h4>
+      <p>Sie können Ihre Einstellungen jederzeit unter
+      "<a onclick="openCookieModal();closeLegal();" style="cursor:pointer;color:var(--rust);">Cookie-Einstellungen</a>"
+      in der Fußzeile anpassen.</p>`
+  }
+};
+function openLegal(type){
+  const c=LEGAL_CONTENT[type];if(!c)return;
+  document.getElementById('lm-title').textContent=c.title;
+  document.getElementById('lm-body').innerHTML=c.body;
+  document.getElementById('legal-modal').classList.add('open');
+}
+function closeLegal(){document.getElementById('legal-modal').classList.remove('open');}
+document.getElementById('legal-modal').addEventListener('click',function(e){
+  if(e.target===this)closeLegal();
+});
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+function initApp(){
+  const {createClient}=supabase;
+  db=createClient(CONFIG.supabaseUrl,CONFIG.supabaseKey);
+
+  document.getElementById('current-date').textContent=
+    HEUTE.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  buildSidebar();
+  goto('uebersicht');
+}
+
+// Keyboard: Enter to login
+document.getElementById('pw-input')?.addEventListener('keydown',e=>{
+  if(e.key==='Enter')checkPw();
+});
+</script>
 </body>
 </html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hüttenbuch – Übersicht</title>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --ink:     #1e1510;
+      --paper:   #f7f2ea;
+      --aged:    #e8dfc8;
+      --rust:    #8b4513;
+      --gold:    #b8860b;
+      --pine:    #2d4a2d;
+      --blue:    #2c5f8a;
+      --muted:   #7a6a58;
+      --divider: #d4c9b0;
+      --red:     #c0392b;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink);
+      background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(180,160,120,.07) 28px,rgba(180,160,120,.07) 29px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position:fixed; top:0; left:0; bottom:0; width:220px;
+      background:var(--ink); display:flex; flex-direction:column;
+      padding:2.5rem 1.8rem; z-index:100; border-right:3px solid var(--rust);
+    }
+    .sidebar-logo { font-family:'Crimson Pro',serif; font-size:1.4rem; color:var(--aged); line-height:1.3; margin-bottom:.4rem; }
+    .sidebar-logo span { color:var(--gold); font-style:italic; }
+    .sidebar-sub { font-size:.65rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:3rem; }
+    .sidebar nav { display:flex; flex-direction:column; gap:.2rem; }
+    .sidebar nav a {
+      display:flex; align-items:center; gap:.75rem; padding:.6rem .8rem;
+      color:rgba(232,223,200,.65); text-decoration:none; font-size:.82rem;
+      letter-spacing:.04em; border-radius:3px; transition:background .15s,color .15s;
+    }
+    .sidebar nav a:hover,.sidebar nav a.active { background:rgba(139,69,19,.25); color:var(--aged); }
+    .sidebar nav a .ni { font-size:1rem; width:1.2rem; text-align:center; }
+    .sidebar-footer { margin-top:auto; font-size:.65rem; color:rgba(122,106,88,.4); letter-spacing:.1em; }
+
+    /* ── MAIN ── */
+    .main { margin-left:220px; min-height:100vh; }
+    .page-header {
+      padding:3.5rem 3.5rem 2rem; border-bottom:1px solid var(--divider);
+      display:flex; justify-content:space-between; align-items:flex-end;
+    }
+    .page-header h1 { font-family:'Crimson Pro',serif; font-size:2.8rem; font-weight:300; color:var(--rust); }
+    .page-header h1 em { font-style:italic; color:var(--ink); }
+    .page-header p { color:var(--muted); font-size:.85rem; margin-top:.4rem; }
+    .header-date { font-size:.75rem; letter-spacing:.18em; color:var(--muted); text-transform:uppercase; text-align:right; }
+    .content { padding:3rem 3.5rem; }
+    .section { margin-bottom:4rem; }
+    .section-heading { display:flex; align-items:center; gap:1rem; margin-bottom:1.8rem; }
+    .section-heading::after { content:''; flex:1; height:1px; background:var(--divider); }
+    .section-heading h2 { font-family:'Crimson Pro',serif; font-size:1.4rem; font-weight:400; color:var(--rust); white-space:nowrap; }
+
+    /* ── STATS ── */
+    .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; }
+    .stat-card { background:#fff; border:1px solid var(--divider); border-top:3px solid var(--rust); border-radius:2px; padding:1.4rem 1.6rem; }
+    .stat-card.green { border-top-color:var(--pine); }
+    .stat-card.gold  { border-top-color:var(--gold); }
+    .stat-card.blue  { border-top-color:var(--blue); }
+    .slabel { font-size:.65rem; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
+    .sval { font-family:'Crimson Pro',serif; font-size:2.2rem; font-weight:300; color:var(--ink); line-height:1; }
+    .sval.sm { font-size:1.2rem; padding-top:.35rem; }
+    .snote { font-size:.75rem; color:var(--muted); margin-top:.3rem; }
+    .spin { display:inline-block; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── KALENDER WIDGET ── */
+    .kal-wrap { display:grid; grid-template-columns:1fr 260px; gap:1.5rem; align-items:start; }
+    #mini-kal-container { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem; }
+    .fc { font-family:'DM Sans',sans-serif; }
+    .fc .fc-toolbar-title { font-family:'Crimson Pro',serif; font-size:1.3rem; font-weight:400; color:var(--rust); }
+    .fc .fc-button-primary { background:var(--rust)!important; border-color:var(--rust)!important; font-size:.75rem!important; border-radius:2px!important; padding:.3rem .7rem!important; }
+    .fc .fc-button-primary:hover { background:#a0521a!important; }
+    .fc .fc-col-header-cell { background:var(--aged); }
+    .fc .fc-col-header-cell-cushion { font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:.4rem 0; }
+    .fc .fc-daygrid-day-number { font-size:.76rem; color:var(--muted); text-decoration:none; padding:3px 5px; }
+    .fc .fc-daygrid-day.fc-day-today { background:rgba(184,134,11,.1)!important; }
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number { color:var(--gold); font-weight:600; }
+    .fc-event { border-radius:2px!important; border:none!important; font-size:.72rem!important; padding:1px 3px!important; cursor:pointer; }
+    .fc .fc-daygrid-week-number { font-size:.62rem; color:var(--muted); opacity:.55; padding:2px 3px; }
+
+    /* Kalender Sidebar */
+    .kal-side { display:flex; flex-direction:column; gap:1rem; }
+    .kal-card { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem 1.3rem; }
+    .kal-card-title { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.7rem; }
+    .leg { display:flex; align-items:center; gap:.6rem; font-size:.8rem; color:var(--muted); margin-bottom:.4rem; }
+    .leg-dot { width:11px; height:11px; border-radius:2px; flex-shrink:0; }
+    .nb-item { padding:.5rem .7rem; background:var(--paper); border-radius:2px; border-left:3px solid var(--rust); font-size:.8rem; margin-bottom:.5rem; }
+    .nb-item.ev-fam { border-left-color:var(--blue); }
+    .nb-item.ev-arb { border-left-color:var(--pine); }
+    .nb-item.ev-son { border-left-color:var(--muted); }
+    .nb-name { font-weight:600; }
+    .nb-dat  { color:var(--muted); font-size:.72rem; margin-top:.1rem; }
+
+    /* ── VERANSTALTUNGEN ── */
+    .events-layout { display:grid; grid-template-columns:1fr 300px; gap:1.5rem; align-items:start; }
+
+    /* Event-Liste */
+    .event-liste { display:flex; flex-direction:column; gap:.8rem; }
+    .event-card {
+      background:#fff; border:1px solid var(--divider); border-radius:2px; overflow:hidden;
+      display:flex; align-items:stretch;
+    }
+    .event-stripe { width:4px; flex-shrink:0; }
+    .ev-fam-stripe  { background:var(--blue); }
+    .ev-arb-stripe  { background:var(--pine); }
+    .ev-son-stripe  { background:var(--muted); }
+    .event-body { padding:1rem 1.2rem; flex:1; }
+    .event-head { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; }
+    .event-typ-badge {
+      font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
+      padding:.2rem .5rem; border-radius:10px; font-weight:500; white-space:nowrap;
+    }
+    .badge-fam { background:rgba(44,95,138,.12); color:var(--blue); }
+    .badge-arb { background:rgba(45,74,45,.12);  color:var(--pine); }
+    .badge-son { background:rgba(122,106,88,.12); color:var(--muted); }
+    .event-del { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.85rem; transition:color .2s; }
+    .event-del:hover { color:var(--red); }
+    .event-titel { font-family:'Crimson Pro',serif; font-size:1.1rem; font-weight:600; margin:.25rem 0 .15rem; }
+    .event-datum { font-size:.78rem; color:var(--muted); }
+    .event-desc  { font-size:.82rem; color:var(--muted); margin-top:.4rem; line-height:1.65; }
+
+    .leer-events { font-size:.85rem; color:var(--muted); font-style:italic; padding:.5rem 0; }
+
+    /* Event-Formular */
+    .ev-form-card {
+      background:#fff; border:1px solid var(--divider);
+      border-top:3px solid var(--blue); border-radius:2px; padding:1.3rem;
+      position:sticky; top:1.5rem;
+    }
+    .ev-form-card h3 { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.9rem; }
+    .form-group { margin-bottom:.65rem; }
+    .form-group label { display:block; font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; padding:.5rem .6rem; border:1px solid var(--divider); border-radius:2px;
+      background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; font-size:.82rem;
+      transition:border-color .2s; resize:vertical;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--blue); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+    .btn { width:100%; padding:.6rem; border:none; border-radius:2px; font-family:'DM Sans',sans-serif; font-size:.8rem; letter-spacing:.1em; cursor:pointer; transition:background .2s; margin-top:.3rem; }
+    .btn-blue { background:var(--blue); color:#fff; }
+    .btn-blue:hover { background:#245080; }
+    .btn-blue:disabled { background:var(--muted); cursor:not-allowed; }
+
+    /* ── TIMELINE ── */
+    .timeline { position:relative; padding-left:2rem; }
+    .timeline::before { content:''; position:absolute; left:.4rem; top:0; bottom:0; width:2px; background:var(--divider); }
+    .titem { position:relative; margin-bottom:2.2rem; padding-left:1rem; }
+    .titem::before { content:''; position:absolute; left:-1.67rem; top:.45rem; width:10px; height:10px; background:var(--rust); border-radius:50%; border:2px solid var(--paper); }
+    .tyear { font-size:.68rem; letter-spacing:.25em; text-transform:uppercase; color:var(--gold); font-weight:500; margin-bottom:.2rem; }
+    .ttitle { font-family:'Crimson Pro',serif; font-size:1.1rem; font-weight:600; margin-bottom:.3rem; }
+    .ttext { font-size:.88rem; color:var(--muted); line-height:1.75; }
+
+    /* ── GALERIE ── */
+    .galerie-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+    .foto { aspect-ratio:4/3; overflow:hidden; border-radius:2px; border:1px solid var(--divider); }
+    .foto.big { grid-column:span 2; aspect-ratio:16/7; }
+    .foto img { width:100%; height:100%; object-fit:cover; filter:sepia(12%) brightness(.97); transition:filter .3s,transform .35s; }
+    .foto:hover img { filter:sepia(0%) brightness(1.02); transform:scale(1.04); }
+
+    /* ── REGELN ── */
+    .regeln-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .rcard { background:#fff; border:1px solid var(--divider); border-left:4px solid var(--pine); padding:1.2rem 1.4rem; border-radius:0 2px 2px 0; }
+    .rcard.warn { border-left-color:var(--gold); }
+    .rcard h4 { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.5rem; }
+    .rcard ul { list-style:none; font-size:.84rem; color:var(--muted); line-height:1.9; }
+    .rcard ul li::before { content:'— '; color:var(--rust); }
+
+    /* ── KONTAKT ── */
+    .kontakt-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .kcard { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.4rem; display:flex; gap:1rem; align-items:flex-start; }
+    .kicon { font-size:1.6rem; }
+    .klabel { font-size:.65rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+    .kval { font-family:'Crimson Pro',serif; font-size:1.05rem; color:var(--ink); }
+    .kval a { color:var(--rust); text-decoration:none; }
+    .kval a:hover { text-decoration:underline; }
+
+    /* ── FOOTER ── */
+    .site-footer { margin-left:220px; padding:1.2rem 3.5rem; border-top:1px solid var(--divider); font-size:.72rem; color:var(--muted); letter-spacing:.1em; display:flex; justify-content:space-between; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width:1150px) {
+      .kal-wrap { grid-template-columns:1fr; }
+      .events-layout { grid-template-columns:1fr; }
+    }
+    @media (max-width:900px) {
+      .sidebar { width:58px; padding:1.2rem .7rem; }
+      .sidebar-logo,.sidebar-sub,.sidebar nav a span,.sidebar-footer { display:none; }
+      .sidebar nav a { justify-content:center; padding:.7rem; }
+      .main,.site-footer { margin-left:58px; }
+      .content,.page-header { padding-left:1.5rem; padding-right:1.5rem; }
+      .regeln-grid,.kontakt-grid { grid-template-columns:1fr; }
+      .galerie-grid { grid-template-columns:1fr 1fr; }
+      .foto.big { grid-column:span 1; aspect-ratio:4/3; }
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">Hütten<span>buch</span></div>
+    <div class="sidebar-sub">Verwaltung</div>
+    <nav>
+      <a href="#uebersicht" class="active"><span class="ni">🏠</span><span>Übersicht</span></a>
+      <a href="#kalender"><span class="ni">📅</span><span>Kalender</span></a>
+      <a href="#veranstaltungen"><span class="ni">🎉</span><span>Veranstaltungen</span></a>
+      <a href="#geschichte"><span class="ni">📖</span><span>Geschichte</span></a>
+      <a href="#galerie"><span class="ni">🖼</span><span>Galerie</span></a>
+      <a href="#regeln"><span class="ni">📋</span><span>Regeln & Infos</span></a>
+      <a href="#kontakt"><span class="ni">✉️</span><span>Kontakt</span></a>
+    </nav>
+    <div class="sidebar-footer">© 2026 Familie Mustermann</div>
+  </aside>
+
+  <main class="main">
+    <header class="page-header" id="uebersicht">
+      <div>
+        <h1>Unsere <em>Ferienhütte</em></h1>
+        <p>Familieninterne Verwaltung · Schwarzwald</p>
+      </div>
+      <div class="header-date" id="current-date"></div>
+    </header>
+
+    <div class="content">
+
+      <!-- ── STATS ── -->
+      <section class="section">
+        <div class="section-heading"><span>📊</span><h2>Auf einen Blick</h2></div>
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="slabel">Belegungen <span id="stat-jahr">2026</span></div>
+            <div class="sval" id="stat-anz"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-anz-note">wird geladen…</div>
+          </div>
+          <div class="stat-card">
+            <div class="slabel">Personen gesamt</div>
+            <div class="sval" id="stat-pers"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-pers-note">wird geladen…</div>
+          </div>
+          <div class="stat-card green">
+            <div class="slabel">Nächste freie Woche</div>
+            <div class="sval sm" id="stat-frei"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-frei-note">wird geladen…</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="slabel">Nächste Belegung</div>
+            <div class="sval sm" id="stat-naechste"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-naechste-note">wird geladen…</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="slabel">Nächste Veranstaltung</div>
+            <div class="sval sm" id="stat-event"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-event-note">wird geladen…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── MINI KALENDER ── -->
+      <section class="section" id="kalender">
+        <div class="section-heading"><span>📅</span><h2>Belegungskalender</h2></div>
+        <div class="kal-wrap">
+          <div id="mini-kal-container">
+            <div id="mini-kal"></div>
+          </div>
+          <div class="kal-side">
+            <!-- Legende -->
+            <div class="kal-card">
+              <div class="kal-card-title">Legende</div>
+              <div class="leg"><div class="leg-dot" style="background:#8b4513"></div> Belegung</div>
+              <div class="leg"><div class="leg-dot" style="background:#2c5f8a"></div> Familienversammlung</div>
+              <div class="leg"><div class="leg-dot" style="background:#2d4a2d"></div> Arbeitswochenende</div>
+              <div class="leg"><div class="leg-dot" style="background:#7a6a58"></div> Sonstige Veranstaltung</div>
+              <div style="margin-top:1rem;">
+                <a href="kalender.html" style="display:inline-block;padding:.5rem 1rem;background:var(--rust);color:#fff;text-decoration:none;font-size:.78rem;letter-spacing:.08em;border-radius:2px;">
+                  → Buchen & Vollansicht
+                </a>
+              </div>
+            </div>
+            <!-- Nächste Termine -->
+            <div class="kal-card">
+              <div class="kal-card-title">Nächste Termine</div>
+              <div id="nb-liste"><div style="font-size:.8rem;color:var(--muted);font-style:italic;">Lädt…</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── VERANSTALTUNGEN ── -->
+      <section class="section" id="veranstaltungen">
+        <div class="section-heading"><span>🎉</span><h2>Jahresveranstaltungen</h2></div>
+        <div class="events-layout">
+          <!-- Liste -->
+          <div>
+            <div id="events-liste"><div style="font-size:.85rem;color:var(--muted);font-style:italic;"><span class="spin">⏳</span> Lädt…</div></div>
+          </div>
+          <!-- Formular -->
+          <div class="ev-form-card">
+            <h3>➕ Veranstaltung erstellen</h3>
+            <div class="form-group">
+              <label>Titel</label>
+              <input type="text" id="ev-titel" placeholder="z.B. Familienversammlung 2026"/>
+            </div>
+            <div class="form-group">
+              <label>Typ</label>
+              <select id="ev-typ">
+                <option value="familienversammlung">👨‍👩‍👧‍👦 Familienversammlung</option>
+                <option value="arbeitswochenende">🔨 Arbeitswochenende</option>
+                <option value="sonstige">📌 Sonstige Veranstaltung</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Von</label>
+                <input type="date" id="ev-von"/>
+              </div>
+              <div class="form-group">
+                <label>Bis</label>
+                <input type="date" id="ev-bis"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Beschreibung (optional)</label>
+              <textarea id="ev-beschreibung" rows="3" placeholder="Kurze Beschreibung…"></textarea>
+            </div>
+            <button class="btn btn-blue" id="ev-btn" onclick="eventSpeichern()">Veranstaltung speichern</button>
+            <div id="ev-status" style="font-size:.78rem;margin-top:.5rem;color:var(--muted);min-height:1.2em;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── GESCHICHTE ── -->
+      <section class="section" id="geschichte">
+        <div class="section-heading"><span>📖</span><h2>Geschichte der Hütte</h2></div>
+        <div class="timeline">
+          <div class="titem"><div class="tyear">1978</div><div class="ttitle">Der Bau</div><div class="ttext">Opa Hermann baut die Hütte in Eigenregie über zwei Sommer. Die Holzbalken stammen aus dem eigenen Waldstück, der Kamin wird gemeinsam mit den Nachbarn gemauert.</div></div>
+          <div class="titem"><div class="tyear">1985</div><div class="ttitle">Erste Erweiterung</div><div class="ttext">Ein zweites Schlafzimmer und die Veranda werden angebaut. Ab jetzt können auch Großfamilienurlaube stattfinden.</div></div>
+          <div class="titem"><div class="tyear">2003</div><div class="ttitle">Renovierung</div><div class="ttext">Neue Küche, neues Bad, neue Elektrik. Die Hütte erhält außerdem einen Holzofen im Wohnzimmer als Herzstück.</div></div>
+          <div class="titem"><div class="tyear">2019</div><div class="ttitle">Übergabe an die nächste Generation</div><div class="ttext">Die Verwaltung geht an Kinder und Enkel über. WLAN wird installiert. Die Tradition lebt weiter.</div></div>
+          <div class="titem"><div class="tyear">2026</div><div class="ttitle">Dieses digitale Hüttenbuch</div><div class="ttext">Zur besseren Koordination innerhalb der Familie entsteht diese Website. Wer wann? Ab jetzt alles auf einen Blick.</div></div>
+        </div>
+      </section>
+
+      <!-- ── GALERIE ── -->
+      <section class="section" id="galerie">
+        <div class="section-heading"><span>🖼</span><h2>Galerie</h2></div>
+        <div class="galerie-grid">
+          <div class="foto big"><img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=900&q=80" alt="Hütte"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Außen"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=500&q=80" alt="Umgebung"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1520637836993-a072955a31e1?w=500&q=80" alt="Innen"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80" alt="Wohnzimmer"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1586105449897-20b5efeb3233?w=500&q=80" alt="Natur"/></div>
+        </div>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:.8rem;">💡 Eigene Fotos: URL durch lokale Dateinamen ersetzen, z.B. <code>fotos/huette1.jpg</code></p>
+      </section>
+
+      <!-- ── REGELN ── -->
+      <section class="section" id="regeln">
+        <div class="section-heading"><span>📋</span><h2>Regeln & Wichtige Infos</h2></div>
+        <div class="regeln-grid">
+          <div class="rcard"><h4>🔑 Anreise & Schlüssel</h4><ul><li>Anreise ab 15:00 Uhr</li><li>Schlüssel bei Familie Mustermann</li><li>Abreise bis 11:00 Uhr</li><li>Schlüssel im Briefkasten</li></ul></div>
+          <div class="rcard"><h4>🧹 Reinigung</h4><ul><li>Hütte besenrein hinterlassen</li><li>Bettwäsche in den Wäschebeutel</li><li>Kühlschrank leeren</li><li>Müll zur Tonne bringen</li></ul></div>
+          <div class="rcard warn"><h4>⚠️ Wichtige Hinweise</h4><ul><li>Kamin nur mit trocknem Holz</li><li>Lüftung bei Abreise schließen</li><li>Wasser im Winter absperren</li><li>Notfall Heizung: 0800 123 456</li></ul></div>
+          <div class="rcard"><h4>🐾 Sonstiges</h4><ul><li>Haustiere willkommen</li><li>Rauchen nur im Außenbereich</li><li>WLAN-Passwort: HütteXXXX</li><li>Holz im Schuppen nachfüllen</li></ul></div>
+        </div>
+      </section>
+
+      <!-- ── KONTAKT ── -->
+      <section class="section" id="kontakt">
+        <div class="section-heading"><span>✉️</span><h2>Kontakt & Verwaltung</h2></div>
+        <div class="kontakt-grid">
+          <div class="kcard"><div class="kicon">👤</div><div><div class="klabel">Ansprechpartner</div><div class="kval">Max Mustermann</div></div></div>
+          <div class="kcard"><div class="kicon">📞</div><div><div class="klabel">Telefon</div><div class="kval"><a href="tel:+491234567890">+49 123 456 7890</a></div></div></div>
+          <div class="kcard"><div class="kicon">📧</div><div><div class="klabel">E-Mail</div><div class="kval"><a href="mailto:huette@familie.de">huette@familie.de</a></div></div></div>
+          <div class="kcard"><div class="kicon">📍</div><div><div class="klabel">Adresse</div><div class="kval">Waldweg 7, 79123 Musterort</div></div></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <span>Hüttenbuch · Familieninterne Verwaltung</span>
+    <span id="fyear"></span>
+  </footer>
+
+  <script>
+    // ══════════════════════════════════════
+    //  ⚙️  ZUGANGSDATEN
+    // ══════════════════════════════════════
+    const SUPABASE_URL = 'https://jvxlhlpqsiipplrwozje.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A';
+    // ══════════════════════════════════════
+
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const HEUTE = new Date();
+    let miniKal;
+
+    document.getElementById('current-date').textContent =
+      HEUTE.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    document.getElementById('fyear').textContent = '© ' + HEUTE.getFullYear();
+    document.getElementById('stat-jahr').textContent = HEUTE.getFullYear();
+
+    // ── Hilfsfunktionen ──
+    function datDE(str, opt) {
+      if (!str) return '–';
+      return new Date(str).toLocaleDateString('de-DE', opt || {day:'2-digit',month:'short',year:'numeric'});
+    }
+
+    function kwVonDatum(datStr) {
+      const d = new Date(datStr);
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() + 3 - (d.getDay()+6)%7);
+      const w = new Date(d.getFullYear(),0,4);
+      return 1 + Math.round(((d-w)/86400000 - 3 + (w.getDay()+6)%7)/7);
+    }
+
+    function naechsteFreieWoche(belegungen) {
+      const belegt = new Set();
+      belegungen.forEach(b => {
+        let d = new Date(b.von), end = new Date(b.bis);
+        while (d < end) { belegt.add(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); }
+      });
+      let mo = new Date(HEUTE);
+      mo.setDate(mo.getDate() + (8 - mo.getDay()) % 7 || 7);
+      for (let i=0; i<52; i++) {
+        let frei = true;
+        for (let t=0; t<7; t++) {
+          const d = new Date(mo); d.setDate(d.getDate()+t);
+          if (belegt.has(d.toISOString().slice(0,10))) { frei=false; break; }
+        }
+        if (frei) {
+          const so = new Date(mo); so.setDate(so.getDate()+6);
+          return { kw: kwVonDatum(mo.toISOString().slice(0,10)), von: mo.toISOString().slice(0,10), bis: so.toISOString().slice(0,10) };
+        }
+        mo.setDate(mo.getDate()+7);
+      }
+      return null;
+    }
+
+    function eventFarbe(typ) {
+      return typ === 'familienversammlung' ? '#2c5f8a'
+           : typ === 'arbeitswochenende'   ? '#2d4a2d'
+           : '#7a6a58';
+    }
+    function eventKlasse(typ) {
+      return typ === 'familienversammlung' ? 'ev-fam'
+           : typ === 'arbeitswochenende'   ? 'ev-arb'
+           : 'ev-son';
+    }
+    function badgeKlasse(typ) {
+      return typ === 'familienversammlung' ? 'badge-fam'
+           : typ === 'arbeitswochenende'   ? 'badge-arb'
+           : 'badge-son';
+    }
+    function typLabel(typ) {
+      return typ === 'familienversammlung' ? '👨‍👩‍👧‍👦 Familienversammlung'
+           : typ === 'arbeitswochenende'   ? '🔨 Arbeitswochenende'
+           : '📌 Sonstige Veranstaltung';
+    }
+
+    // ══════════════════════════════════════
+    //  ALLES LADEN
+    // ══════════════════════════════════════
+    async function alleNeuLaden() {
+      const jetzt   = HEUTE.toISOString().slice(0,10);
+      const jarAnf  = HEUTE.getFullYear() + '-01-01';
+      const jarEnd  = HEUTE.getFullYear() + '-12-31';
+
+      const [{ data: bel }, { data: events }] = await Promise.all([
+        db.from('belegungen').select('*').order('von'),
+        db.from('special_events').select('*').order('von')
+      ]);
+
+      // ── Stats ──
+      const belJahr = (bel||[]).filter(b => b.von >= jarAnf && b.von <= jarEnd);
+      const belKunft = belJahr.filter(b => b.bis > jetzt);
+      document.getElementById('stat-anz').textContent = belJahr.length;
+      document.getElementById('stat-anz-note').textContent =
+        belKunft.length + ' noch bevorstehend';
+
+      const gesPers = belJahr.reduce((s,b) => s + (b.erwachsene||0) + (b.kinder||0), 0);
+      document.getElementById('stat-pers').textContent = gesPers;
+      document.getElementById('stat-pers-note').textContent =
+        belJahr.reduce((s,b) => s+(b.erwachsene||0),0) + ' Erw. · ' +
+        belJahr.reduce((s,b) => s+(b.kinder||0),0) + ' Kinder';
+
+      const naechsteBel = (bel||[]).filter(b => b.bis > jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+      if (naechsteBel) {
+        document.getElementById('stat-naechste').textContent = naechsteBel.name;
+        document.getElementById('stat-naechste-note').textContent =
+          datDE(naechsteBel.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(naechsteBel.bis,{day:'2-digit',month:'short'});
+      } else {
+        document.getElementById('stat-naechste').textContent = '–';
+        document.getElementById('stat-naechste-note').textContent = 'Keine bevorstehend';
+      }
+
+      const fw = naechsteFreieWoche((bel||[]).filter(b => b.bis > jetzt));
+      if (fw) {
+        document.getElementById('stat-frei').textContent = 'KW ' + fw.kw;
+        document.getElementById('stat-frei-note').textContent =
+          datDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(fw.bis,{day:'2-digit',month:'short'});
+      } else {
+        document.getElementById('stat-frei').textContent = '–';
+        document.getElementById('stat-frei-note').textContent = 'Keine gefunden';
+      }
+
+      const naechstesEvent = (events||[]).filter(e => e.bis > jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+      if (naechstesEvent) {
+        document.getElementById('stat-event').textContent = naechstesEvent.titel;
+        document.getElementById('stat-event-note').textContent =
+          datDE(naechstesEvent.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(naechstesEvent.bis,{day:'2-digit',month:'short'});
+      } else {
+        document.getElementById('stat-event').textContent = '–';
+        document.getElementById('stat-event-note').textContent = 'Keine geplant';
+      }
+
+      // ── Kalender ──
+      miniKal.removeAllEvents();
+      (bel||[]).forEach(b => miniKal.addEvent({
+        title: b.name, start: b.von, end: b.bis,
+        backgroundColor:'#8b4513', borderColor:'#8b4513'
+      }));
+      (events||[]).forEach(e => miniKal.addEvent({
+        title: e.titel, start: e.von, end: e.bis,
+        backgroundColor: eventFarbe(e.typ), borderColor: eventFarbe(e.typ)
+      }));
+
+      // ── Nächste Termine Sidebar ──
+      const alleTermine = [
+        ...(bel||[]).filter(b => b.bis > jetzt).map(b => ({...b, _art:'bel'})),
+        ...(events||[]).filter(e => e.bis > jetzt).map(e => ({...e, name:e.titel, _art:'event'}))
+      ].sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
+
+      const nbEl = document.getElementById('nb-liste');
+      nbEl.innerHTML = alleTermine.length
+        ? alleTermine.map(t => {
+            const cls = t._art==='event' ? eventKlasse(t.typ) : '';
+            return `<div class="nb-item ${cls}">
+              <div class="nb-name">${t.name}</div>
+              <div class="nb-dat">${datDE(t.von,{day:'2-digit',month:'short'})} – ${datDE(t.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
+            </div>`;
+          }).join('')
+        : '<div style="font-size:.8rem;color:var(--muted);font-style:italic;">Keine bevorstehenden Termine.</div>';
+
+      // ── Veranstaltungsliste ──
+      renderEventListe(events||[]);
+    }
+
+    // ══════════════════════════════════════
+    //  VERANSTALTUNGEN RENDERN
+    // ══════════════════════════════════════
+    function renderEventListe(events) {
+      const el = document.getElementById('events-liste');
+      if (!events.length) {
+        el.innerHTML = '<div class="leer-events">Noch keine Veranstaltungen erstellt.</div>';
+        return;
+      }
+
+      // Nach Jahr gruppieren
+      const gruppen = {};
+      events.forEach(e => {
+        const j = e.jahr || new Date(e.von).getFullYear();
+        if (!gruppen[j]) gruppen[j] = [];
+        gruppen[j].push(e);
+      });
+
+      let html = '';
+      Object.keys(gruppen).sort().reverse().forEach(jahr => {
+        html += `<div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem;margin-top:${html?'1.5rem':'0'}">${jahr}</div>`;
+        html += '<div class="event-liste">';
+        gruppen[jahr].forEach(e => {
+          html += `
+            <div class="event-card">
+              <div class="event-stripe ${eventKlasse(e.typ)}-stripe" style="background:${eventFarbe(e.typ)}"></div>
+              <div class="event-body">
+                <div class="event-head">
+                  <span class="event-typ-badge ${badgeKlasse(e.typ)}">${typLabel(e.typ)}</span>
+                  <button class="event-del" onclick="eventLoeschen('${e.id}')" title="Löschen">✕</button>
+                </div>
+                <div class="event-titel">${e.titel}</div>
+                <div class="event-datum">
+                  ${datDE(e.von,{weekday:'short',day:'2-digit',month:'long'})} –
+                  ${datDE(e.bis,{weekday:'short',day:'2-digit',month:'long',year:'numeric'})}
+                </div>
+                ${e.beschreibung ? `<div class="event-desc">${e.beschreibung}</div>` : ''}
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+      });
+      el.innerHTML = html;
+    }
+
+    // ══════════════════════════════════════
+    //  VERANSTALTUNG SPEICHERN
+    // ══════════════════════════════════════
+    async function eventSpeichern() {
+      const titel = document.getElementById('ev-titel').value.trim();
+      const typ   = document.getElementById('ev-typ').value;
+      const von   = document.getElementById('ev-von').value;
+      const bis   = document.getElementById('ev-bis').value;
+      const beschr = document.getElementById('ev-beschreibung').value.trim();
+      const stEl  = document.getElementById('ev-status');
+
+      if (!titel || !von || !bis) { stEl.textContent = '⚠ Bitte Titel und Datum ausfüllen.'; stEl.style.color='var(--red)'; return; }
+      if (von >= bis) { stEl.textContent = '⚠ Enddatum muss nach Startdatum liegen.'; stEl.style.color='var(--red)'; return; }
+
+      const btn = document.getElementById('ev-btn');
+      btn.disabled = true; btn.textContent = 'Speichern…';
+      stEl.textContent = ''; 
+
+      const { error } = await db.from('special_events').insert({
+        titel, typ, von, bis,
+        beschreibung: beschr || null,
+        jahr: parseInt(von.slice(0,4))
+      });
+
+      btn.disabled = false; btn.textContent = 'Veranstaltung speichern';
+
+      if (error) { stEl.textContent = '✗ Fehler: ' + error.message; stEl.style.color='var(--red)'; return; }
+
+      ['ev-titel','ev-von','ev-bis','ev-beschreibung'].forEach(id => document.getElementById(id).value='');
+      stEl.textContent = '✓ Gespeichert!'; stEl.style.color='var(--pine)';
+      setTimeout(() => stEl.textContent='', 3000);
+      alleNeuLaden();
+    }
+
+    // ══════════════════════════════════════
+    //  VERANSTALTUNG LÖSCHEN
+    // ══════════════════════════════════════
+    async function eventLoeschen(id) {
+      if (!confirm('Veranstaltung wirklich löschen?')) return;
+      const { error } = await db.from('special_events').delete().eq('id', id);
+      if (error) { alert('Fehler: ' + error.message); return; }
+      alleNeuLaden();
+    }
+
+    // ══════════════════════════════════════
+    //  INIT
+    // ══════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      miniKal = new FullCalendar.Calendar(document.getElementById('mini-kal'), {
+        initialView:   'dayGridMonth',
+        locale:        'de',
+        firstDay:      1,
+        height:        'auto',
+        weekNumbers:   true,
+        weekNumberFormat: { week:'numeric' },
+        weekText:      'KW',
+        events:        [],
+        eventClick:    () => window.location.href = 'kalender.html',
+        headerToolbar: { left:'prev,next', center:'title', right:'' }
+      });
+      miniKal.render();
+      alleNeuLaden();
+
+      // Nav aktiv beim Scrollen
+      const links = document.querySelectorAll('.sidebar nav a');
+      const secs  = document.querySelectorAll('[id]');
+      window.addEventListener('scroll', () => {
+        let cur='';
+        secs.forEach(s => { if (window.scrollY >= s.offsetTop-140) cur=s.id; });
+        links.forEach(a => a.classList.toggle('active', a.getAttribute('href')==='#'+cur));
+      });
+    });
+  </script>
+</body>
+</html>
