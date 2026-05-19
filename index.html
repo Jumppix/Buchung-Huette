@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root {
       --ink:     #1e1510;
@@ -16,24 +15,22 @@
       --rust:    #8b4513;
       --gold:    #b8860b;
       --pine:    #2d4a2d;
+      --blue:    #2c5f8a;
       --muted:   #7a6a58;
       --divider: #d4c9b0;
       --red:     #c0392b;
-      --blue:    #2c5f8a;
     }
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior:smooth; }
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--paper);
-      color: var(--ink);
-      background-image: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(180,160,120,0.07) 28px, rgba(180,160,120,0.07) 29px);
+      font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink);
+      background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(180,160,120,.07) 28px,rgba(180,160,120,.07) 29px);
     }
 
     /* ── SIDEBAR ── */
     .sidebar {
-      position: fixed; top:0; left:0; bottom:0; width:220px;
-      background: var(--ink); display:flex; flex-direction:column;
+      position:fixed; top:0; left:0; bottom:0; width:220px;
+      background:var(--ink); display:flex; flex-direction:column;
       padding:2.5rem 1.8rem; z-index:100; border-right:3px solid var(--rust);
     }
     .sidebar-logo { font-family:'Crimson Pro',serif; font-size:1.4rem; color:var(--aged); line-height:1.3; margin-bottom:.4rem; }
@@ -43,9 +40,9 @@
     .sidebar nav a {
       display:flex; align-items:center; gap:.75rem; padding:.6rem .8rem;
       color:rgba(232,223,200,.65); text-decoration:none; font-size:.82rem;
-      letter-spacing:.04em; border-radius:3px; transition:background .15s, color .15s;
+      letter-spacing:.04em; border-radius:3px; transition:background .15s,color .15s;
     }
-    .sidebar nav a:hover, .sidebar nav a.active { background:rgba(139,69,19,.25); color:var(--aged); }
+    .sidebar nav a:hover,.sidebar nav a.active { background:rgba(139,69,19,.25); color:var(--aged); }
     .sidebar nav a .ni { font-size:1rem; width:1.2rem; text-align:center; }
     .sidebar-footer { margin-top:auto; font-size:.65rem; color:rgba(122,106,88,.4); letter-spacing:.1em; }
 
@@ -61,131 +58,103 @@
     .header-date { font-size:.75rem; letter-spacing:.18em; color:var(--muted); text-transform:uppercase; text-align:right; }
     .content { padding:3rem 3.5rem; }
     .section { margin-bottom:4rem; }
-    .section-heading {
-      display:flex; align-items:center; gap:1rem; margin-bottom:1.8rem;
-    }
+    .section-heading { display:flex; align-items:center; gap:1rem; margin-bottom:1.8rem; }
     .section-heading::after { content:''; flex:1; height:1px; background:var(--divider); }
     .section-heading h2 { font-family:'Crimson Pro',serif; font-size:1.4rem; font-weight:400; color:var(--rust); white-space:nowrap; }
 
-    /* ── STAT CARDS ── */
+    /* ── STATS ── */
     .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; }
-    .stat-card {
-      background:#fff; border:1px solid var(--divider);
-      border-top:3px solid var(--rust); border-radius:2px; padding:1.4rem 1.6rem;
-    }
+    .stat-card { background:#fff; border:1px solid var(--divider); border-top:3px solid var(--rust); border-radius:2px; padding:1.4rem 1.6rem; }
     .stat-card.green { border-top-color:var(--pine); }
     .stat-card.gold  { border-top-color:var(--gold); }
     .stat-card.blue  { border-top-color:var(--blue); }
     .slabel { font-size:.65rem; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
     .sval { font-family:'Crimson Pro',serif; font-size:2.2rem; font-weight:300; color:var(--ink); line-height:1; }
-    .sval.sm { font-size:1.2rem; padding-top:.4rem; }
+    .sval.sm { font-size:1.2rem; padding-top:.35rem; }
     .snote { font-size:.75rem; color:var(--muted); margin-top:.3rem; }
+    .spin { display:inline-block; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
     /* ── KALENDER WIDGET ── */
-    .kalender-widget-wrap {
-      display:grid; grid-template-columns:1fr 260px; gap:1.5rem; align-items:start;
-    }
-    #mini-kalender-container {
-      background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem;
-    }
+    .kal-wrap { display:grid; grid-template-columns:1fr 260px; gap:1.5rem; align-items:start; }
+    #mini-kal-container { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem; }
     .fc { font-family:'DM Sans',sans-serif; }
     .fc .fc-toolbar-title { font-family:'Crimson Pro',serif; font-size:1.3rem; font-weight:400; color:var(--rust); }
     .fc .fc-button-primary { background:var(--rust)!important; border-color:var(--rust)!important; font-size:.75rem!important; border-radius:2px!important; padding:.3rem .7rem!important; }
-    .fc .fc-button-primary:hover { background:#a0521a!important; border-color:#a0521a!important; }
+    .fc .fc-button-primary:hover { background:#a0521a!important; }
     .fc .fc-col-header-cell { background:var(--aged); }
     .fc .fc-col-header-cell-cushion { font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:.4rem 0; }
     .fc .fc-daygrid-day-number { font-size:.76rem; color:var(--muted); text-decoration:none; padding:3px 5px; }
     .fc .fc-daygrid-day.fc-day-today { background:rgba(184,134,11,.1)!important; }
-    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number { color:var(--gold); font-weight:500; }
-    .fc-event { border-radius:2px!important; border:none!important; font-size:.72rem!important; padding:1px 3px!important; cursor:default!important; }
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number { color:var(--gold); font-weight:600; }
+    .fc-event { border-radius:2px!important; border:none!important; font-size:.72rem!important; padding:1px 3px!important; cursor:pointer; }
+    .fc .fc-daygrid-week-number { font-size:.62rem; color:var(--muted); opacity:.55; padding:2px 3px; }
 
-    /* Kalender Legende */
-    .kal-legende {
-      display:flex; flex-direction:column; gap:.6rem;
-    }
-    .kal-legende-title { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.4rem; color:var(--ink); }
-    .leg-item { display:flex; align-items:center; gap:.6rem; font-size:.8rem; color:var(--muted); }
-    .leg-dot { width:12px; height:12px; border-radius:2px; flex-shrink:0; }
+    /* Kalender Sidebar */
+    .kal-side { display:flex; flex-direction:column; gap:1rem; }
+    .kal-card { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem 1.3rem; }
+    .kal-card-title { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.7rem; }
+    .leg { display:flex; align-items:center; gap:.6rem; font-size:.8rem; color:var(--muted); margin-bottom:.4rem; }
+    .leg-dot { width:11px; height:11px; border-radius:2px; flex-shrink:0; }
+    .nb-item { padding:.5rem .7rem; background:var(--paper); border-radius:2px; border-left:3px solid var(--rust); font-size:.8rem; margin-bottom:.5rem; }
+    .nb-item.ev-fam { border-left-color:var(--blue); }
+    .nb-item.ev-arb { border-left-color:var(--pine); }
+    .nb-item.ev-son { border-left-color:var(--muted); }
+    .nb-name { font-weight:600; }
+    .nb-dat  { color:var(--muted); font-size:.72rem; margin-top:.1rem; }
 
-    /* Nächste Buchungen Liste */
-    .naechste-liste { display:flex; flex-direction:column; gap:.5rem; margin-top:1rem; }
-    .naechste-title { font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.3rem; }
-    .nb-item {
-      padding:.6rem .8rem; background:var(--paper);
-      border-radius:2px; border-left:3px solid var(--rust); font-size:.82rem;
-    }
-    .nb-name { font-weight:500; }
-    .nb-datum { color:var(--muted); font-size:.75rem; margin-top:.1rem; }
+    /* ── VERANSTALTUNGEN ── */
+    .events-layout { display:grid; grid-template-columns:1fr 300px; gap:1.5rem; align-items:start; }
 
-    /* ── SPECIAL EVENTS ── */
-    .events-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
-
+    /* Event-Liste */
+    .event-liste { display:flex; flex-direction:column; gap:.8rem; }
     .event-card {
-      background:#fff; border:1px solid var(--divider); border-radius:2px;
-      overflow:hidden;
+      background:#fff; border:1px solid var(--divider); border-radius:2px; overflow:hidden;
+      display:flex; align-items:stretch;
     }
-    .event-header {
-      padding:1rem 1.3rem; display:flex; justify-content:space-between; align-items:flex-start;
-    }
-    .event-header.familienversammlung { background:rgba(44,95,138,.08); border-bottom:2px solid var(--blue); }
-    .event-header.arbeitswochenende   { background:rgba(45,74,45,.08);  border-bottom:2px solid var(--pine); }
-
+    .event-stripe { width:4px; flex-shrink:0; }
+    .ev-fam-stripe  { background:var(--blue); }
+    .ev-arb-stripe  { background:var(--pine); }
+    .ev-son-stripe  { background:var(--muted); }
+    .event-body { padding:1rem 1.2rem; flex:1; }
+    .event-head { display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; }
     .event-typ-badge {
-      font-size:.6rem; letter-spacing:.2em; text-transform:uppercase;
-      padding:.2rem .5rem; border-radius:10px; font-weight:500;
+      font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
+      padding:.2rem .5rem; border-radius:10px; font-weight:500; white-space:nowrap;
     }
-    .badge-fam  { background:rgba(44,95,138,.15); color:var(--blue); }
-    .badge-arb  { background:rgba(45,74,45,.15);  color:var(--pine); }
-
-    .event-titel { font-family:'Crimson Pro',serif; font-size:1.15rem; font-weight:600; margin:.3rem 0 .2rem; }
+    .badge-fam { background:rgba(44,95,138,.12); color:var(--blue); }
+    .badge-arb { background:rgba(45,74,45,.12);  color:var(--pine); }
+    .badge-son { background:rgba(122,106,88,.12); color:var(--muted); }
+    .event-del { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.85rem; transition:color .2s; }
+    .event-del:hover { color:var(--red); }
+    .event-titel { font-family:'Crimson Pro',serif; font-size:1.1rem; font-weight:600; margin:.25rem 0 .15rem; }
     .event-datum { font-size:.78rem; color:var(--muted); }
-    .event-body  { padding:1rem 1.3rem; }
-    .event-beschreibung { font-size:.85rem; color:var(--muted); line-height:1.7; margin-bottom:1rem; }
+    .event-desc  { font-size:.82rem; color:var(--muted); margin-top:.4rem; line-height:1.65; }
 
-    /* Zusagen */
-    .zusagen-bereich { margin-bottom:1rem; }
-    .zusagen-titel { font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.6rem; }
-    .zusagen-chips { display:flex; flex-wrap:wrap; gap:.4rem; min-height:28px; }
-    .chip {
-      display:inline-flex; align-items:center; gap:.35rem;
-      padding:.25rem .65rem; border-radius:12px; font-size:.78rem; font-weight:500;
-    }
-    .chip.ja       { background:rgba(45,74,45,.12);   color:var(--pine); }
-    .chip.vielleicht { background:rgba(184,134,11,.12); color:var(--gold); }
-    .chip.nein     { background:rgba(192,57,43,.1);   color:var(--red); }
-    .chip-del { background:none; border:none; cursor:pointer; color:inherit; opacity:.5; font-size:.8rem; padding:0; transition:opacity .2s; }
-    .chip-del:hover { opacity:1; }
-    .keine-zusagen { font-size:.8rem; color:var(--divider); font-style:italic; }
+    .leer-events { font-size:.85rem; color:var(--muted); font-style:italic; padding:.5rem 0; }
 
-    /* RSVP Formular */
-    .rsvp-form { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-top:.5rem; }
-    .rsvp-input {
-      flex:1; min-width:120px; padding:.45rem .6rem;
-      border:1px solid var(--divider); border-radius:2px;
-      background:var(--paper); font-family:'DM Sans',sans-serif; font-size:.82rem;
-      transition:border-color .2s;
+    /* Event-Formular */
+    .ev-form-card {
+      background:#fff; border:1px solid var(--divider);
+      border-top:3px solid var(--blue); border-radius:2px; padding:1.3rem;
+      position:sticky; top:1.5rem;
     }
-    .rsvp-input:focus { outline:none; border-color:var(--rust); }
-    .rsvp-select {
-      padding:.45rem .5rem; border:1px solid var(--divider); border-radius:2px;
-      background:var(--paper); font-family:'DM Sans',sans-serif; font-size:.82rem;
-      color:var(--ink); cursor:pointer;
+    .ev-form-card h3 { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.9rem; }
+    .form-group { margin-bottom:.65rem; }
+    .form-group label { display:block; font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; padding:.5rem .6rem; border:1px solid var(--divider); border-radius:2px;
+      background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; font-size:.82rem;
+      transition:border-color .2s; resize:vertical;
     }
-    .rsvp-btn {
-      padding:.45rem .9rem; border:none; border-radius:2px;
-      background:var(--rust); color:#fff; font-size:.78rem; letter-spacing:.08em;
-      cursor:pointer; transition:background .2s; white-space:nowrap;
-    }
-    .rsvp-btn:hover { background:#a0521a; }
-    .rsvp-btn:disabled { background:var(--muted); cursor:not-allowed; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--blue); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+    .btn { width:100%; padding:.6rem; border:none; border-radius:2px; font-family:'DM Sans',sans-serif; font-size:.8rem; letter-spacing:.1em; cursor:pointer; transition:background .2s; margin-top:.3rem; }
+    .btn-blue { background:var(--blue); color:#fff; }
+    .btn-blue:hover { background:#245080; }
+    .btn-blue:disabled { background:var(--muted); cursor:not-allowed; }
 
-    /* Fortschrittsbalken */
-    .fortschritt-wrap { margin-bottom:.8rem; }
-    .fortschritt-label { font-size:.68rem; color:var(--muted); margin-bottom:.3rem; display:flex; justify-content:space-between; }
-    .fortschritt-bar { height:6px; background:var(--aged); border-radius:3px; overflow:hidden; }
-    .fortschritt-fill { height:100%; background:var(--pine); border-radius:3px; transition:width .4s; }
-
-    /* ── GESCHICHTE ── */
+    /* ── TIMELINE ── */
     .timeline { position:relative; padding-left:2rem; }
     .timeline::before { content:''; position:absolute; left:.4rem; top:0; bottom:0; width:2px; background:var(--divider); }
     .titem { position:relative; margin-bottom:2.2rem; padding-left:1rem; }
@@ -198,7 +167,7 @@
     .galerie-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
     .foto { aspect-ratio:4/3; overflow:hidden; border-radius:2px; border:1px solid var(--divider); }
     .foto.big { grid-column:span 2; aspect-ratio:16/7; }
-    .foto img { width:100%; height:100%; object-fit:cover; filter:sepia(12%) brightness(.97); transition:filter .3s, transform .35s; }
+    .foto img { width:100%; height:100%; object-fit:cover; filter:sepia(12%) brightness(.97); transition:filter .3s,transform .35s; }
     .foto:hover img { filter:sepia(0%) brightness(1.02); transform:scale(1.04); }
 
     /* ── REGELN ── */
@@ -221,23 +190,18 @@
     /* ── FOOTER ── */
     .site-footer { margin-left:220px; padding:1.2rem 3.5rem; border-top:1px solid var(--divider); font-size:.72rem; color:var(--muted); letter-spacing:.1em; display:flex; justify-content:space-between; }
 
-    /* ── LADEANIMATION ── */
-    .lade-platzhalter { color:var(--muted); font-size:.85rem; font-style:italic; }
-    .spin { display:inline-block; animation:spin 1s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-
     /* ── RESPONSIVE ── */
-    @media (max-width:1100px) {
-      .kalender-widget-wrap { grid-template-columns:1fr; }
-      .events-grid { grid-template-columns:1fr; }
+    @media (max-width:1150px) {
+      .kal-wrap { grid-template-columns:1fr; }
+      .events-layout { grid-template-columns:1fr; }
     }
     @media (max-width:900px) {
       .sidebar { width:58px; padding:1.2rem .7rem; }
-      .sidebar-logo, .sidebar-sub, .sidebar nav a span, .sidebar-footer { display:none; }
+      .sidebar-logo,.sidebar-sub,.sidebar nav a span,.sidebar-footer { display:none; }
       .sidebar nav a { justify-content:center; padding:.7rem; }
-      .main, .site-footer { margin-left:58px; }
-      .content, .page-header { padding-left:1.5rem; padding-right:1.5rem; }
-      .regeln-grid, .kontakt-grid { grid-template-columns:1fr; }
+      .main,.site-footer { margin-left:58px; }
+      .content,.page-header { padding-left:1.5rem; padding-right:1.5rem; }
+      .regeln-grid,.kontakt-grid { grid-template-columns:1fr; }
       .galerie-grid { grid-template-columns:1fr 1fr; }
       .foto.big { grid-column:span 1; aspect-ratio:4/3; }
     }
@@ -271,19 +235,24 @@
 
     <div class="content">
 
-      <!-- ── SCHNELLINFOS ── -->
+      <!-- ── STATS ── -->
       <section class="section">
         <div class="section-heading"><span>📊</span><h2>Auf einen Blick</h2></div>
         <div class="dashboard-grid">
           <div class="stat-card">
-            <div class="slabel">Belegungen 2026</div>
-            <div class="sval" id="stat-belegungen"><span class="spin">⏳</span></div>
-            <div class="snote" id="stat-belegungen-note">wird geladen…</div>
+            <div class="slabel">Belegungen <span id="stat-jahr">2026</span></div>
+            <div class="sval" id="stat-anz"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-anz-note">wird geladen…</div>
+          </div>
+          <div class="stat-card">
+            <div class="slabel">Personen gesamt</div>
+            <div class="sval" id="stat-pers"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-pers-note">wird geladen…</div>
           </div>
           <div class="stat-card green">
             <div class="slabel">Nächste freie Woche</div>
-            <div class="sval sm" id="stat-freie-woche"><span class="spin">⏳</span></div>
-            <div class="snote" id="stat-freie-woche-note">wird geladen…</div>
+            <div class="sval sm" id="stat-frei"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-frei-note">wird geladen…</div>
           </div>
           <div class="stat-card gold">
             <div class="slabel">Nächste Belegung</div>
@@ -301,32 +270,28 @@
       <!-- ── MINI KALENDER ── -->
       <section class="section" id="kalender">
         <div class="section-heading"><span>📅</span><h2>Belegungskalender</h2></div>
-        <div class="kalender-widget-wrap">
-          <div id="mini-kalender-container">
-            <div id="mini-kalender"></div>
+        <div class="kal-wrap">
+          <div id="mini-kal-container">
+            <div id="mini-kal"></div>
           </div>
-          <div>
+          <div class="kal-side">
             <!-- Legende -->
-            <div style="background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem 1.3rem;margin-bottom:1rem;">
-              <div class="kal-legende-title">Legende</div>
-              <div class="kal-legende" style="margin-top:.7rem;">
-                <div class="leg-item"><div class="leg-dot" style="background:#8b4513"></div> Belegung</div>
-                <div class="leg-item"><div class="leg-dot" style="background:#2c5f8a"></div> Familienversammlung</div>
-                <div class="leg-item"><div class="leg-dot" style="background:#2d4a2d"></div> Arbeitswochenende</div>
-                <div class="leg-item"><div class="leg-dot" style="background:#b8860b;opacity:.6"></div> Reserviert (Timer)</div>
-              </div>
+            <div class="kal-card">
+              <div class="kal-card-title">Legende</div>
+              <div class="leg"><div class="leg-dot" style="background:#8b4513"></div> Belegung</div>
+              <div class="leg"><div class="leg-dot" style="background:#2c5f8a"></div> Familienversammlung</div>
+              <div class="leg"><div class="leg-dot" style="background:#2d4a2d"></div> Arbeitswochenende</div>
+              <div class="leg"><div class="leg-dot" style="background:#7a6a58"></div> Sonstige Veranstaltung</div>
               <div style="margin-top:1rem;">
                 <a href="kalender.html" style="display:inline-block;padding:.5rem 1rem;background:var(--rust);color:#fff;text-decoration:none;font-size:.78rem;letter-spacing:.08em;border-radius:2px;">
-                  → Vollansicht & Buchen
+                  → Buchen & Vollansicht
                 </a>
               </div>
             </div>
-            <!-- Nächste Buchungen -->
-            <div style="background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);border-radius:2px;padding:1.2rem 1.3rem;">
-              <div class="kal-legende-title">Nächste Belegungen</div>
-              <div class="naechste-liste" id="naechste-liste">
-                <div class="lade-platzhalter"><span class="spin">⏳</span> Lädt…</div>
-              </div>
+            <!-- Nächste Termine -->
+            <div class="kal-card">
+              <div class="kal-card-title">Nächste Termine</div>
+              <div id="nb-liste"><div style="font-size:.8rem;color:var(--muted);font-style:italic;">Lädt…</div></div>
             </div>
           </div>
         </div>
@@ -334,9 +299,44 @@
 
       <!-- ── VERANSTALTUNGEN ── -->
       <section class="section" id="veranstaltungen">
-        <div class="section-heading"><span>🎉</span><h2>Jahresveranstaltungen 2026</h2></div>
-        <div class="events-grid" id="events-grid">
-          <div class="lade-platzhalter"><span class="spin">⏳</span> Lade Veranstaltungen…</div>
+        <div class="section-heading"><span>🎉</span><h2>Jahresveranstaltungen</h2></div>
+        <div class="events-layout">
+          <!-- Liste -->
+          <div>
+            <div id="events-liste"><div style="font-size:.85rem;color:var(--muted);font-style:italic;"><span class="spin">⏳</span> Lädt…</div></div>
+          </div>
+          <!-- Formular -->
+          <div class="ev-form-card">
+            <h3>➕ Veranstaltung erstellen</h3>
+            <div class="form-group">
+              <label>Titel</label>
+              <input type="text" id="ev-titel" placeholder="z.B. Familienversammlung 2026"/>
+            </div>
+            <div class="form-group">
+              <label>Typ</label>
+              <select id="ev-typ">
+                <option value="familienversammlung">👨‍👩‍👧‍👦 Familienversammlung</option>
+                <option value="arbeitswochenende">🔨 Arbeitswochenende</option>
+                <option value="sonstige">📌 Sonstige Veranstaltung</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Von</label>
+                <input type="date" id="ev-von"/>
+              </div>
+              <div class="form-group">
+                <label>Bis</label>
+                <input type="date" id="ev-bis"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Beschreibung (optional)</label>
+              <textarea id="ev-beschreibung" rows="3" placeholder="Kurze Beschreibung…"></textarea>
+            </div>
+            <button class="btn btn-blue" id="ev-btn" onclick="eventSpeichern()">Veranstaltung speichern</button>
+            <div id="ev-status" style="font-size:.78rem;margin-top:.5rem;color:var(--muted);min-height:1.2em;"></div>
+          </div>
         </div>
       </section>
 
@@ -344,31 +344,11 @@
       <section class="section" id="geschichte">
         <div class="section-heading"><span>📖</span><h2>Geschichte der Hütte</h2></div>
         <div class="timeline">
-          <div class="titem">
-            <div class="tyear">1978</div>
-            <div class="ttitle">Der Bau</div>
-            <div class="ttext">Opa Hermann baut die Hütte in Eigenregie über zwei Sommer. Die Holzbalken stammen aus dem eigenen Waldstück, der Kamin wird gemeinsam mit den Nachbarn gemauert.</div>
-          </div>
-          <div class="titem">
-            <div class="tyear">1985</div>
-            <div class="ttitle">Erste Erweiterung</div>
-            <div class="ttext">Ein zweites Schlafzimmer und die Veranda werden angebaut. Ab jetzt können auch Großfamilienurlaube stattfinden.</div>
-          </div>
-          <div class="titem">
-            <div class="tyear">2003</div>
-            <div class="ttitle">Renovierung</div>
-            <div class="ttext">Neue Küche, neues Bad, neue Elektrik. Die Hütte erhält außerdem einen Holzofen im Wohnzimmer als Herzstück.</div>
-          </div>
-          <div class="titem">
-            <div class="tyear">2019</div>
-            <div class="ttitle">Übergabe an die nächste Generation</div>
-            <div class="ttext">Die Verwaltung geht an die Kinder und Enkel über. WLAN wird installiert. Die Tradition lebt weiter.</div>
-          </div>
-          <div class="titem">
-            <div class="tyear">2026</div>
-            <div class="ttitle">Dieses digitale Hüttenbuch</div>
-            <div class="ttext">Zur besseren Koordination innerhalb der Familie entsteht diese Website. Wer wann? Ab jetzt alles auf einen Blick.</div>
-          </div>
+          <div class="titem"><div class="tyear">1978</div><div class="ttitle">Der Bau</div><div class="ttext">Opa Hermann baut die Hütte in Eigenregie über zwei Sommer. Die Holzbalken stammen aus dem eigenen Waldstück, der Kamin wird gemeinsam mit den Nachbarn gemauert.</div></div>
+          <div class="titem"><div class="tyear">1985</div><div class="ttitle">Erste Erweiterung</div><div class="ttext">Ein zweites Schlafzimmer und die Veranda werden angebaut. Ab jetzt können auch Großfamilienurlaube stattfinden.</div></div>
+          <div class="titem"><div class="tyear">2003</div><div class="ttitle">Renovierung</div><div class="ttext">Neue Küche, neues Bad, neue Elektrik. Die Hütte erhält außerdem einen Holzofen im Wohnzimmer als Herzstück.</div></div>
+          <div class="titem"><div class="tyear">2019</div><div class="ttitle">Übergabe an die nächste Generation</div><div class="ttext">Die Verwaltung geht an Kinder und Enkel über. WLAN wird installiert. Die Tradition lebt weiter.</div></div>
+          <div class="titem"><div class="tyear">2026</div><div class="ttitle">Dieses digitale Hüttenbuch</div><div class="ttext">Zur besseren Koordination innerhalb der Familie entsteht diese Website. Wer wann? Ab jetzt alles auf einen Blick.</div></div>
         </div>
       </section>
 
@@ -383,49 +363,17 @@
           <div class="foto"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80" alt="Wohnzimmer"/></div>
           <div class="foto"><img src="https://images.unsplash.com/photo-1586105449897-20b5efeb3233?w=500&q=80" alt="Natur"/></div>
         </div>
-        <p style="font-size:.75rem;color:var(--muted);margin-top:.8rem;">💡 Eigene Fotos: URL durch z.B. <code>fotos/huette1.jpg</code> ersetzen.</p>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:.8rem;">💡 Eigene Fotos: URL durch lokale Dateinamen ersetzen, z.B. <code>fotos/huette1.jpg</code></p>
       </section>
 
       <!-- ── REGELN ── -->
       <section class="section" id="regeln">
         <div class="section-heading"><span>📋</span><h2>Regeln & Wichtige Infos</h2></div>
         <div class="regeln-grid">
-          <div class="rcard">
-            <h4>🔑 Anreise & Schlüssel</h4>
-            <ul>
-              <li>Anreise ab 15:00 Uhr</li>
-              <li>Schlüssel bei Familie Mustermann</li>
-              <li>Abreise bis 11:00 Uhr</li>
-              <li>Schlüssel im Briefkasten einwerfen</li>
-            </ul>
-          </div>
-          <div class="rcard">
-            <h4>🧹 Reinigung</h4>
-            <ul>
-              <li>Hütte besenrein hinterlassen</li>
-              <li>Bettwäsche in den Wäschebeutel</li>
-              <li>Kühlschrank leeren</li>
-              <li>Müll zur Tonne bringen</li>
-            </ul>
-          </div>
-          <div class="rcard warn">
-            <h4>⚠️ Wichtige Hinweise</h4>
-            <ul>
-              <li>Kamin nur mit trocknem Holz</li>
-              <li>Lüftung bei Abreise schließen</li>
-              <li>Wasser im Winter absperren</li>
-              <li>Notfall Heizung: 0800 123 456</li>
-            </ul>
-          </div>
-          <div class="rcard">
-            <h4>🐾 Sonstiges</h4>
-            <ul>
-              <li>Haustiere willkommen</li>
-              <li>Rauchen nur im Außenbereich</li>
-              <li>WLAN-Passwort: HütteXXXX</li>
-              <li>Holz im Schuppen nachfüllen</li>
-            </ul>
-          </div>
+          <div class="rcard"><h4>🔑 Anreise & Schlüssel</h4><ul><li>Anreise ab 15:00 Uhr</li><li>Schlüssel bei Familie Mustermann</li><li>Abreise bis 11:00 Uhr</li><li>Schlüssel im Briefkasten</li></ul></div>
+          <div class="rcard"><h4>🧹 Reinigung</h4><ul><li>Hütte besenrein hinterlassen</li><li>Bettwäsche in den Wäschebeutel</li><li>Kühlschrank leeren</li><li>Müll zur Tonne bringen</li></ul></div>
+          <div class="rcard warn"><h4>⚠️ Wichtige Hinweise</h4><ul><li>Kamin nur mit trocknem Holz</li><li>Lüftung bei Abreise schließen</li><li>Wasser im Winter absperren</li><li>Notfall Heizung: 0800 123 456</li></ul></div>
+          <div class="rcard"><h4>🐾 Sonstiges</h4><ul><li>Haustiere willkommen</li><li>Rauchen nur im Außenbereich</li><li>WLAN-Passwort: HütteXXXX</li><li>Holz im Schuppen nachfüllen</li></ul></div>
         </div>
       </section>
 
@@ -449,341 +397,284 @@
   </footer>
 
   <script>
-    // ════════════════════════════════════════════
-    //  ⚙️  SUPABASE ZUGANGSDATEN
-    // ════════════════════════════════════════════
+    // ══════════════════════════════════════
+    //  ⚙️  ZUGANGSDATEN
+    // ══════════════════════════════════════
     const SUPABASE_URL = 'https://jvxlhlpqsiipplrwozje.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A';
-    // ════════════════════════════════════════════
+    // ══════════════════════════════════════
 
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let miniKalender;
     const HEUTE = new Date();
+    let miniKal;
 
-    // ── Datum ──
     document.getElementById('current-date').textContent =
-      HEUTE.toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      HEUTE.toLocaleDateString('de-DE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     document.getElementById('fyear').textContent = '© ' + HEUTE.getFullYear();
+    document.getElementById('stat-jahr').textContent = HEUTE.getFullYear();
 
-    // ════════════════════════════════════════════
-    //  HILFSFUNKTIONEN
-    // ════════════════════════════════════════════
-    function datumDE(str, opt) {
-      return new Date(str).toLocaleDateString('de-DE', opt || {day:'2-digit', month:'short', year:'numeric'});
+    // ── Hilfsfunktionen ──
+    function datDE(str, opt) {
+      if (!str) return '–';
+      return new Date(str).toLocaleDateString('de-DE', opt || {day:'2-digit',month:'short',year:'numeric'});
     }
 
-    // Nächste Montags-KW finden die komplett frei ist
+    function kwVonDatum(datStr) {
+      const d = new Date(datStr);
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() + 3 - (d.getDay()+6)%7);
+      const w = new Date(d.getFullYear(),0,4);
+      return 1 + Math.round(((d-w)/86400000 - 3 + (w.getDay()+6)%7)/7);
+    }
+
     function naechsteFreieWoche(belegungen) {
       const belegt = new Set();
       belegungen.forEach(b => {
-        let d = new Date(b.von);
-        const end = new Date(b.bis);
-        while (d < end) {
-          belegt.add(d.toISOString().slice(0,10));
-          d.setDate(d.getDate() + 1);
-        }
+        let d = new Date(b.von), end = new Date(b.bis);
+        while (d < end) { belegt.add(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); }
       });
-
-      // Ab nächstem Montag suchen
-      let montag = new Date(HEUTE);
-      montag.setDate(montag.getDate() + (8 - montag.getDay()) % 7 || 7);
-
-      for (let i = 0; i < 52; i++) {
+      let mo = new Date(HEUTE);
+      mo.setDate(mo.getDate() + (8 - mo.getDay()) % 7 || 7);
+      for (let i=0; i<52; i++) {
         let frei = true;
-        for (let t = 0; t < 7; t++) {
-          const d = new Date(montag);
-          d.setDate(d.getDate() + t);
-          if (belegt.has(d.toISOString().slice(0,10))) { frei = false; break; }
+        for (let t=0; t<7; t++) {
+          const d = new Date(mo); d.setDate(d.getDate()+t);
+          if (belegt.has(d.toISOString().slice(0,10))) { frei=false; break; }
         }
         if (frei) {
-          const sonntag = new Date(montag);
-          sonntag.setDate(sonntag.getDate() + 6);
-          // KW berechnen
-          const tmp = new Date(montag);
-          tmp.setHours(0,0,0,0);
-          tmp.setDate(tmp.getDate() + 3 - (tmp.getDay() + 6) % 7);
-          const week1 = new Date(tmp.getFullYear(), 0, 4);
-          const kw = 1 + Math.round(((tmp - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-          return {
-            kw,
-            von: montag.toISOString().slice(0,10),
-            bis: sonntag.toISOString().slice(0,10)
-          };
+          const so = new Date(mo); so.setDate(so.getDate()+6);
+          return { kw: kwVonDatum(mo.toISOString().slice(0,10)), von: mo.toISOString().slice(0,10), bis: so.toISOString().slice(0,10) };
         }
-        montag.setDate(montag.getDate() + 7);
+        mo.setDate(mo.getDate()+7);
       }
       return null;
     }
 
-    // ════════════════════════════════════════════
-    //  STATS LADEN
-    // ════════════════════════════════════════════
-    async function statsLaden() {
-      const jetzt = HEUTE.toISOString().slice(0,10);
-      const jahresStart = HEUTE.getFullYear() + '-01-01';
-      const jahresEnd   = HEUTE.getFullYear() + '-12-31';
+    function eventFarbe(typ) {
+      return typ === 'familienversammlung' ? '#2c5f8a'
+           : typ === 'arbeitswochenende'   ? '#2d4a2d'
+           : '#7a6a58';
+    }
+    function eventKlasse(typ) {
+      return typ === 'familienversammlung' ? 'ev-fam'
+           : typ === 'arbeitswochenende'   ? 'ev-arb'
+           : 'ev-son';
+    }
+    function badgeKlasse(typ) {
+      return typ === 'familienversammlung' ? 'badge-fam'
+           : typ === 'arbeitswochenende'   ? 'badge-arb'
+           : 'badge-son';
+    }
+    function typLabel(typ) {
+      return typ === 'familienversammlung' ? '👨‍👩‍👧‍👦 Familienversammlung'
+           : typ === 'arbeitswochenende'   ? '🔨 Arbeitswochenende'
+           : '📌 Sonstige Veranstaltung';
+    }
+
+    // ══════════════════════════════════════
+    //  ALLES LADEN
+    // ══════════════════════════════════════
+    async function alleNeuLaden() {
+      const jetzt   = HEUTE.toISOString().slice(0,10);
+      const jarAnf  = HEUTE.getFullYear() + '-01-01';
+      const jarEnd  = HEUTE.getFullYear() + '-12-31';
 
       const [{ data: bel }, { data: events }] = await Promise.all([
-        db.from('belegungen').select('*').gte('von', jahresStart).lte('von', jahresEnd).order('von'),
-        db.from('special_events').select('*').gte('von', jetzt).order('von').limit(1)
+        db.from('belegungen').select('*').order('von'),
+        db.from('special_events').select('*').order('von')
       ]);
 
-      // Belegungen dieses Jahr
-      document.getElementById('stat-belegungen').textContent = bel ? bel.length : '–';
-      document.getElementById('stat-belegungen-note').textContent =
-        bel && bel.length > 0
-          ? `${bel.filter(b => b.von >= jetzt).length} noch bevorstehend`
-          : 'Noch keine Einträge';
+      // ── Stats ──
+      const belJahr = (bel||[]).filter(b => b.von >= jarAnf && b.von <= jarEnd);
+      const belKunft = belJahr.filter(b => b.bis > jetzt);
+      document.getElementById('stat-anz').textContent = belJahr.length;
+      document.getElementById('stat-anz-note').textContent =
+        belKunft.length + ' noch bevorstehend';
 
-      // Nächste Belegung
-      const naechste = bel ? bel.filter(b => b.bis > jetzt).sort((a,b) => a.von.localeCompare(b.von))[0] : null;
-      if (naechste) {
-        document.getElementById('stat-naechste').textContent = naechste.name;
+      const gesPers = belJahr.reduce((s,b) => s + (b.erwachsene||0) + (b.kinder||0), 0);
+      document.getElementById('stat-pers').textContent = gesPers;
+      document.getElementById('stat-pers-note').textContent =
+        belJahr.reduce((s,b) => s+(b.erwachsene||0),0) + ' Erw. · ' +
+        belJahr.reduce((s,b) => s+(b.kinder||0),0) + ' Kinder';
+
+      const naechsteBel = (bel||[]).filter(b => b.bis > jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+      if (naechsteBel) {
+        document.getElementById('stat-naechste').textContent = naechsteBel.name;
         document.getElementById('stat-naechste-note').textContent =
-          datumDE(naechste.von, {day:'2-digit',month:'short'}) + ' – ' + datumDE(naechste.bis, {day:'2-digit',month:'short'});
+          datDE(naechsteBel.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(naechsteBel.bis,{day:'2-digit',month:'short'});
       } else {
         document.getElementById('stat-naechste').textContent = '–';
-        document.getElementById('stat-naechste-note').textContent = 'Keine bevorstehenden Buchungen';
+        document.getElementById('stat-naechste-note').textContent = 'Keine bevorstehend';
       }
 
-      // Nächste freie Woche
-      const alleBel = bel ? bel.filter(b => b.bis > jetzt) : [];
-      const freiWoche = naechsteFreieWoche(alleBel);
-      if (freiWoche) {
-        document.getElementById('stat-freie-woche').textContent = 'KW ' + freiWoche.kw;
-        document.getElementById('stat-freie-woche-note').textContent =
-          datumDE(freiWoche.von, {day:'2-digit',month:'short'}) + ' – ' + datumDE(freiWoche.bis, {day:'2-digit',month:'short'});
+      const fw = naechsteFreieWoche((bel||[]).filter(b => b.bis > jetzt));
+      if (fw) {
+        document.getElementById('stat-frei').textContent = 'KW ' + fw.kw;
+        document.getElementById('stat-frei-note').textContent =
+          datDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(fw.bis,{day:'2-digit',month:'short'});
       } else {
-        document.getElementById('stat-freie-woche').textContent = '–';
-        document.getElementById('stat-freie-woche-note').textContent = 'Keine freie Woche gefunden';
+        document.getElementById('stat-frei').textContent = '–';
+        document.getElementById('stat-frei-note').textContent = 'Keine gefunden';
       }
 
-      // Nächste Veranstaltung
-      if (events && events.length > 0) {
-        const ev = events[0];
-        document.getElementById('stat-event').textContent = ev.titel.replace(' 2026','').replace(' 2025','');
+      const naechstesEvent = (events||[]).filter(e => e.bis > jetzt).sort((a,b)=>a.von.localeCompare(b.von))[0];
+      if (naechstesEvent) {
+        document.getElementById('stat-event').textContent = naechstesEvent.titel;
         document.getElementById('stat-event-note').textContent =
-          datumDE(ev.von, {day:'2-digit',month:'short'}) + ' – ' + datumDE(ev.bis, {day:'2-digit',month:'short'});
+          datDE(naechstesEvent.von,{day:'2-digit',month:'short'}) + ' – ' + datDE(naechstesEvent.bis,{day:'2-digit',month:'short'});
       } else {
         document.getElementById('stat-event').textContent = '–';
-        document.getElementById('stat-event-note').textContent = 'Keine Veranstaltungen';
+        document.getElementById('stat-event-note').textContent = 'Keine geplant';
       }
 
-      return bel || [];
+      // ── Kalender ──
+      miniKal.removeAllEvents();
+      (bel||[]).forEach(b => miniKal.addEvent({
+        title: b.name, start: b.von, end: b.bis,
+        backgroundColor:'#8b4513', borderColor:'#8b4513'
+      }));
+      (events||[]).forEach(e => miniKal.addEvent({
+        title: e.titel, start: e.von, end: e.bis,
+        backgroundColor: eventFarbe(e.typ), borderColor: eventFarbe(e.typ)
+      }));
+
+      // ── Nächste Termine Sidebar ──
+      const alleTermine = [
+        ...(bel||[]).filter(b => b.bis > jetzt).map(b => ({...b, _art:'bel'})),
+        ...(events||[]).filter(e => e.bis > jetzt).map(e => ({...e, name:e.titel, _art:'event'}))
+      ].sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
+
+      const nbEl = document.getElementById('nb-liste');
+      nbEl.innerHTML = alleTermine.length
+        ? alleTermine.map(t => {
+            const cls = t._art==='event' ? eventKlasse(t.typ) : '';
+            return `<div class="nb-item ${cls}">
+              <div class="nb-name">${t.name}</div>
+              <div class="nb-dat">${datDE(t.von,{day:'2-digit',month:'short'})} – ${datDE(t.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
+            </div>`;
+          }).join('')
+        : '<div style="font-size:.8rem;color:var(--muted);font-style:italic;">Keine bevorstehenden Termine.</div>';
+
+      // ── Veranstaltungsliste ──
+      renderEventListe(events||[]);
     }
 
-    // ════════════════════════════════════════════
-    //  NÄCHSTE BUCHUNGEN LISTE
-    // ════════════════════════════════════════════
-    function naechsteListeAktualisieren(belegungen, events) {
-      const jetzt = HEUTE.toISOString().slice(0,10);
-      const alle = [
-        ...(belegungen || []).filter(b => b.bis > jetzt).map(b => ({...b, art:'belegung'})),
-        ...(events    || []).filter(e => e.bis > jetzt).map(e => ({...e, name: e.titel, art:'event', typ: e.typ}))
-      ].sort((a,b) => a.von.localeCompare(b.von)).slice(0, 5);
+    // ══════════════════════════════════════
+    //  VERANSTALTUNGEN RENDERN
+    // ══════════════════════════════════════
+    function renderEventListe(events) {
+      const el = document.getElementById('events-liste');
+      if (!events.length) {
+        el.innerHTML = '<div class="leer-events">Noch keine Veranstaltungen erstellt.</div>';
+        return;
+      }
 
-      const el = document.getElementById('naechste-liste');
-      if (alle.length === 0) { el.innerHTML = '<div class="lade-platzhalter">Keine bevorstehenden Einträge.</div>'; return; }
-
-      el.innerHTML = alle.map(e => {
-        const farbe = e.art === 'event'
-          ? (e.typ === 'familienversammlung' ? 'var(--blue)' : 'var(--pine)')
-          : 'var(--rust)';
-        return `
-          <div class="nb-item" style="border-left-color:${farbe}">
-            <div class="nb-name">${e.name}</div>
-            <div class="nb-datum">
-              ${datumDE(e.von,{day:'2-digit',month:'short'})} – ${datumDE(e.bis,{day:'2-digit',month:'short',year:'numeric'})}
-            </div>
-          </div>`;
-      }).join('');
-    }
-
-    // ════════════════════════════════════════════
-    //  MINI KALENDER
-    // ════════════════════════════════════════════
-    function miniKalenderAktualisieren(belegungen, events) {
-      miniKalender.removeAllEvents();
-
-      (belegungen || []).forEach(b => {
-        miniKalender.addEvent({ title: b.name, start: b.von, end: b.bis, backgroundColor:'#8b4513', borderColor:'#8b4513' });
+      // Nach Jahr gruppieren
+      const gruppen = {};
+      events.forEach(e => {
+        const j = e.jahr || new Date(e.von).getFullYear();
+        if (!gruppen[j]) gruppen[j] = [];
+        gruppen[j].push(e);
       });
 
-      (events || []).forEach(e => {
-        const farbe = e.typ === 'familienversammlung' ? '#2c5f8a' : '#2d4a2d';
-        miniKalender.addEvent({ title: e.titel, start: e.von, end: e.bis, backgroundColor: farbe, borderColor: farbe });
-      });
-    }
-
-    // ════════════════════════════════════════════
-    //  VERANSTALTUNGEN LADEN & RENDERN
-    // ════════════════════════════════════════════
-    async function veranstaltungenLaden() {
-      const jahr = HEUTE.getFullYear();
-      const { data: events, error: e1 } = await db
-        .from('special_events').select('*').eq('jahr', jahr).order('von');
-      if (e1 || !events) return [];
-
-      const { data: zusagen } = await db
-        .from('event_zusagen').select('*').in('event_id', events.map(e => e.id));
-
-      renderEvents(events, zusagen || []);
-      return events;
-    }
-
-    function renderEvents(events, zusagen) {
-      const grid = document.getElementById('events-grid');
-      if (!events.length) { grid.innerHTML = '<div class="lade-platzhalter">Keine Veranstaltungen gefunden.</div>'; return; }
-
-      grid.innerHTML = events.map(ev => {
-        const evZusagen = zusagen.filter(z => z.event_id === ev.id);
-        const jaList  = evZusagen.filter(z => z.status === 'ja');
-        const vielList = evZusagen.filter(z => z.status === 'vielleicht');
-        const neinList = evZusagen.filter(z => z.status === 'nein');
-        const total   = jaList.length + vielList.length;
-        const pct     = total > 0 ? Math.round((jaList.length / total) * 100) : 0;
-        const isFam   = ev.typ === 'familienversammlung';
-
-        const chipHTML = (liste, cls) => liste.map(z => `
-          <span class="chip ${cls}">
-            ${z.name}
-            <button class="chip-del" onclick="zusageLoeschen('${z.id}','${ev.id}')" title="Entfernen">✕</button>
-          </span>`).join('');
-
-        return `
-          <div class="event-card" id="card-${ev.id}">
-            <div class="event-header ${ev.typ}">
-              <div>
-                <span class="event-typ-badge ${isFam ? 'badge-fam' : 'badge-arb'}">
-                  ${isFam ? '👨‍👩‍👧‍👦 Familienversammlung' : '🔨 Arbeitswochenende'}
-                </span>
-                <div class="event-titel">${ev.titel}</div>
+      let html = '';
+      Object.keys(gruppen).sort().reverse().forEach(jahr => {
+        html += `<div style="font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem;margin-top:${html?'1.5rem':'0'}">${jahr}</div>`;
+        html += '<div class="event-liste">';
+        gruppen[jahr].forEach(e => {
+          html += `
+            <div class="event-card">
+              <div class="event-stripe ${eventKlasse(e.typ)}-stripe" style="background:${eventFarbe(e.typ)}"></div>
+              <div class="event-body">
+                <div class="event-head">
+                  <span class="event-typ-badge ${badgeKlasse(e.typ)}">${typLabel(e.typ)}</span>
+                  <button class="event-del" onclick="eventLoeschen('${e.id}')" title="Löschen">✕</button>
+                </div>
+                <div class="event-titel">${e.titel}</div>
                 <div class="event-datum">
-                  ${datumDE(ev.von, {weekday:'short',day:'2-digit',month:'long'})} –
-                  ${datumDE(ev.bis, {weekday:'short',day:'2-digit',month:'long',year:'numeric'})}
+                  ${datDE(e.von,{weekday:'short',day:'2-digit',month:'long'})} –
+                  ${datDE(e.bis,{weekday:'short',day:'2-digit',month:'long',year:'numeric'})}
                 </div>
+                ${e.beschreibung ? `<div class="event-desc">${e.beschreibung}</div>` : ''}
               </div>
-            </div>
-            <div class="event-body">
-              <p class="event-beschreibung">${ev.beschreibung || ''}</p>
-
-              ${total > 0 ? `
-              <div class="fortschritt-wrap">
-                <div class="fortschritt-label">
-                  <span>${jaList.length} zugesagt · ${vielList.length} vielleicht · ${neinList.length} abgesagt</span>
-                  <span>${pct}% dabei</span>
-                </div>
-                <div class="fortschritt-bar"><div class="fortschritt-fill" style="width:${pct}%"></div></div>
-              </div>` : ''}
-
-              <div class="zusagen-bereich">
-                <div class="zusagen-titel">✅ Zugesagt</div>
-                <div class="zusagen-chips" id="chips-ja-${ev.id}">
-                  ${jaList.length ? chipHTML(jaList,'ja') : '<span class="keine-zusagen">Noch niemand</span>'}
-                </div>
-              </div>
-              ${vielList.length > 0 ? `
-              <div class="zusagen-bereich">
-                <div class="zusagen-titel">🤔 Vielleicht</div>
-                <div class="zusagen-chips">${chipHTML(vielList,'vielleicht')}</div>
-              </div>` : ''}
-              ${neinList.length > 0 ? `
-              <div class="zusagen-bereich">
-                <div class="zusagen-titel">❌ Abgesagt</div>
-                <div class="zusagen-chips">${chipHTML(neinList,'nein')}</div>
-              </div>` : ''}
-
-              <div class="rsvp-form">
-                <input class="rsvp-input" id="rsvp-name-${ev.id}" type="text" placeholder="Dein Name"/>
-                <select class="rsvp-select" id="rsvp-status-${ev.id}">
-                  <option value="ja">✅ Ich bin dabei</option>
-                  <option value="vielleicht">🤔 Vielleicht</option>
-                  <option value="nein">❌ Kann nicht</option>
-                </select>
-                <button class="rsvp-btn" id="rsvp-btn-${ev.id}" onclick="zusageAbgeben('${ev.id}')">Antworten</button>
-              </div>
-            </div>
-          </div>`;
-      }).join('');
+            </div>`;
+        });
+        html += '</div>';
+      });
+      el.innerHTML = html;
     }
 
-    // ════════════════════════════════════════════
-    //  RSVP ABGEBEN
-    // ════════════════════════════════════════════
-    async function zusageAbgeben(eventId) {
-      const nameEl   = document.getElementById('rsvp-name-'  + eventId);
-      const statusEl = document.getElementById('rsvp-status-'+ eventId);
-      const btn      = document.getElementById('rsvp-btn-'   + eventId);
-      const name     = nameEl.value.trim();
-      if (!name) { nameEl.focus(); return; }
+    // ══════════════════════════════════════
+    //  VERANSTALTUNG SPEICHERN
+    // ══════════════════════════════════════
+    async function eventSpeichern() {
+      const titel = document.getElementById('ev-titel').value.trim();
+      const typ   = document.getElementById('ev-typ').value;
+      const von   = document.getElementById('ev-von').value;
+      const bis   = document.getElementById('ev-bis').value;
+      const beschr = document.getElementById('ev-beschreibung').value.trim();
+      const stEl  = document.getElementById('ev-status');
 
-      btn.disabled = true;
-      btn.textContent = '…';
+      if (!titel || !von || !bis) { stEl.textContent = '⚠ Bitte Titel und Datum ausfüllen.'; stEl.style.color='var(--red)'; return; }
+      if (von >= bis) { stEl.textContent = '⚠ Enddatum muss nach Startdatum liegen.'; stEl.style.color='var(--red)'; return; }
 
-      // Upsert: gleicher Name → Status aktualisieren
-      const { error } = await db.from('event_zusagen').upsert(
-        { event_id: eventId, name, status: statusEl.value },
-        { onConflict: 'event_id,name' }
-      );
+      const btn = document.getElementById('ev-btn');
+      btn.disabled = true; btn.textContent = 'Speichern…';
+      stEl.textContent = ''; 
 
-      btn.disabled = false;
-      btn.textContent = 'Antworten';
+      const { error } = await db.from('special_events').insert({
+        titel, typ, von, bis,
+        beschreibung: beschr || null,
+        jahr: parseInt(von.slice(0,4))
+      });
 
+      btn.disabled = false; btn.textContent = 'Veranstaltung speichern';
+
+      if (error) { stEl.textContent = '✗ Fehler: ' + error.message; stEl.style.color='var(--red)'; return; }
+
+      ['ev-titel','ev-von','ev-bis','ev-beschreibung'].forEach(id => document.getElementById(id).value='');
+      stEl.textContent = '✓ Gespeichert!'; stEl.style.color='var(--pine)';
+      setTimeout(() => stEl.textContent='', 3000);
+      alleNeuLaden();
+    }
+
+    // ══════════════════════════════════════
+    //  VERANSTALTUNG LÖSCHEN
+    // ══════════════════════════════════════
+    async function eventLoeschen(id) {
+      if (!confirm('Veranstaltung wirklich löschen?')) return;
+      const { error } = await db.from('special_events').delete().eq('id', id);
       if (error) { alert('Fehler: ' + error.message); return; }
-      nameEl.value = '';
-      await alleNeuLaden();
+      alleNeuLaden();
     }
 
-    // ════════════════════════════════════════════
-    //  ZUSAGE LÖSCHEN
-    // ════════════════════════════════════════════
-    async function zusageLoeschen(zusageId, eventId) {
-      if (!confirm('Antwort entfernen?')) return;
-      await db.from('event_zusagen').delete().eq('id', zusageId);
-      await alleNeuLaden();
-    }
-
-    // ════════════════════════════════════════════
-    //  ALLES LADEN
-    // ════════════════════════════════════════════
-    async function alleNeuLaden() {
-      const [belegungen, events] = await Promise.all([
-        statsLaden(),
-        veranstaltungenLaden()
-      ]);
-
-      // Alle Events für Kalender & Liste
-      const { data: alleEvents } = await db.from('special_events').select('*').order('von');
-      miniKalenderAktualisieren(belegungen, alleEvents || []);
-      naechsteListeAktualisieren(belegungen, alleEvents || []);
-    }
-
-    // ════════════════════════════════════════════
+    // ══════════════════════════════════════
     //  INIT
-    // ════════════════════════════════════════════
+    // ══════════════════════════════════════
     document.addEventListener('DOMContentLoaded', () => {
-      miniKalender = new FullCalendar.Calendar(document.getElementById('mini-kalender'), {
+      miniKal = new FullCalendar.Calendar(document.getElementById('mini-kal'), {
         initialView:   'dayGridMonth',
         locale:        'de',
         firstDay:      1,
         height:        'auto',
+        weekNumbers:   true,
+        weekNumberFormat: { week:'numeric' },
+        weekText:      'KW',
         events:        [],
-        eventClick:    () => { window.location.href = 'kalender.html'; },
-        headerToolbar: { left:'prev,next', center:'title', right:'' },
-        buttonText:    { today:'Heute' }
+        eventClick:    () => window.location.href = 'kalender.html',
+        headerToolbar: { left:'prev,next', center:'title', right:'' }
       });
-      miniKalender.render();
+      miniKal.render();
       alleNeuLaden();
 
-      // Active nav beim Scrollen
+      // Nav aktiv beim Scrollen
       const links = document.querySelectorAll('.sidebar nav a');
       const secs  = document.querySelectorAll('[id]');
       window.addEventListener('scroll', () => {
-        let cur = '';
-        secs.forEach(s => { if (window.scrollY >= s.offsetTop - 140) cur = s.id; });
-        links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
+        let cur='';
+        secs.forEach(s => { if (window.scrollY >= s.offsetTop-140) cur=s.id; });
+        links.forEach(a => a.classList.toggle('active', a.getAttribute('href')==='#'+cur));
       });
     });
   </script>
