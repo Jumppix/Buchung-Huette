@@ -1,270 +1,245 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hüttenbuch – Unsere Ferienhütte</title>
+  <title>Hüttenbuch – Übersicht</title>
   <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
-      --ink:       #1e1510;
-      --paper:     #f7f2ea;
-      --aged:      #e8dfc8;
-      --rust:      #8b4513;
-      --gold:      #b8860b;
-      --pine:      #2d4a2d;
-      --muted:     #7a6a58;
-      --divider:   #d4c9b0;
+      --ink:     #1e1510;
+      --paper:   #f7f2ea;
+      --aged:    #e8dfc8;
+      --rust:    #8b4513;
+      --gold:    #b8860b;
+      --pine:    #2d4a2d;
+      --muted:   #7a6a58;
+      --divider: #d4c9b0;
+      --red:     #c0392b;
+      --blue:    #2c5f8a;
     }
-
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior: smooth; }
-
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--paper);
       color: var(--ink);
-      background-image:
-        repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(180,160,120,0.07) 28px, rgba(180,160,120,0.07) 29px);
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(180,160,120,0.07) 28px, rgba(180,160,120,0.07) 29px);
     }
 
     /* ── SIDEBAR ── */
     .sidebar {
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      width: 220px;
-      background: var(--ink);
-      display: flex;
-      flex-direction: column;
-      padding: 2.5rem 1.8rem;
-      z-index: 100;
-      border-right: 3px solid var(--rust);
+      position: fixed; top:0; left:0; bottom:0; width:220px;
+      background: var(--ink); display:flex; flex-direction:column;
+      padding:2.5rem 1.8rem; z-index:100; border-right:3px solid var(--rust);
     }
-    .sidebar-logo {
-      font-family: 'Crimson Pro', serif;
-      font-size: 1.4rem;
-      color: var(--aged);
-      line-height: 1.3;
-      margin-bottom: 0.4rem;
-    }
-    .sidebar-logo span { color: var(--gold); font-style: italic; }
-    .sidebar-sub {
-      font-size: 0.65rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 3rem;
-    }
-    .sidebar nav { display: flex; flex-direction: column; gap: 0.2rem; }
+    .sidebar-logo { font-family:'Crimson Pro',serif; font-size:1.4rem; color:var(--aged); line-height:1.3; margin-bottom:.4rem; }
+    .sidebar-logo span { color:var(--gold); font-style:italic; }
+    .sidebar-sub { font-size:.65rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:3rem; }
+    .sidebar nav { display:flex; flex-direction:column; gap:.2rem; }
     .sidebar nav a {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.6rem 0.8rem;
-      color: rgba(232,223,200,0.65);
-      text-decoration: none;
-      font-size: 0.82rem;
-      letter-spacing: 0.04em;
-      border-radius: 3px;
-      transition: background 0.15s, color 0.15s;
+      display:flex; align-items:center; gap:.75rem; padding:.6rem .8rem;
+      color:rgba(232,223,200,.65); text-decoration:none; font-size:.82rem;
+      letter-spacing:.04em; border-radius:3px; transition:background .15s, color .15s;
     }
-    .sidebar nav a:hover, .sidebar nav a.active {
-      background: rgba(139,69,19,0.25);
-      color: var(--aged);
-    }
-    .sidebar nav a .ni { font-size: 1rem; width: 1.2rem; text-align: center; }
-    .sidebar-footer {
-      margin-top: auto;
-      font-size: 0.65rem;
-      color: rgba(122,106,88,0.4);
-      letter-spacing: 0.1em;
-    }
+    .sidebar nav a:hover, .sidebar nav a.active { background:rgba(139,69,19,.25); color:var(--aged); }
+    .sidebar nav a .ni { font-size:1rem; width:1.2rem; text-align:center; }
+    .sidebar-footer { margin-top:auto; font-size:.65rem; color:rgba(122,106,88,.4); letter-spacing:.1em; }
 
     /* ── MAIN ── */
-    .main { margin-left: 220px; min-height: 100vh; }
-
+    .main { margin-left:220px; min-height:100vh; }
     .page-header {
-      padding: 3.5rem 3.5rem 2rem;
-      border-bottom: 1px solid var(--divider);
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
+      padding:3.5rem 3.5rem 2rem; border-bottom:1px solid var(--divider);
+      display:flex; justify-content:space-between; align-items:flex-end;
     }
-    .page-header h1 {
-      font-family: 'Crimson Pro', serif;
-      font-size: 2.8rem;
-      font-weight: 300;
-      color: var(--rust);
-      line-height: 1;
-    }
-    .page-header h1 em { font-style: italic; color: var(--ink); }
-    .page-header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.4rem; }
-    .header-date { font-size: 0.75rem; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
-
-    .content { padding: 3rem 3.5rem; }
-    .section { margin-bottom: 4rem; }
-
+    .page-header h1 { font-family:'Crimson Pro',serif; font-size:2.8rem; font-weight:300; color:var(--rust); }
+    .page-header h1 em { font-style:italic; color:var(--ink); }
+    .page-header p { color:var(--muted); font-size:.85rem; margin-top:.4rem; }
+    .header-date { font-size:.75rem; letter-spacing:.18em; color:var(--muted); text-transform:uppercase; text-align:right; }
+    .content { padding:3rem 3.5rem; }
+    .section { margin-bottom:4rem; }
     .section-heading {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.8rem;
+      display:flex; align-items:center; gap:1rem; margin-bottom:1.8rem;
     }
-    .section-heading::after { content:''; flex:1; height:1px; background: var(--divider); }
-    .section-heading h2 {
-      font-family: 'Crimson Pro', serif;
-      font-size: 1.4rem;
-      font-weight: 400;
-      color: var(--rust);
-      white-space: nowrap;
-    }
+    .section-heading::after { content:''; flex:1; height:1px; background:var(--divider); }
+    .section-heading h2 { font-family:'Crimson Pro',serif; font-size:1.4rem; font-weight:400; color:var(--rust); white-space:nowrap; }
 
     /* ── STAT CARDS ── */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.2rem;
-    }
+    .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; }
     .stat-card {
-      background: #fff;
-      border: 1px solid var(--divider);
-      border-top: 3px solid var(--rust);
-      padding: 1.4rem 1.6rem;
-      border-radius: 2px;
+      background:#fff; border:1px solid var(--divider);
+      border-top:3px solid var(--rust); border-radius:2px; padding:1.4rem 1.6rem;
     }
-    .stat-card.green { border-top-color: var(--pine); }
-    .stat-card.gold  { border-top-color: var(--gold); }
-    .stat-card .slabel { font-size: 0.65rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-    .stat-card .sval {
-      font-family: 'Crimson Pro', serif;
-      font-size: 2.2rem;
-      font-weight: 300;
-      color: var(--ink);
-      line-height: 1;
-    }
-    .stat-card .snote { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+    .stat-card.green { border-top-color:var(--pine); }
+    .stat-card.gold  { border-top-color:var(--gold); }
+    .stat-card.blue  { border-top-color:var(--blue); }
+    .slabel { font-size:.65rem; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); margin-bottom:.5rem; }
+    .sval { font-family:'Crimson Pro',serif; font-size:2.2rem; font-weight:300; color:var(--ink); line-height:1; }
+    .sval.sm { font-size:1.2rem; padding-top:.4rem; }
+    .snote { font-size:.75rem; color:var(--muted); margin-top:.3rem; }
 
-    /* ── KALENDER PLACEHOLDER ── */
-    .cal-placeholder {
-      background: #fff;
-      border: 1px solid var(--divider);
-      border-radius: 2px;
-      padding: 2.5rem;
-      text-align: center;
-      color: var(--muted);
+    /* ── KALENDER WIDGET ── */
+    .kalender-widget-wrap {
+      display:grid; grid-template-columns:1fr 260px; gap:1.5rem; align-items:start;
     }
-    .cal-placeholder .ci { font-size: 3rem; margin-bottom: 1rem; }
-    .cal-placeholder p { font-size: 0.9rem; line-height: 1.7; }
-    .cal-placeholder a {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.6rem 1.5rem;
-      background: var(--rust);
-      color: #fff;
-      text-decoration: none;
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
-      border-radius: 2px;
-      transition: background 0.2s;
+    #mini-kalender-container {
+      background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.2rem;
     }
-    .cal-placeholder a:hover { background: #a0521a; }
+    .fc { font-family:'DM Sans',sans-serif; }
+    .fc .fc-toolbar-title { font-family:'Crimson Pro',serif; font-size:1.3rem; font-weight:400; color:var(--rust); }
+    .fc .fc-button-primary { background:var(--rust)!important; border-color:var(--rust)!important; font-size:.75rem!important; border-radius:2px!important; padding:.3rem .7rem!important; }
+    .fc .fc-button-primary:hover { background:#a0521a!important; border-color:#a0521a!important; }
+    .fc .fc-col-header-cell { background:var(--aged); }
+    .fc .fc-col-header-cell-cushion { font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:.4rem 0; }
+    .fc .fc-daygrid-day-number { font-size:.76rem; color:var(--muted); text-decoration:none; padding:3px 5px; }
+    .fc .fc-daygrid-day.fc-day-today { background:rgba(184,134,11,.1)!important; }
+    .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number { color:var(--gold); font-weight:500; }
+    .fc-event { border-radius:2px!important; border:none!important; font-size:.72rem!important; padding:1px 3px!important; cursor:default!important; }
 
-    /* ── TIMELINE ── */
-    .timeline { position: relative; padding-left: 2rem; }
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 0.4rem; top: 0; bottom: 0;
-      width: 2px;
-      background: var(--divider);
+    /* Kalender Legende */
+    .kal-legende {
+      display:flex; flex-direction:column; gap:.6rem;
     }
-    .titem { position: relative; margin-bottom: 2.2rem; padding-left: 1rem; }
-    .titem::before {
-      content: '';
-      position: absolute;
-      left: -1.67rem; top: 0.45rem;
-      width: 10px; height: 10px;
-      background: var(--rust);
-      border-radius: 50%;
-      border: 2px solid var(--paper);
+    .kal-legende-title { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.4rem; color:var(--ink); }
+    .leg-item { display:flex; align-items:center; gap:.6rem; font-size:.8rem; color:var(--muted); }
+    .leg-dot { width:12px; height:12px; border-radius:2px; flex-shrink:0; }
+
+    /* Nächste Buchungen Liste */
+    .naechste-liste { display:flex; flex-direction:column; gap:.5rem; margin-top:1rem; }
+    .naechste-title { font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.3rem; }
+    .nb-item {
+      padding:.6rem .8rem; background:var(--paper);
+      border-radius:2px; border-left:3px solid var(--rust); font-size:.82rem;
     }
-    .tyear { font-size: 0.68rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 0.2rem; }
-    .ttitle { font-family: 'Crimson Pro', serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; }
-    .ttext { font-size: 0.88rem; color: var(--muted); line-height: 1.75; }
+    .nb-name { font-weight:500; }
+    .nb-datum { color:var(--muted); font-size:.75rem; margin-top:.1rem; }
+
+    /* ── SPECIAL EVENTS ── */
+    .events-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+
+    .event-card {
+      background:#fff; border:1px solid var(--divider); border-radius:2px;
+      overflow:hidden;
+    }
+    .event-header {
+      padding:1rem 1.3rem; display:flex; justify-content:space-between; align-items:flex-start;
+    }
+    .event-header.familienversammlung { background:rgba(44,95,138,.08); border-bottom:2px solid var(--blue); }
+    .event-header.arbeitswochenende   { background:rgba(45,74,45,.08);  border-bottom:2px solid var(--pine); }
+
+    .event-typ-badge {
+      font-size:.6rem; letter-spacing:.2em; text-transform:uppercase;
+      padding:.2rem .5rem; border-radius:10px; font-weight:500;
+    }
+    .badge-fam  { background:rgba(44,95,138,.15); color:var(--blue); }
+    .badge-arb  { background:rgba(45,74,45,.15);  color:var(--pine); }
+
+    .event-titel { font-family:'Crimson Pro',serif; font-size:1.15rem; font-weight:600; margin:.3rem 0 .2rem; }
+    .event-datum { font-size:.78rem; color:var(--muted); }
+    .event-body  { padding:1rem 1.3rem; }
+    .event-beschreibung { font-size:.85rem; color:var(--muted); line-height:1.7; margin-bottom:1rem; }
+
+    /* Zusagen */
+    .zusagen-bereich { margin-bottom:1rem; }
+    .zusagen-titel { font-size:.65rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:.6rem; }
+    .zusagen-chips { display:flex; flex-wrap:wrap; gap:.4rem; min-height:28px; }
+    .chip {
+      display:inline-flex; align-items:center; gap:.35rem;
+      padding:.25rem .65rem; border-radius:12px; font-size:.78rem; font-weight:500;
+    }
+    .chip.ja       { background:rgba(45,74,45,.12);   color:var(--pine); }
+    .chip.vielleicht { background:rgba(184,134,11,.12); color:var(--gold); }
+    .chip.nein     { background:rgba(192,57,43,.1);   color:var(--red); }
+    .chip-del { background:none; border:none; cursor:pointer; color:inherit; opacity:.5; font-size:.8rem; padding:0; transition:opacity .2s; }
+    .chip-del:hover { opacity:1; }
+    .keine-zusagen { font-size:.8rem; color:var(--divider); font-style:italic; }
+
+    /* RSVP Formular */
+    .rsvp-form { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-top:.5rem; }
+    .rsvp-input {
+      flex:1; min-width:120px; padding:.45rem .6rem;
+      border:1px solid var(--divider); border-radius:2px;
+      background:var(--paper); font-family:'DM Sans',sans-serif; font-size:.82rem;
+      transition:border-color .2s;
+    }
+    .rsvp-input:focus { outline:none; border-color:var(--rust); }
+    .rsvp-select {
+      padding:.45rem .5rem; border:1px solid var(--divider); border-radius:2px;
+      background:var(--paper); font-family:'DM Sans',sans-serif; font-size:.82rem;
+      color:var(--ink); cursor:pointer;
+    }
+    .rsvp-btn {
+      padding:.45rem .9rem; border:none; border-radius:2px;
+      background:var(--rust); color:#fff; font-size:.78rem; letter-spacing:.08em;
+      cursor:pointer; transition:background .2s; white-space:nowrap;
+    }
+    .rsvp-btn:hover { background:#a0521a; }
+    .rsvp-btn:disabled { background:var(--muted); cursor:not-allowed; }
+
+    /* Fortschrittsbalken */
+    .fortschritt-wrap { margin-bottom:.8rem; }
+    .fortschritt-label { font-size:.68rem; color:var(--muted); margin-bottom:.3rem; display:flex; justify-content:space-between; }
+    .fortschritt-bar { height:6px; background:var(--aged); border-radius:3px; overflow:hidden; }
+    .fortschritt-fill { height:100%; background:var(--pine); border-radius:3px; transition:width .4s; }
+
+    /* ── GESCHICHTE ── */
+    .timeline { position:relative; padding-left:2rem; }
+    .timeline::before { content:''; position:absolute; left:.4rem; top:0; bottom:0; width:2px; background:var(--divider); }
+    .titem { position:relative; margin-bottom:2.2rem; padding-left:1rem; }
+    .titem::before { content:''; position:absolute; left:-1.67rem; top:.45rem; width:10px; height:10px; background:var(--rust); border-radius:50%; border:2px solid var(--paper); }
+    .tyear { font-size:.68rem; letter-spacing:.25em; text-transform:uppercase; color:var(--gold); font-weight:500; margin-bottom:.2rem; }
+    .ttitle { font-family:'Crimson Pro',serif; font-size:1.1rem; font-weight:600; margin-bottom:.3rem; }
+    .ttext { font-size:.88rem; color:var(--muted); line-height:1.75; }
 
     /* ── GALERIE ── */
-    .galerie-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-    }
-    .foto { aspect-ratio: 4/3; overflow: hidden; border-radius: 2px; border: 1px solid var(--divider); }
-    .foto.big { grid-column: span 2; aspect-ratio: 16/7; }
-    .foto img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      filter: sepia(12%) brightness(0.97);
-      transition: filter 0.3s, transform 0.35s;
-    }
-    .foto:hover img { filter: sepia(0%) brightness(1.02); transform: scale(1.04); }
+    .galerie-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+    .foto { aspect-ratio:4/3; overflow:hidden; border-radius:2px; border:1px solid var(--divider); }
+    .foto.big { grid-column:span 2; aspect-ratio:16/7; }
+    .foto img { width:100%; height:100%; object-fit:cover; filter:sepia(12%) brightness(.97); transition:filter .3s, transform .35s; }
+    .foto:hover img { filter:sepia(0%) brightness(1.02); transform:scale(1.04); }
 
     /* ── REGELN ── */
-    .regeln-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
-    .rcard {
-      background: #fff;
-      border: 1px solid var(--divider);
-      border-left: 4px solid var(--pine);
-      padding: 1.2rem 1.4rem;
-      border-radius: 0 2px 2px 0;
-    }
-    .rcard.warn { border-left-color: var(--gold); }
-    .rcard h4 { font-family: 'Crimson Pro', serif; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .rcard ul { list-style: none; font-size: 0.84rem; color: var(--muted); line-height: 1.9; }
-    .rcard ul li::before { content: '— '; color: var(--rust); }
+    .regeln-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .rcard { background:#fff; border:1px solid var(--divider); border-left:4px solid var(--pine); padding:1.2rem 1.4rem; border-radius:0 2px 2px 0; }
+    .rcard.warn { border-left-color:var(--gold); }
+    .rcard h4 { font-family:'Crimson Pro',serif; font-size:1rem; font-weight:600; margin-bottom:.5rem; }
+    .rcard ul { list-style:none; font-size:.84rem; color:var(--muted); line-height:1.9; }
+    .rcard ul li::before { content:'— '; color:var(--rust); }
 
     /* ── KONTAKT ── */
-    .kontakt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
-    .kcard {
-      background: #fff;
-      border: 1px solid var(--divider);
-      border-radius: 2px;
-      padding: 1.4rem;
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-    .kicon { font-size: 1.6rem; }
-    .klabel { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
-    .kval { font-family: 'Crimson Pro', serif; font-size: 1.05rem; color: var(--ink); }
-    .kval a { color: var(--rust); text-decoration: none; }
-    .kval a:hover { text-decoration: underline; }
+    .kontakt-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .kcard { background:#fff; border:1px solid var(--divider); border-radius:2px; padding:1.4rem; display:flex; gap:1rem; align-items:flex-start; }
+    .kicon { font-size:1.6rem; }
+    .klabel { font-size:.65rem; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:.25rem; }
+    .kval { font-family:'Crimson Pro',serif; font-size:1.05rem; color:var(--ink); }
+    .kval a { color:var(--rust); text-decoration:none; }
+    .kval a:hover { text-decoration:underline; }
 
     /* ── FOOTER ── */
-    .site-footer {
-      margin-left: 220px;
-      padding: 1.2rem 3.5rem;
-      border-top: 1px solid var(--divider);
-      font-size: 0.72rem;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      display: flex;
-      justify-content: space-between;
-    }
+    .site-footer { margin-left:220px; padding:1.2rem 3.5rem; border-top:1px solid var(--divider); font-size:.72rem; color:var(--muted); letter-spacing:.1em; display:flex; justify-content:space-between; }
+
+    /* ── LADEANIMATION ── */
+    .lade-platzhalter { color:var(--muted); font-size:.85rem; font-style:italic; }
+    .spin { display:inline-block; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      .sidebar { width: 58px; padding: 1.2rem 0.7rem; }
-      .sidebar-logo, .sidebar-sub, .sidebar nav a span, .sidebar-footer { display: none; }
-      .sidebar nav a { justify-content: center; padding: 0.7rem; }
-      .main, .site-footer { margin-left: 58px; }
-      .content, .page-header { padding-left: 1.5rem; padding-right: 1.5rem; }
-      .regeln-grid, .kontakt-grid { grid-template-columns: 1fr; }
-      .galerie-grid { grid-template-columns: 1fr 1fr; }
-      .foto.big { grid-column: span 1; aspect-ratio: 4/3; }
+    @media (max-width:1100px) {
+      .kalender-widget-wrap { grid-template-columns:1fr; }
+      .events-grid { grid-template-columns:1fr; }
     }
-    @media (max-width: 560px) {
-      .dashboard-grid { grid-template-columns: 1fr 1fr; }
-      .galerie-grid { grid-template-columns: 1fr; }
+    @media (max-width:900px) {
+      .sidebar { width:58px; padding:1.2rem .7rem; }
+      .sidebar-logo, .sidebar-sub, .sidebar nav a span, .sidebar-footer { display:none; }
+      .sidebar nav a { justify-content:center; padding:.7rem; }
+      .main, .site-footer { margin-left:58px; }
+      .content, .page-header { padding-left:1.5rem; padding-right:1.5rem; }
+      .regeln-grid, .kontakt-grid { grid-template-columns:1fr; }
+      .galerie-grid { grid-template-columns:1fr 1fr; }
+      .foto.big { grid-column:span 1; aspect-ratio:4/3; }
     }
   </style>
 </head>
@@ -276,66 +251,96 @@
     <nav>
       <a href="#uebersicht" class="active"><span class="ni">🏠</span><span>Übersicht</span></a>
       <a href="#kalender"><span class="ni">📅</span><span>Kalender</span></a>
+      <a href="#veranstaltungen"><span class="ni">🎉</span><span>Veranstaltungen</span></a>
       <a href="#geschichte"><span class="ni">📖</span><span>Geschichte</span></a>
       <a href="#galerie"><span class="ni">🖼</span><span>Galerie</span></a>
       <a href="#regeln"><span class="ni">📋</span><span>Regeln & Infos</span></a>
       <a href="#kontakt"><span class="ni">✉️</span><span>Kontakt</span></a>
     </nav>
-    <div class="sidebar-footer">© 2025 Familie Mustermann</div>
+    <div class="sidebar-footer">© 2026 Familie Mustermann</div>
   </aside>
 
   <main class="main">
     <header class="page-header" id="uebersicht">
       <div>
-        <h1>Willkommen zur Verwaltung der <em>Hütte</em></h1>
-        <p>Familieninterne Verwaltung · Einartshausen</p>
+        <h1>Unsere <em>Ferienhütte</em></h1>
+        <p>Familieninterne Verwaltung · Schwarzwald</p>
       </div>
       <div class="header-date" id="current-date"></div>
     </header>
 
     <div class="content">
 
-      <!-- Übersicht -->
+      <!-- ── SCHNELLINFOS ── -->
       <section class="section">
         <div class="section-heading"><span>📊</span><h2>Auf einen Blick</h2></div>
         <div class="dashboard-grid">
           <div class="stat-card">
             <div class="slabel">Belegungen 2026</div>
-            <div class="sval">14</div>
-            <div class="snote">davon 3 diesen Monat</div>
+            <div class="sval" id="stat-belegungen"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-belegungen-note">wird geladen…</div>
           </div>
           <div class="stat-card green">
             <div class="slabel">Nächste freie Woche</div>
-            <div class="sval" style="font-size:1.3rem;padding-top:.4rem">KW 34</div>
-            <div class="snote">19.–25. August</div>
+            <div class="sval sm" id="stat-freie-woche"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-freie-woche-note">wird geladen…</div>
           </div>
           <div class="stat-card gold">
             <div class="slabel">Nächste Belegung</div>
-            <div class="sval" style="font-size:1.2rem;padding-top:.4rem">Familie T.</div>
-            <div class="snote">28. Juli – 4. Aug.</div>
+            <div class="sval sm" id="stat-naechste"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-naechste-note">wird geladen…</div>
           </div>
-          <div class="stat-card">
-            <div class="slabel">Übernachtungen gesamt</div>
-            <div class="sval">87</div>
-            <div class="snote">seit Eröffnung 1978</div>
+          <div class="stat-card blue">
+            <div class="slabel">Nächste Veranstaltung</div>
+            <div class="sval sm" id="stat-event"><span class="spin">⏳</span></div>
+            <div class="snote" id="stat-event-note">wird geladen…</div>
           </div>
         </div>
       </section>
 
-      <!-- Kalender -->
+      <!-- ── MINI KALENDER ── -->
       <section class="section" id="kalender">
         <div class="section-heading"><span>📅</span><h2>Belegungskalender</h2></div>
-        <div class="cal-placeholder">
-          <div class="ci">🗓️</div>
-          <p>
-            Hier wird der interaktive Belegungskalender eingebunden.<br/>
-            Kommt als nächster Schritt mit <strong>FullCalendar.js</strong>!
-          </p>
-          <a href="kalender.html">→ Kalender öffnen</a>
+        <div class="kalender-widget-wrap">
+          <div id="mini-kalender-container">
+            <div id="mini-kalender"></div>
+          </div>
+          <div>
+            <!-- Legende -->
+            <div style="background:#fff;border:1px solid var(--divider);border-radius:2px;padding:1.2rem 1.3rem;margin-bottom:1rem;">
+              <div class="kal-legende-title">Legende</div>
+              <div class="kal-legende" style="margin-top:.7rem;">
+                <div class="leg-item"><div class="leg-dot" style="background:#8b4513"></div> Belegung</div>
+                <div class="leg-item"><div class="leg-dot" style="background:#2c5f8a"></div> Familienversammlung</div>
+                <div class="leg-item"><div class="leg-dot" style="background:#2d4a2d"></div> Arbeitswochenende</div>
+                <div class="leg-item"><div class="leg-dot" style="background:#b8860b;opacity:.6"></div> Reserviert (Timer)</div>
+              </div>
+              <div style="margin-top:1rem;">
+                <a href="kalender.html" style="display:inline-block;padding:.5rem 1rem;background:var(--rust);color:#fff;text-decoration:none;font-size:.78rem;letter-spacing:.08em;border-radius:2px;">
+                  → Vollansicht & Buchen
+                </a>
+              </div>
+            </div>
+            <!-- Nächste Buchungen -->
+            <div style="background:#fff;border:1px solid var(--divider);border-top:3px solid var(--rust);border-radius:2px;padding:1.2rem 1.3rem;">
+              <div class="kal-legende-title">Nächste Belegungen</div>
+              <div class="naechste-liste" id="naechste-liste">
+                <div class="lade-platzhalter"><span class="spin">⏳</span> Lädt…</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- Geschichte -->
+      <!-- ── VERANSTALTUNGEN ── -->
+      <section class="section" id="veranstaltungen">
+        <div class="section-heading"><span>🎉</span><h2>Jahresveranstaltungen 2026</h2></div>
+        <div class="events-grid" id="events-grid">
+          <div class="lade-platzhalter"><span class="spin">⏳</span> Lade Veranstaltungen…</div>
+        </div>
+      </section>
+
+      <!-- ── GESCHICHTE ── -->
       <section class="section" id="geschichte">
         <div class="section-heading"><span>📖</span><h2>Geschichte der Hütte</h2></div>
         <div class="timeline">
@@ -360,42 +365,28 @@
             <div class="ttext">Die Verwaltung geht an die Kinder und Enkel über. WLAN wird installiert. Die Tradition lebt weiter.</div>
           </div>
           <div class="titem">
-            <div class="tyear">2025</div>
+            <div class="tyear">2026</div>
             <div class="ttitle">Dieses digitale Hüttenbuch</div>
             <div class="ttext">Zur besseren Koordination innerhalb der Familie entsteht diese Website. Wer wann? Ab jetzt alles auf einen Blick.</div>
           </div>
         </div>
       </section>
 
-      <!-- Galerie -->
+      <!-- ── GALERIE ── -->
       <section class="section" id="galerie">
         <div class="section-heading"><span>🖼</span><h2>Galerie</h2></div>
         <div class="galerie-grid">
-          <div class="foto big">
-            <img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=900&q=80" alt="Hütte im Winter"/>
-          </div>
-          <div class="foto">
-            <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Außenansicht"/>
-          </div>
-          <div class="foto">
-            <img src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=500&q=80" alt="Umgebung"/>
-          </div>
-          <div class="foto">
-            <img src="https://images.unsplash.com/photo-1520637836993-a072955a31e1?w=500&q=80" alt="Innenraum"/>
-          </div>
-          <div class="foto">
-            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80" alt="Wohnzimmer"/>
-          </div>
-          <div class="foto">
-            <img src="https://images.unsplash.com/photo-1586105449897-20b5efeb3233?w=500&q=80" alt="Natur"/>
-          </div>
+          <div class="foto big"><img src="https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=900&q=80" alt="Hütte"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=500&q=80" alt="Außen"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=500&q=80" alt="Umgebung"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1520637836993-a072955a31e1?w=500&q=80" alt="Innen"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80" alt="Wohnzimmer"/></div>
+          <div class="foto"><img src="https://images.unsplash.com/photo-1586105449897-20b5efeb3233?w=500&q=80" alt="Natur"/></div>
         </div>
-        <p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem;">
-          💡 Eigene Fotos hochladen und die URLs durch z.B. <code>fotos/huette1.jpg</code> ersetzen.
-        </p>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:.8rem;">💡 Eigene Fotos: URL durch z.B. <code>fotos/huette1.jpg</code> ersetzen.</p>
       </section>
 
-      <!-- Regeln -->
+      <!-- ── REGELN ── -->
       <section class="section" id="regeln">
         <div class="section-heading"><span>📋</span><h2>Regeln & Wichtige Infos</h2></div>
         <div class="regeln-grid">
@@ -438,26 +429,14 @@
         </div>
       </section>
 
-      <!-- Kontakt -->
+      <!-- ── KONTAKT ── -->
       <section class="section" id="kontakt">
         <div class="section-heading"><span>✉️</span><h2>Kontakt & Verwaltung</h2></div>
         <div class="kontakt-grid">
-          <div class="kcard">
-            <div class="kicon">👤</div>
-            <div><div class="klabel">Ansprechpartner</div><div class="kval">Max Mustermann</div></div>
-          </div>
-          <div class="kcard">
-            <div class="kicon">📞</div>
-            <div><div class="klabel">Telefon</div><div class="kval"><a href="tel:+491234567890">+49 123 456 7890</a></div></div>
-          </div>
-          <div class="kcard">
-            <div class="kicon">📧</div>
-            <div><div class="klabel">E-Mail</div><div class="kval"><a href="mailto:huette@familie.de">huette@familie.de</a></div></div>
-          </div>
-          <div class="kcard">
-            <div class="kicon">📍</div>
-            <div><div class="klabel">Adresse</div><div class="kval">Waldweg 7, 79123 Musterort</div></div>
-          </div>
+          <div class="kcard"><div class="kicon">👤</div><div><div class="klabel">Ansprechpartner</div><div class="kval">Max Mustermann</div></div></div>
+          <div class="kcard"><div class="kicon">📞</div><div><div class="klabel">Telefon</div><div class="kval"><a href="tel:+491234567890">+49 123 456 7890</a></div></div></div>
+          <div class="kcard"><div class="kicon">📧</div><div><div class="klabel">E-Mail</div><div class="kval"><a href="mailto:huette@familie.de">huette@familie.de</a></div></div></div>
+          <div class="kcard"><div class="kicon">📍</div><div><div class="klabel">Adresse</div><div class="kval">Waldweg 7, 79123 Musterort</div></div></div>
         </div>
       </section>
 
@@ -470,17 +449,342 @@
   </footer>
 
   <script>
-    const d = new Date();
-    document.getElementById('current-date').textContent =
-      d.toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    document.getElementById('fyear').textContent = '© ' + d.getFullYear();
+    // ════════════════════════════════════════════
+    //  ⚙️  SUPABASE ZUGANGSDATEN
+    // ════════════════════════════════════════════
+    const SUPABASE_URL = 'https://jvxlhlpqsiipplrwozje.supabase.co';
+    const SUPABASE_KEY = 'DeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A';
+    // ════════════════════════════════════════════
 
-    const links = document.querySelectorAll('.sidebar nav a');
-    const secs = document.querySelectorAll('[id]');
-    window.addEventListener('scroll', () => {
-      let cur = '';
-      secs.forEach(s => { if (window.scrollY >= s.offsetTop - 140) cur = s.id; });
-      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let miniKalender;
+    const HEUTE = new Date();
+
+    // ── Datum ──
+    document.getElementById('current-date').textContent =
+      HEUTE.toLocaleDateString('de-DE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    document.getElementById('fyear').textContent = '© ' + HEUTE.getFullYear();
+
+    // ════════════════════════════════════════════
+    //  HILFSFUNKTIONEN
+    // ════════════════════════════════════════════
+    function datumDE(str, opt) {
+      return new Date(str).toLocaleDateString('de-DE', opt || {day:'2-digit', month:'short', year:'numeric'});
+    }
+
+    // Nächste Montags-KW finden die komplett frei ist
+    function naechsteFreieWoche(belegungen) {
+      const belegt = new Set();
+      belegungen.forEach(b => {
+        let d = new Date(b.von);
+        const end = new Date(b.bis);
+        while (d < end) {
+          belegt.add(d.toISOString().slice(0,10));
+          d.setDate(d.getDate() + 1);
+        }
+      });
+
+      // Ab nächstem Montag suchen
+      let montag = new Date(HEUTE);
+      montag.setDate(montag.getDate() + (8 - montag.getDay()) % 7 || 7);
+
+      for (let i = 0; i < 52; i++) {
+        let frei = true;
+        for (let t = 0; t < 7; t++) {
+          const d = new Date(montag);
+          d.setDate(d.getDate() + t);
+          if (belegt.has(d.toISOString().slice(0,10))) { frei = false; break; }
+        }
+        if (frei) {
+          const sonntag = new Date(montag);
+          sonntag.setDate(sonntag.getDate() + 6);
+          // KW berechnen
+          const tmp = new Date(montag);
+          tmp.setHours(0,0,0,0);
+          tmp.setDate(tmp.getDate() + 3 - (tmp.getDay() + 6) % 7);
+          const week1 = new Date(tmp.getFullYear(), 0, 4);
+          const kw = 1 + Math.round(((tmp - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+          return {
+            kw,
+            von: montag.toISOString().slice(0,10),
+            bis: sonntag.toISOString().slice(0,10)
+          };
+        }
+        montag.setDate(montag.getDate() + 7);
+      }
+      return null;
+    }
+
+    // ════════════════════════════════════════════
+    //  STATS LADEN
+    // ════════════════════════════════════════════
+    async function statsLaden() {
+      const jetzt = HEUTE.toISOString().slice(0,10);
+      const jahresStart = HEUTE.getFullYear() + '-01-01';
+      const jahresEnd   = HEUTE.getFullYear() + '-12-31';
+
+      const [{ data: bel }, { data: events }] = await Promise.all([
+        db.from('belegungen').select('*').gte('von', jahresStart).lte('von', jahresEnd).order('von'),
+        db.from('special_events').select('*').gte('von', jetzt).order('von').limit(1)
+      ]);
+
+      // Belegungen dieses Jahr
+      document.getElementById('stat-belegungen').textContent = bel ? bel.length : '–';
+      document.getElementById('stat-belegungen-note').textContent =
+        bel && bel.length > 0
+          ? `${bel.filter(b => b.von >= jetzt).length} noch bevorstehend`
+          : 'Noch keine Einträge';
+
+      // Nächste Belegung
+      const naechste = bel ? bel.filter(b => b.bis > jetzt).sort((a,b) => a.von.localeCompare(b.von))[0] : null;
+      if (naechste) {
+        document.getElementById('stat-naechste').textContent = naechste.name;
+        document.getElementById('stat-naechste-note').textContent =
+          datumDE(naechste.von, {day:'2-digit',month:'short'}) + ' – ' + datumDE(naechste.bis, {day:'2-digit',month:'short'});
+      } else {
+        document.getElementById('stat-naechste').textContent = '–';
+        document.getElementById('stat-naechste-note').textContent = 'Keine bevorstehenden Buchungen';
+      }
+
+      // Nächste freie Woche
+      const alleBel = bel ? bel.filter(b => b.bis > jetzt) : [];
+      const freiWoche = naechsteFreieWoche(alleBel);
+      if (freiWoche) {
+        document.getElementById('stat-freie-woche').textContent = 'KW ' + freiWoche.kw;
+        document.getElementById('stat-freie-woche-note').textContent =
+          datumDE(freiWoche.von, {day:'2-digit',month:'short'}) + ' – ' + datumDE(freiWoche.bis, {day:'2-digit',month:'short'});
+      } else {
+        document.getElementById('stat-freie-woche').textContent = '–';
+        document.getElementById('stat-freie-woche-note').textContent = 'Keine freie Woche gefunden';
+      }
+
+      // Nächste Veranstaltung
+      if (events && events.length > 0) {
+        const ev = events[0];
+        document.getElementById('stat-event').textContent = ev.titel.replace(' 2026','').replace(' 2025','');
+        document.getElementById('stat-event-note').textContent =
+          datumDE(ev.von, {day:'2-digit',month:'short'}) + ' – ' + datumDE(ev.bis, {day:'2-digit',month:'short'});
+      } else {
+        document.getElementById('stat-event').textContent = '–';
+        document.getElementById('stat-event-note').textContent = 'Keine Veranstaltungen';
+      }
+
+      return bel || [];
+    }
+
+    // ════════════════════════════════════════════
+    //  NÄCHSTE BUCHUNGEN LISTE
+    // ════════════════════════════════════════════
+    function naechsteListeAktualisieren(belegungen, events) {
+      const jetzt = HEUTE.toISOString().slice(0,10);
+      const alle = [
+        ...(belegungen || []).filter(b => b.bis > jetzt).map(b => ({...b, art:'belegung'})),
+        ...(events    || []).filter(e => e.bis > jetzt).map(e => ({...e, name: e.titel, art:'event', typ: e.typ}))
+      ].sort((a,b) => a.von.localeCompare(b.von)).slice(0, 5);
+
+      const el = document.getElementById('naechste-liste');
+      if (alle.length === 0) { el.innerHTML = '<div class="lade-platzhalter">Keine bevorstehenden Einträge.</div>'; return; }
+
+      el.innerHTML = alle.map(e => {
+        const farbe = e.art === 'event'
+          ? (e.typ === 'familienversammlung' ? 'var(--blue)' : 'var(--pine)')
+          : 'var(--rust)';
+        return `
+          <div class="nb-item" style="border-left-color:${farbe}">
+            <div class="nb-name">${e.name}</div>
+            <div class="nb-datum">
+              ${datumDE(e.von,{day:'2-digit',month:'short'})} – ${datumDE(e.bis,{day:'2-digit',month:'short',year:'numeric'})}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ════════════════════════════════════════════
+    //  MINI KALENDER
+    // ════════════════════════════════════════════
+    function miniKalenderAktualisieren(belegungen, events) {
+      miniKalender.removeAllEvents();
+
+      (belegungen || []).forEach(b => {
+        miniKalender.addEvent({ title: b.name, start: b.von, end: b.bis, backgroundColor:'#8b4513', borderColor:'#8b4513' });
+      });
+
+      (events || []).forEach(e => {
+        const farbe = e.typ === 'familienversammlung' ? '#2c5f8a' : '#2d4a2d';
+        miniKalender.addEvent({ title: e.titel, start: e.von, end: e.bis, backgroundColor: farbe, borderColor: farbe });
+      });
+    }
+
+    // ════════════════════════════════════════════
+    //  VERANSTALTUNGEN LADEN & RENDERN
+    // ════════════════════════════════════════════
+    async function veranstaltungenLaden() {
+      const jahr = HEUTE.getFullYear();
+      const { data: events, error: e1 } = await db
+        .from('special_events').select('*').eq('jahr', jahr).order('von');
+      if (e1 || !events) return [];
+
+      const { data: zusagen } = await db
+        .from('event_zusagen').select('*').in('event_id', events.map(e => e.id));
+
+      renderEvents(events, zusagen || []);
+      return events;
+    }
+
+    function renderEvents(events, zusagen) {
+      const grid = document.getElementById('events-grid');
+      if (!events.length) { grid.innerHTML = '<div class="lade-platzhalter">Keine Veranstaltungen gefunden.</div>'; return; }
+
+      grid.innerHTML = events.map(ev => {
+        const evZusagen = zusagen.filter(z => z.event_id === ev.id);
+        const jaList  = evZusagen.filter(z => z.status === 'ja');
+        const vielList = evZusagen.filter(z => z.status === 'vielleicht');
+        const neinList = evZusagen.filter(z => z.status === 'nein');
+        const total   = jaList.length + vielList.length;
+        const pct     = total > 0 ? Math.round((jaList.length / total) * 100) : 0;
+        const isFam   = ev.typ === 'familienversammlung';
+
+        const chipHTML = (liste, cls) => liste.map(z => `
+          <span class="chip ${cls}">
+            ${z.name}
+            <button class="chip-del" onclick="zusageLoeschen('${z.id}','${ev.id}')" title="Entfernen">✕</button>
+          </span>`).join('');
+
+        return `
+          <div class="event-card" id="card-${ev.id}">
+            <div class="event-header ${ev.typ}">
+              <div>
+                <span class="event-typ-badge ${isFam ? 'badge-fam' : 'badge-arb'}">
+                  ${isFam ? '👨‍👩‍👧‍👦 Familienversammlung' : '🔨 Arbeitswochenende'}
+                </span>
+                <div class="event-titel">${ev.titel}</div>
+                <div class="event-datum">
+                  ${datumDE(ev.von, {weekday:'short',day:'2-digit',month:'long'})} –
+                  ${datumDE(ev.bis, {weekday:'short',day:'2-digit',month:'long',year:'numeric'})}
+                </div>
+              </div>
+            </div>
+            <div class="event-body">
+              <p class="event-beschreibung">${ev.beschreibung || ''}</p>
+
+              ${total > 0 ? `
+              <div class="fortschritt-wrap">
+                <div class="fortschritt-label">
+                  <span>${jaList.length} zugesagt · ${vielList.length} vielleicht · ${neinList.length} abgesagt</span>
+                  <span>${pct}% dabei</span>
+                </div>
+                <div class="fortschritt-bar"><div class="fortschritt-fill" style="width:${pct}%"></div></div>
+              </div>` : ''}
+
+              <div class="zusagen-bereich">
+                <div class="zusagen-titel">✅ Zugesagt</div>
+                <div class="zusagen-chips" id="chips-ja-${ev.id}">
+                  ${jaList.length ? chipHTML(jaList,'ja') : '<span class="keine-zusagen">Noch niemand</span>'}
+                </div>
+              </div>
+              ${vielList.length > 0 ? `
+              <div class="zusagen-bereich">
+                <div class="zusagen-titel">🤔 Vielleicht</div>
+                <div class="zusagen-chips">${chipHTML(vielList,'vielleicht')}</div>
+              </div>` : ''}
+              ${neinList.length > 0 ? `
+              <div class="zusagen-bereich">
+                <div class="zusagen-titel">❌ Abgesagt</div>
+                <div class="zusagen-chips">${chipHTML(neinList,'nein')}</div>
+              </div>` : ''}
+
+              <div class="rsvp-form">
+                <input class="rsvp-input" id="rsvp-name-${ev.id}" type="text" placeholder="Dein Name"/>
+                <select class="rsvp-select" id="rsvp-status-${ev.id}">
+                  <option value="ja">✅ Ich bin dabei</option>
+                  <option value="vielleicht">🤔 Vielleicht</option>
+                  <option value="nein">❌ Kann nicht</option>
+                </select>
+                <button class="rsvp-btn" id="rsvp-btn-${ev.id}" onclick="zusageAbgeben('${ev.id}')">Antworten</button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ════════════════════════════════════════════
+    //  RSVP ABGEBEN
+    // ════════════════════════════════════════════
+    async function zusageAbgeben(eventId) {
+      const nameEl   = document.getElementById('rsvp-name-'  + eventId);
+      const statusEl = document.getElementById('rsvp-status-'+ eventId);
+      const btn      = document.getElementById('rsvp-btn-'   + eventId);
+      const name     = nameEl.value.trim();
+      if (!name) { nameEl.focus(); return; }
+
+      btn.disabled = true;
+      btn.textContent = '…';
+
+      // Upsert: gleicher Name → Status aktualisieren
+      const { error } = await db.from('event_zusagen').upsert(
+        { event_id: eventId, name, status: statusEl.value },
+        { onConflict: 'event_id,name' }
+      );
+
+      btn.disabled = false;
+      btn.textContent = 'Antworten';
+
+      if (error) { alert('Fehler: ' + error.message); return; }
+      nameEl.value = '';
+      await alleNeuLaden();
+    }
+
+    // ════════════════════════════════════════════
+    //  ZUSAGE LÖSCHEN
+    // ════════════════════════════════════════════
+    async function zusageLoeschen(zusageId, eventId) {
+      if (!confirm('Antwort entfernen?')) return;
+      await db.from('event_zusagen').delete().eq('id', zusageId);
+      await alleNeuLaden();
+    }
+
+    // ════════════════════════════════════════════
+    //  ALLES LADEN
+    // ════════════════════════════════════════════
+    async function alleNeuLaden() {
+      const [belegungen, events] = await Promise.all([
+        statsLaden(),
+        veranstaltungenLaden()
+      ]);
+
+      // Alle Events für Kalender & Liste
+      const { data: alleEvents } = await db.from('special_events').select('*').order('von');
+      miniKalenderAktualisieren(belegungen, alleEvents || []);
+      naechsteListeAktualisieren(belegungen, alleEvents || []);
+    }
+
+    // ════════════════════════════════════════════
+    //  INIT
+    // ════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      miniKalender = new FullCalendar.Calendar(document.getElementById('mini-kalender'), {
+        initialView:   'dayGridMonth',
+        locale:        'de',
+        firstDay:      1,
+        height:        'auto',
+        events:        [],
+        eventClick:    () => { window.location.href = 'kalender.html'; },
+        headerToolbar: { left:'prev,next', center:'title', right:'' },
+        buttonText:    { today:'Heute' }
+      });
+      miniKalender.render();
+      alleNeuLaden();
+
+      // Active nav beim Scrollen
+      const links = document.querySelectorAll('.sidebar nav a');
+      const secs  = document.querySelectorAll('[id]');
+      window.addEventListener('scroll', () => {
+        let cur = '';
+        secs.forEach(s => { if (window.scrollY >= s.offsetTop - 140) cur = s.id; });
+        links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
+      });
     });
   </script>
 </body>
