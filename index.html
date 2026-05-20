@@ -197,7 +197,9 @@ header{
 .fg{margin-bottom:.55rem;}
 .fg label{display:block;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem;}
 .req{color:var(--rust);}
-.fg input,.fg textarea,.fg select{width:100%;padding:.45rem .55rem;border:1px solid var(--div);border-radius:2px;background:var(--paper);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:.82rem;transition:border-color .2s;resize:vertical;}
+.fg input,.fg textarea,.fg select{width:100%;padding:.45rem .55rem;border:1px solid var(--div);border-radius:2px;background:var(--paper);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:.82rem;transition:border-color .2s;}
+textarea{resize:none;}
+textarea.allow-resize{resize:vertical;}
 .fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--rust);}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
 .btn{padding:.5rem 1rem;border:none;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.78rem;letter-spacing:.07em;cursor:pointer;transition:background .2s;}
@@ -613,7 +615,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
         <div class="fg"><label>Von</label><input id="ev-von" type="date"/></div>
         <div class="fg"><label>Bis</label><input id="ev-bis" type="date"/></div>
       </div>
-      <div class="fg"><label>Beschreibung</label><textarea id="ev-desc" rows="2"></textarea></div>
+      <div class="fg"><label>Beschreibung</label><textarea id="ev-desc" class="allow-resize" rows="2"></textarea></div>
       <button class="btn btn-b btn-sm" onclick="evSave()">Speichern</button>
       <span class="stat-msg" id="ev-msg"></span>
     </div>
@@ -805,7 +807,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
           <div class="fg"><label>Bis</label><input id="e-bis" type="date"/></div>
           <div class="fg"><label>Name / Titel</label><input id="e-name" type="text"/></div>
           <div class="fg"><label>Typ</label><select id="e-typ"><option value="belegung">Belegung</option><option value="familienversammlung">Familienversammlung</option><option value="arbeitswochenende">Arbeitswochenende</option><option value="sonstige">Sonstige</option></select></div>
-          <div class="fg"><label>Beschreibung</label><textarea id="e-desc" rows="3"></textarea></div>
+          <div class="fg"><label>Beschreibung</label><textarea id="e-desc" class="allow-resize" rows="3"></textarea></div>
         </div>
         <div style="width:260px">
           <div class="fg"><label>Erwachsene</label><input id="e-erw" type="number" min="0"/></div>
