@@ -53,6 +53,13 @@
       padding:3.5rem 3.5rem 2rem; border-bottom:1px solid var(--divider);
       display:flex; justify-content:space-between; align-items:flex-end;
     }
+    body.embedded { background: transparent; }
+    body.embedded .sidebar,
+    body.embedded .page-header { display:none; }
+    .embedded .main { margin-left:0; min-height:auto; }
+    .embedded .content { padding:1.5rem 1.5rem 2rem; }
+    .embedded .kal-layout { grid-template-columns:1fr; }
+    .embedded .statusbar { margin-top:0; }
     .page-header h1 { font-family:'Crimson Pro',serif; font-size:2.8rem; font-weight:300; color:var(--rust); }
     .page-header h1 em { font-style:italic; color:var(--ink); }
     .page-header p { color:var(--muted); font-size:.85rem; margin-top:.4rem; }
@@ -523,6 +530,12 @@
       alleLaden();
       setInterval(alleLaden, 30000);
     });
+
+    // Embed mode hides duplicate page chrome when loaded inside the main app iframe
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('embed') === '1') {
+      document.body.classList.add('embedded');
+    }
   </script>
 </body>
 </html>
