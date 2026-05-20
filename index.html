@@ -128,15 +128,16 @@ header{
 .fc .fc-daygrid-week-number-cell{background:rgba(232,223,200,.3)!important;}
 
 /* Jahr-Ansicht - kompaktere Darstellung */
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:22px;padding:2px;}
-.fc-view.fc-daygrid-year-view .fc-event{font-size:.55rem!important;padding:0 2px!important;line-height:1;max-height:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-number{font-size:.55rem;padding:0 2px;color:var(--muted);}
-.fc-view.fc-daygrid-year-view .fc-daygrid-week-number{display:none;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame > .fc-daygrid-day-top{padding-bottom:0;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:2px 3px;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:18px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:0;margin:0;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-top{display:flex;align-items:center;justify-content:center;padding:0;margin:0;width:100%;height:100%;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-number{display:none;} /* hide numbers for maximum compactness */
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-events{display:flex;gap:4px;align-items:center;justify-content:center;padding:0;margin:0;}
+.fc-view.fc-daygrid-year-view .fc-event{background:transparent;border:none;padding:0;margin:0;}
+.fc-yr-dot{display:inline-block;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,0.03);}
 
-/* Very compact indicator for year view events */
-.fc-yr-dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:4px;vertical-align:middle}
+/* limit event element size in year view */
+.fc-view.fc-daygrid-year-view .fc-event-main-frame{padding:0;margin:0;}
 
 /* Nächste Termine Box */
 .nbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
@@ -1208,10 +1209,7 @@ async function loadKalOv() {
         // Compact rendering for Year view
         if (arg.view && arg.view.type === 'dayGridYear') {
           const color = arg.event.backgroundColor || arg.event.borderColor || '#8b4513';
-          const short = name.split(' · ')[0].slice(0,18);
-          return {
-            html: `<span class="fc-yr-dot" style="background:${color}"></span><span style="font-size:.6rem;vertical-align:middle;display:inline-block;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${short}</span>`
-          };
+          return { html: `<span class="fc-yr-dot" style="background:${color}"></span>` };
         }
         let detail = '';
         if (ep.typ === 'belegung' && ep.erwachsene !== undefined) {
@@ -1224,6 +1222,23 @@ async function loadKalOv() {
       },
       headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,dayGridYear,listMonth'},
       buttonText:{today:'Heute',month:'Monat',year:'Jahr',list:'Liste'}
+      ,
+      eventDidMount: function(info) {
+        // Show full info as native tooltip in compact year view
+        try {
+          const ep = info.event.extendedProps || {};
+          let title = info.event.title || '';
+          if (ep.typ === 'belegung') {
+            const pers = (ep.erwachsene||0) + (ep.kinder||0);
+            if (pers) title += ' · ' + pers + ' P.';
+          }
+          const von = info.event.start ? info.event.start.toISOString().slice(0,10) : '';
+          const bis = info.event.end ? (info.event.end.toISOString().slice(0,10)) : '';
+          const dateRange = von && bis ? (von + ' – ' + bis) : (von || bis || '');
+          const full = title + (dateRange ? ('\n' + dateRange) : '') + (ep.beschreibung ? ('\n' + ep.beschreibung) : '');
+          info.el.setAttribute('title', full);
+        } catch (e) {}
+      }
     });
     kalOv.render();
   }
