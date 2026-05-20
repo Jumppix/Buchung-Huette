@@ -101,6 +101,14 @@ header{
 
 /* ══ KALENDER WRAPPER ══ */
 .kw2{display:grid;grid-template-columns:1fr 230px;gap:1.4rem;align-items:start;}
+.booking-layout{display:grid;grid-template-columns:1fr 340px;gap:1.4rem;align-items:start;}
+.booking-main{display:flex;flex-direction:column;gap:1rem;}
+.booking-sidebar .nbox{padding:1.1rem;}
+.booking-sidebar .nbox-title{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.75rem;}
+.booking-sidebar .fg{margin-bottom:.7rem;}
+.booking-sidebar .frow{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
+.booking-sidebar .warn-box{margin-top:-.4rem;}
+.booking-sidebar .btn{width:100%;}
 .kbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
 .fc{font-family:'DM Sans',sans-serif;}
 .fc .fc-toolbar-title{font-family:'Crimson Pro',serif;font-size:1.2rem;font-weight:400;color:var(--rust);}
@@ -313,6 +321,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 @media(max-width:900px){
   #content{padding:1.4rem;}
   .kw2{grid-template-columns:1fr;}
+  .booking-layout{grid-template-columns:1fr;}
   .cfg{grid-template-columns:1fr;}
   .frow{grid-template-columns:1fr;}
 }
@@ -603,8 +612,34 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   </div>
   <div class="panel" id="p-aktivitaeten-uebernachtungen">
     <div class="ptitle">Übernachtungen <em>eintragen</em></div>
-    <div class="pdesc">Buchungskalender – bitte scroll hinunter für das Formular</div>
-    <iframe src="kalender.html?embed=1" class="iframe-panel" title="Buchungskalender"></iframe>
+    <div class="pdesc">Buchungskalender und Formular direkt auf dieser Seite.</div>
+    <div class="booking-layout">
+      <div class="booking-main">
+        <div id="booking-status" class="statusbar laden"><span class="spin">⏳</span> Lade Buchungen…</div>
+        <div class="kbox"><div id="booking-kal"></div></div>
+      </div>
+      <div class="booking-sidebar">
+        <div class="nbox">
+          <div class="nbox-title">➕ Belegung eintragen</div>
+          <div class="fg"><label>Von <span class="req">*</span></label><input id="b-von" type="date"/></div>
+          <div class="fg"><label>Bis (Abreisetag) <span class="req">*</span></label><input id="b-bis" type="date"/></div>
+          <div class="fg"><label>Name / Vertreter <span class="req">*</span></label><input id="b-name" type="text" placeholder="z.B. Familie Müller"/></div>
+          <div class="frow">
+            <div class="fg"><label>Erwachsene</label><input id="b-erw" type="number" min="0" value="2"/></div>
+            <div class="fg"><label>Kinder</label><input id="b-kind" type="number" min="0" value="0"/></div>
+          </div>
+          <div class="fg"><label>Schlafplätze benötigt <span class="req">*</span></label><input id="b-schlaf" type="number" min="1" value="2" oninput="bookingSchlafCheck()"/></div>
+          <div class="warn-box" id="booking-warn-schlaf">⚠️ Die Hütte hat max. 6 Schlafplätze. Bitte vorher absprechen!</div>
+          <div class="fg"><label>E-Mail <span class="req">*</span></label><input id="b-email" type="email" placeholder="max@beispiel.de"/></div>
+          <div class="fg"><label>Telefon</label><input id="b-tel" type="tel" placeholder="+49 123 456 789"/></div>
+          <button class="btn btn-r btn-sm" id="b-btn-save" onclick="bookingSave()">Belegung speichern</button>
+        </div>
+        <div class="nbox">
+          <div class="nbox-title">Belegungen & Termine</div>
+          <div id="booking-list"></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="panel" id="p-aktivitaeten-freizeit">
     <div class="ptitle"><em>Freizeittipps</em></div>
@@ -875,7 +910,7 @@ function buildNav() {
 // ════════════════════════════════════════
 let curSec = 'home', curSub = null;
 let upTarget = { bkt:'', folder:'' };
-let kalHome = null, kalOv = null;
+let kalHome = null, kalOv = null, bookingCal = null;
 
 function go(sec, sub) {
   // Nav aktiv
@@ -976,6 +1011,7 @@ function onShow(sec, sub, secDef) {
   else if (sec === 'verein' && sub === 'vorstand')      renderV();
   else if (sec === 'aktivitaeten' && sub === 'kalender') loadKalOv();
   else if (sec === 'aktivitaeten' && sub === 'termine')  loadEv();
+  else if (sec === 'aktivitaeten' && sub === 'uebernachtungen') loadBooking();
   else if (sec === 'aktivitaeten' && sub === 'todo')     renderTd();
   else if ((sec === 'archiv' || sec === 'finanzen') && subDef && subDef.bkt) {
     loadFiles(subDef.bkt, subDef.folder, `fg-${sec}-${sub}`);
@@ -1109,6 +1145,141 @@ async function loadKalOv() {
   document.getElementById('kal-next').innerHTML = next.length
     ? next.map(b=>`<div class="nitem"><div class="nname">${b.name}</div><div class="ndat">${dDE(b.von,{day:'2-digit',month:'short'})} – ${dDE(b.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`).join('')
     : '<div class="none">Keine Belegungen</div>';
+}
+
+function bookingSchlafCheck() {
+  const v = parseInt(document.getElementById('b-schlaf').value) || 0;
+  document.getElementById('booking-warn-schlaf').classList.toggle('aktiv', v > 6);
+}
+
+async function loadBooking() {
+  if (!bookingCal) {
+    bookingCal = new FullCalendar.Calendar(document.getElementById('booking-kal'), {
+      initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
+      weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
+      events:[],
+      eventClick: async function(info) {
+        if (info.event.extendedProps.typ === 'event') return;
+        if (confirm('Belegung "' + info.event.title + '" löschen?')) {
+          await bookingDelete(info.event.extendedProps.dbId);
+        }
+      },
+      headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},
+      buttonText:{today:'Heute',month:'Monat',list:'Liste'}
+    });
+    bookingCal.render();
+  }
+
+  const status = document.getElementById('booking-status');
+  if (!db) {
+    status.className = 'statusbar fehler';
+    status.textContent = '✗ Supabase Zugangsdaten eintragen.';
+    document.getElementById('booking-list').innerHTML = '<div class="none">Keine DB-Verbindung</div>';
+    return;
+  }
+
+  const jetzt = HEUTE.toISOString().slice(0,10);
+  const [r1,r2] = await Promise.all([
+    dbQ(d => d.from('belegungen').select('*').order('von')),
+    dbQ(d => d.from('special_events').select('*').order('von'))
+  ]);
+  const bel = r1.data || [];
+  const events = r2.data || [];
+
+  bookingCal.removeAllEvents();
+  bel.forEach(b => {
+    const p = (b.erwachsene||0) + (b.kinder||0);
+    bookingCal.addEvent({
+      id: 'b-' + b.id,
+      title: b.name + (p ? ' ('+p+' P.)' : ''),
+      start: b.von, end: b.bis,
+      backgroundColor:'#8b4513', borderColor:'#8b4513',
+      extendedProps:{typ:'belegung', dbId: b.id}
+    });
+  });
+  events.forEach(e => {
+    const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+    bookingCal.addEvent({
+      id: 'e-' + e.id,
+      title: '📌 ' + e.titel,
+      start: e.von, end: e.bis,
+      backgroundColor:c, borderColor:c,
+      extendedProps:{typ:'event'}
+    });
+  });
+
+  status.className = 'statusbar ok';
+  status.textContent = '✓ Verbunden · ' + bel.length + ' Belegung(en) geladen';
+  renderBookingList(bel, events);
+}
+
+function renderBookingList(belegungen, events) {
+  const jetzt = HEUTE.toISOString().slice(0,10);
+  const items = [
+    ...belegungen.filter(b => b.bis > jetzt).map(b => ({...b, _art:'bel'})),
+    ...events.filter(e => e.bis > jetzt).map(e => ({...e, name:e.titel, _art:'event'}))
+  ].sort((a,b) => a.von.localeCompare(b.von));
+
+  const el = document.getElementById('booking-list');
+  if (!items.length) { el.innerHTML = '<div class="none">Noch keine Einträge.</div>'; return; }
+  el.innerHTML = items.map(item => {
+    if (item._art === 'event') {
+      const typ = item.typ === 'familienversammlung' ? '👨‍👩‍👧‍👦' : item.typ === 'arbeitswochenende' ? '🔨' : '📌';
+      return `<div class="nitem ev"><div class="nname">${typ} ${item.name}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`;
+    }
+    return `<div class="nitem"><div class="nname">${item.name}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`;
+  }).join('');
+}
+
+async function bookingSave() {
+  const name = document.getElementById('b-name').value.trim();
+  const von = document.getElementById('b-von').value;
+  const bis = document.getElementById('b-bis').value;
+  const erw = parseInt(document.getElementById('b-erw').value) || 0;
+  const kind = parseInt(document.getElementById('b-kind').value) || 0;
+  const schlaf = parseInt(document.getElementById('b-schlaf').value) || 0;
+  const email = document.getElementById('b-email').value.trim();
+  const telefon = document.getElementById('b-tel').value.trim();
+  const msg = document.getElementById('booking-status');
+
+  const errors = [];
+  if (!name) errors.push('Name fehlt');
+  if (!von || !bis) errors.push('Datum fehlt');
+  if (von && bis && von >= bis) errors.push('Enddatum muss nach Startdatum liegen');
+  if (!email || !email.includes('@')) errors.push('Gültige E-Mail erforderlich');
+  if (schlaf < 1) errors.push('Schlafplätze fehlen');
+  if (errors.length) { msg.className='statusbar fehler'; msg.textContent='✗ '+errors.join(' · '); return; }
+
+  const btn = document.getElementById('b-btn-save');
+  btn.disabled = true;
+  btn.textContent = 'Speichern…';
+  msg.className = 'statusbar laden';
+  msg.innerHTML = '<span class="spin">⏳</span> Wird gespeichert…';
+
+  const { error } = await db.from('belegungen').insert({
+    name, von, bis, erwachsene: erw, kinder: kind,
+    schlafplaetze: schlaf, email, telefon: telefon || null
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Belegung speichern';
+  if (error) { msg.className='statusbar fehler'; msg.textContent='✗ '+error.message; return; }
+
+  ['b-name','b-von','b-bis','b-email','b-tel'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('b-erw').value='2';
+  document.getElementById('b-kind').value='0';
+  document.getElementById('b-schlaf').value='2';
+  document.getElementById('booking-warn-schlaf').classList.remove('aktiv');
+  msg.className='statusbar ok';
+  msg.textContent='✓ Belegung gespeichert!';
+  loadBooking();
+}
+
+async function bookingDelete(id) {
+  if (!confirm('Belegung wirklich löschen?')) return;
+  const { error } = await db.from('belegungen').delete().eq('id', id);
+  if (error) { alert('Fehler: '+error.message); return; }
+  loadBooking();
 }
 
 // ════════════════════════════════════════
