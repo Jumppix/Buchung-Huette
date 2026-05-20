@@ -128,10 +128,15 @@ header{
 .fc .fc-daygrid-week-number-cell{background:rgba(232,223,200,.3)!important;}
 
 /* Jahr-Ansicht - kompaktere Darstellung */
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:50px;}
-.fc-view.fc-daygrid-year-view .fc-event{font-size:.65rem!important;padding:1px 2px!important;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-number{font-size:.7rem;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-week-number{font-size:.6rem;padding:1px 2px;min-width:auto;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:22px;padding:2px;}
+.fc-view.fc-daygrid-year-view .fc-event{font-size:.55rem!important;padding:0 2px!important;line-height:1;max-height:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-number{font-size:.55rem;padding:0 2px;color:var(--muted);}
+.fc-view.fc-daygrid-year-view .fc-daygrid-week-number{display:none;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame > .fc-daygrid-day-top{padding-bottom:0;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:2px 3px;}
+
+/* Very compact indicator for year view events */
+.fc-yr-dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:4px;vertical-align:middle}
 
 /* Nächste Termine Box */
 .nbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
@@ -1199,16 +1204,22 @@ async function loadKalOv() {
       },
       eventContent:function(arg) {
         const ep = arg.event.extendedProps || {};
-        const name = arg.event.title;
+        const name = arg.event.title || '';
+        // Compact rendering for Year view
+        if (arg.view && arg.view.type === 'dayGridYear') {
+          const color = arg.event.backgroundColor || arg.event.borderColor || '#8b4513';
+          const short = name.split(' · ')[0].slice(0,18);
+          return {
+            html: `<span class="fc-yr-dot" style="background:${color}"></span><span style="font-size:.6rem;vertical-align:middle;display:inline-block;max-width:78px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${short}</span>`
+          };
+        }
         let detail = '';
         if (ep.typ === 'belegung' && ep.erwachsene !== undefined) {
           const pers = (ep.erwachsene||0) + (ep.kinder||0);
           detail = pers ? ` · ${pers}P.` : '';
         }
         return {
-          html: `<div style="font-weight:500;line-height:1.2;white-space:normal;">
-            ${name.split(' · ')[0]}${detail}
-          </div>`
+          html: `<div style="font-weight:500;line-height:1.2;white-space:normal;">${name.split(' · ')[0]}${detail}</div>`
         };
       },
       headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,dayGridYear,listMonth'},
