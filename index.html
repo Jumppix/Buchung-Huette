@@ -376,7 +376,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 <div id="content" class="mt-1">
 
   <!-- ▶ HOME / Übersicht -->
-  <div class="panel on" id="p-home">
+  <div class="panel" id="p-home">
     <div class="ptitle">Willkommen im <em>Hüttenbuch</em></div>
     <div class="pdesc">Familieninterne Verwaltung · Schwarzwald</div>
     <div class="bgs" id="bg-home">
@@ -582,6 +582,14 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   <div class="panel" id="p-aktivitaeten-kalender">
     <div class="ptitle">Belegungs<em>kalender</em></div>
     <div class="pdesc">Übersicht – nur lesen. Zum Buchen → "Übernachtungen eintragen".</div>
+    <div class="bgs" id="bg-kal">
+      <div class="dgrid">
+        <div class="sc"><div class="slbl">Belegungen <span id="kal-year"></span></div><div class="sv" id="kal-sv-b"><span class="spin">⏳</span></div><div class="sn" id="kal-sn-b">lädt…</div></div>
+        <div class="sc g"><div class="slbl">Nächste freie Woche</div><div class="sv sm" id="kal-sv-f"><span class="spin">⏳</span></div><div class="sn" id="kal-sn-f">lädt…</div></div>
+        <div class="sc au"><div class="slbl">Nächste Belegung</div><div class="sv sm" id="kal-sv-n"><span class="spin">⏳</span></div><div class="sn" id="kal-sn-n">lädt…</div></div>
+        <div class="sc bl"><div class="slbl">Nächste Veranstaltung</div><div class="sv sm" id="kal-sv-e"><span class="spin">⏳</span></div><div class="sn" id="kal-sn-e">lädt…</div></div>
+      </div>
+    </div>
     <div class="kw2">
       <div class="kbox"><div id="kal-ov"></div></div>
       <div>
@@ -1163,7 +1171,11 @@ async function loadKalOv() {
     kalOv = new FullCalendar.Calendar(document.getElementById('kal-ov'), {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
-      events:[], eventClick:()=>{},
+      events:[], eventClick:function(info) {
+        const ep = info.event.extendedProps || {};
+        if (ep.typ === 'belegung' && ep.dbId) openEditModal('belegung', ep.dbId);
+        else if (ep.typ === 'event' && ep.dbId) openEditModal('event', ep.dbId);
+      },
       headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},
       buttonText:{today:'Heute',month:'Monat',list:'Liste'}
     });
@@ -1172,11 +1184,34 @@ async function loadKalOv() {
   if (!db) { document.getElementById('kal-next').innerHTML = '<div class="none">Keine DB-Verbindung</div>'; return; }
 
   const jetzt = HEUTE.toISOString().slice(0,10);
+  const jarAnf = HEUTE.getFullYear() + '-01-01';
   const [r1,r2] = await Promise.all([
     dbQ(d => d.from('belegungen').select('*').order('von')),
     dbQ(d => d.from('special_events').select('*').order('von'))
   ]);
-  const bel = r1.data || [], events = r2.data || [];
+  const bel = r1.data || [];
+  const events = r2.data || [];
+  const belJahr = bel.filter(b => b.von >= jarAnf);
+  const belKunft = bel.filter(b => b.bis > jetzt);
+  const naechste = belKunft.sort((a,b) => a.von.localeCompare(b.von))[0];
+  const fw = freieWoche(belKunft);
+  const nextEv = events.filter(e => e.bis > jetzt).sort((a,b) => a.von.localeCompare(b.von))[0];
+
+  document.getElementById('kal-year').textContent = HEUTE.getFullYear();
+  document.getElementById('kal-sv-b').textContent = belJahr.length;
+  document.getElementById('kal-sn-b').textContent = belKunft.length + ' bevorstehend';
+  document.getElementById('kal-sv-f').textContent = fw ? 'KW ' + fw.kw : '–';
+  document.getElementById('kal-sn-f').textContent = fw
+    ? dDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(fw.bis,{day:'2-digit',month:'short'})
+    : '';
+  document.getElementById('kal-sv-n').textContent = naechste ? naechste.name : '–';
+  document.getElementById('kal-sn-n').textContent = naechste
+    ? dDE(naechste.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(naechste.bis,{day:'2-digit',month:'short'})
+    : 'Keine bevorstehend';
+  document.getElementById('kal-sv-e').textContent = nextEv ? nextEv.titel : '–';
+  document.getElementById('kal-sn-e').textContent = nextEv
+    ? dDE(nextEv.von,{day:'2-digit',month:'short'})
+    : 'Keine geplant';
   kalOv.removeAllEvents();
   bel.forEach(b => {
     const p = (b.erwachsene||0)+(b.kinder||0);
@@ -1214,9 +1249,11 @@ async function loadBooking() {
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
       events:[],
       eventClick: async function(info) {
-        if (info.event.extendedProps.typ === 'event') return;
-        if (confirm('Belegung "' + info.event.title + '" löschen?')) {
-          await bookingDelete(info.event.extendedProps.dbId);
+        const ep = info.event.extendedProps || {};
+        if (ep.typ === 'belegung' && ep.dbId) {
+          openEditModal('belegung', ep.dbId);
+        } else if (ep.typ === 'event' && ep.dbId) {
+          openEditModal('event', ep.dbId);
         }
       },
       headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},
@@ -1860,8 +1897,8 @@ function startApp(){
   checkCk();
   document.getElementById('fy').textContent = HEUTE.getFullYear();
   document.getElementById('bbar-link').href = CFG.bildSrv;
-  // Übersicht direkt anzeigen (kein navigate-Aufruf, p-home ist bereits on)
-  loadHome();
+  // Direkt Aktivitaeten -> Kalender als Startseite anzeigen
+  go('aktivitaeten','kalender');
 }
 
 // ════════════════════════════════════════
