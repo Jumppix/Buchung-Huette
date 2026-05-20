@@ -1130,6 +1130,13 @@ async function loadHome() {
   initKalHome(bel, events);
 }
 
+// FullCalendar nutzt exklusives Enddatum: 1 Tag addieren, damit das letzte Datum visuell enthalten ist
+function fcEnd(bisStr) {
+  const d = new Date(bisStr + 'T12:00:00');
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0,10);
+}
+
 function initKalHome(bel, events) {
   if (!document.getElementById('kal-home')) return;
   if (!kalHome) {
@@ -1150,7 +1157,7 @@ function initKalHome(bel, events) {
   bel.forEach(b => kalHome.addEvent({
     id: 'b-' + b.id,
     title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
-    start: b.von, end: b.bis, backgroundColor:'#8b4513', borderColor:'#8b4513',
+    start: b.von, end: fcEnd(b.bis), backgroundColor:'#8b4513', borderColor:'#8b4513',
     extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
   }));
   events.forEach(e => {
@@ -1158,7 +1165,7 @@ function initKalHome(bel, events) {
     kalHome.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: e.von, end: e.bis, backgroundColor:c, borderColor:c,
+      start: e.von, end: fcEnd(e.bis), backgroundColor:c, borderColor:c,
       extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
     });
   });
@@ -1219,7 +1226,7 @@ async function loadKalOv() {
     kalOv.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' · ' + p + ' P.' : ''),
-      start: b.von, end: b.bis, backgroundColor:'#8b4513', borderColor:'#8b4513',
+      start: b.von, end: fcEnd(b.bis), backgroundColor:'#8b4513', borderColor:'#8b4513',
       extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
     });
   });
@@ -1228,7 +1235,7 @@ async function loadKalOv() {
     kalOv.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: e.von, end: e.bis, backgroundColor:c, borderColor:c,
+      start: e.von, end: fcEnd(e.bis), backgroundColor:c, borderColor:c,
       extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
     });
   });
@@ -1280,7 +1287,7 @@ async function loadBooking() {
     bookingCal.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' ('+p+' P.)' : ''),
-      start: b.von, end: b.bis,
+      start: b.von, end: fcEnd(b.bis),
       backgroundColor:'#8b4513', borderColor:'#8b4513',
       extendedProps:{typ:'belegung', dbId: b.id}
     });
@@ -1290,7 +1297,7 @@ async function loadBooking() {
     bookingCal.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: e.von, end: e.bis,
+      start: e.von, end: fcEnd(e.bis),
       backgroundColor:c, borderColor:c,
       extendedProps:{typ:'event'}
     });
