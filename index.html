@@ -787,6 +787,36 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   </div>
 </div></div>
 
+<!-- Buchung / Termin bearbeiten Modal -->
+<div class="mo" id="mo-booking-edit"><div class="mb">
+  <div class="mh"><h2 id="edit-title">Termin bearbeiten</h2><button class="mc-btn" onclick="closeM('mo-booking-edit')">✕</button></div>
+  <div class="mbody">
+    <div id="edit-body">
+      <div style="display:flex;gap:1rem;flex-wrap:wrap">
+        <div style="flex:1;min-width:260px">
+          <div class="fg"><label>Von</label><input id="e-von" type="date"/></div>
+          <div class="fg"><label>Bis</label><input id="e-bis" type="date"/></div>
+          <div class="fg"><label>Name / Titel</label><input id="e-name" type="text"/></div>
+          <div class="fg"><label>Typ</label><select id="e-typ"><option value="belegung">Belegung</option><option value="familienversammlung">Familienversammlung</option><option value="arbeitswochenende">Arbeitswochenende</option><option value="sonstige">Sonstige</option></select></div>
+          <div class="fg"><label>Beschreibung</label><textarea id="e-desc" rows="3"></textarea></div>
+        </div>
+        <div style="width:260px">
+          <div class="fg"><label>Erwachsene</label><input id="e-erw" type="number" min="0"/></div>
+          <div class="fg"><label>Kinder</label><input id="e-kind" type="number" min="0"/></div>
+          <div class="fg"><label>Schlafplätze</label><input id="e-schlaf" type="number" min="0"/></div>
+          <div class="fg"><label>E-Mail</label><input id="e-email" type="email"/></div>
+          <div class="fg"><label>Telefon</label><input id="e-tel" type="tel"/></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.6rem;margin-top:1rem">
+        <button class="btn btn-b" id="e-save-btn" onclick="saveEdit()">Speichern</button>
+        <button class="btn btn-r" id="e-del-btn" onclick="deleteEdit()">Löschen</button>
+        <button class="btn btn-g" onclick="closeM('mo-booking-edit')">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+</div></div>
+
 <input type="file" id="up-in" multiple style="display:none" onchange="handleUp(event)"/>
 
 <!-- ══════════════════ JAVASCRIPT ══════════════════ -->
@@ -1097,16 +1127,31 @@ function initKalHome(bel, events) {
     kalHome = new FullCalendar.Calendar(document.getElementById('kal-home'), {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
-      events:[], eventClick: () => go('aktivitaeten','uebernachtungen'),
+      events:[], eventClick: function(info) {
+        const ep = info.event.extendedProps || {};
+        if (ep.typ === 'belegung' && ep.dbId) openEditModal('belegung', ep.dbId);
+        else if (ep.typ === 'event' && ep.dbId) openEditModal('event', ep.dbId);
+        else go('aktivitaeten','uebernachtungen');
+      },
       headerToolbar:{left:'prev,next',center:'title',right:''}
     });
     kalHome.render();
   }
   kalHome.removeAllEvents();
-  bel.forEach(b => kalHome.addEvent({title:b.name,start:b.von,end:b.bis,backgroundColor:'#8b4513',borderColor:'#8b4513'}));
+  bel.forEach(b => kalHome.addEvent({
+    id: 'b-' + b.id,
+    title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
+    start: b.von, end: b.bis, backgroundColor:'#8b4513', borderColor:'#8b4513',
+    extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
+  }));
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    kalHome.addEvent({title:e.titel,start:e.von,end:e.bis,backgroundColor:c,borderColor:c});
+    kalHome.addEvent({
+      id: 'e-' + e.id,
+      title: '📌 ' + e.titel,
+      start: e.von, end: e.bis, backgroundColor:c, borderColor:c,
+      extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
+    });
   });
 }
 
@@ -1135,11 +1180,21 @@ async function loadKalOv() {
   kalOv.removeAllEvents();
   bel.forEach(b => {
     const p = (b.erwachsene||0)+(b.kinder||0);
-    kalOv.addEvent({title:b.name+(p?' ('+p+'P.)':''),start:b.von,end:b.bis,backgroundColor:'#8b4513',borderColor:'#8b4513'});
+    kalOv.addEvent({
+      id: 'b-' + b.id,
+      title: b.name + (p ? ' · ' + p + ' P.' : ''),
+      start: b.von, end: b.bis, backgroundColor:'#8b4513', borderColor:'#8b4513',
+      extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
+    });
   });
   events.forEach(e => {
     const c=e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    kalOv.addEvent({title:'📌 '+e.titel,start:e.von,end:e.bis,backgroundColor:c,borderColor:c});
+    kalOv.addEvent({
+      id: 'e-' + e.id,
+      title: '📌 ' + e.titel,
+      start: e.von, end: e.bis, backgroundColor:c, borderColor:c,
+      extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
+    });
   });
   const next = bel.filter(b=>b.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
   document.getElementById('kal-next').innerHTML = next.length
@@ -1280,6 +1335,94 @@ async function bookingDelete(id) {
   const { error } = await db.from('belegungen').delete().eq('id', id);
   if (error) { alert('Fehler: '+error.message); return; }
   loadBooking();
+}
+
+// Aktueller Edit-Kontext
+let currentEdit = null;
+
+async function openEditModal(type, id) {
+  if (!db) { alert('Keine DB-Verbindung'); return; }
+  currentEdit = { type, id };
+  // Fülle Felder je nach Typ
+  if (type === 'belegung') {
+    const { data, error } = await dbQ(d => d.from('belegungen').select('*').eq('id', id).limit(1).single());
+    if (error || !data) { alert('Eintrag nicht gefunden'); return; }
+    const b = data;
+    document.getElementById('edit-title').textContent = 'Belegung bearbeiten';
+    document.getElementById('e-von').value = b.von;
+    document.getElementById('e-bis').value = b.bis;
+    document.getElementById('e-name').value = b.name || '';
+    document.getElementById('e-typ').value = 'belegung';
+    document.getElementById('e-desc').value = b.beschreibung || '';
+    document.getElementById('e-erw').value = b.erwachsene || 0;
+    document.getElementById('e-kind').value = b.kinder || 0;
+    document.getElementById('e-schlaf').value = b.schlafplaetze || 0;
+    document.getElementById('e-email').value = b.email || '';
+    document.getElementById('e-tel').value = b.telefon || '';
+    document.getElementById('e-del-btn').style.display = '';
+  } else {
+    const { data, error } = await dbQ(d => d.from('special_events').select('*').eq('id', id).limit(1).single());
+    if (error || !data) { alert('Eintrag nicht gefunden'); return; }
+    const e = data;
+    document.getElementById('edit-title').textContent = 'Event bearbeiten';
+    document.getElementById('e-von').value = e.von;
+    document.getElementById('e-bis').value = e.bis;
+    document.getElementById('e-name').value = e.titel || '';
+    document.getElementById('e-typ').value = e.typ || 'sonstige';
+    document.getElementById('e-desc').value = e.beschreibung || '';
+    document.getElementById('e-erw').value = '';
+    document.getElementById('e-kind').value = '';
+    document.getElementById('e-schlaf').value = '';
+    document.getElementById('e-email').value = '';
+    document.getElementById('e-tel').value = '';
+    document.getElementById('e-del-btn').style.display = '';
+  }
+  openM('mo-booking-edit');
+}
+
+async function saveEdit() {
+  if (!currentEdit) return;
+  const id = currentEdit.id;
+  const typ = currentEdit.type;
+  const von = document.getElementById('e-von').value;
+  const bis = document.getElementById('e-bis').value;
+  const name = document.getElementById('e-name').value.trim();
+  const beschr = document.getElementById('e-desc').value.trim();
+  const erw = parseInt(document.getElementById('e-erw').value) || 0;
+  const kind = parseInt(document.getElementById('e-kind').value) || 0;
+  const schlaf = parseInt(document.getElementById('e-schlaf').value) || 0;
+  const email = document.getElementById('e-email').value.trim() || null;
+  const telefon = document.getElementById('e-tel').value.trim() || null;
+
+  if (!von || !bis || von >= bis) { alert('Bitte gültige Daten wählen.'); return; }
+
+  if (typ === 'belegung') {
+    const { error } = await db.from('belegungen').update({ von, bis, name, beschreibung: beschr, erwachsene: erw, kinder: kind, schlafplaetze: schlaf, email, telefon }).eq('id', id);
+    if (error) { alert('Fehler: '+error.message); return; }
+  } else {
+    const evTyp = document.getElementById('e-typ').value || 'sonstige';
+    const { error } = await db.from('special_events').update({ von, bis, titel: name, beschreibung: beschr, typ: evTyp }).eq('id', id);
+    if (error) { alert('Fehler: '+error.message); return; }
+  }
+
+  closeM('mo-booking-edit');
+  currentEdit = null;
+  // Kalender neu laden
+  loadBooking(); loadKalOv(); if (kalHome) kalHome.refetchEvents && kalHome.refetchEvents();
+}
+
+async function deleteEdit() {
+  if (!currentEdit) return;
+  if (!confirm('Eintrag wirklich löschen?')) return;
+  const id = currentEdit.id;
+  if (currentEdit.type === 'belegung') {
+    const { error } = await db.from('belegungen').delete().eq('id', id);
+    if (error) { alert('Fehler: '+error.message); return; }
+  } else {
+    const { error } = await db.from('special_events').delete().eq('id', id);
+    if (error) { alert('Fehler: '+error.message); return; }
+  }
+  closeM('mo-booking-edit'); currentEdit = null; loadBooking(); loadKalOv();
 }
 
 // ════════════════════════════════════════
