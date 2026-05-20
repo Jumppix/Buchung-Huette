@@ -340,7 +340,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   <div class="pw-box">
     <div class="pw-logo">Hütten<span>buch</span></div>
     <div class="pw-sub">Familieninterne Verwaltung</div>
-    <input class="pw-inp" type="password" id="pw-in" placeholder="Passwort eingeben" autocomplete="current-password"/>
+    <input class="pw-inp" type="password" id="pw-in" autocomplete="current-password"/>
     <button class="pw-btn" onclick="checkPw()">Einloggen</button>
     <div class="pw-err" id="pw-err"></div>
   </div>
@@ -361,7 +361,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 <div id="app">
 
 <header>
-  <div class="logo" onclick="go('home')">Hütten<span>buch</span></div>
+  <div class="logo" onclick="go('aktivitaeten','kalender')">Hütten<span>buch</span></div>
   <div id="top-nav"></div>
 </header>
 
@@ -449,7 +449,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ph"><div class="phi">📘</div>
       <p>Facebook-Gruppe oder -Seite einbinden. URL eingeben:</p>
       <div style="display:flex;gap:.5rem;max-width:480px;margin:.8rem auto 0">
-        <input id="fb-url" type="text" style="flex:1;padding:.4rem .55rem;border:1px solid var(--div);border-radius:2px;font-size:.82rem;background:var(--paper);" placeholder="https://www.facebook.com/..."/>
+        <input id="fb-url" type="text" style="flex:1;padding:.4rem .55rem;border:1px solid var(--div);border-radius:2px;font-size:.82rem;background:var(--paper);"/>
         <button class="btn btn-b btn-sm" onclick="document.getElementById('fb-f').src=document.getElementById('fb-url').value;document.getElementById('fb-f').style.display='block'">Laden</button>
       </div>
       <p style="margin-top:.6rem;font-size:.73rem">Facebook-Einbindungen können Drittanbieter-Cookies setzen.</p>
@@ -487,7 +487,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ab"><h4>➕ Mitglied hinzufügen</h4>
       <div class="frow">
         <div class="fg"><label>Name</label><input id="m-name" type="text"/></div>
-        <div class="fg"><label>Rolle / Info</label><input id="m-role" type="text" placeholder="Gründungsmitglied…"/></div>
+        <div class="fg"><label>Rolle / Info</label><input id="m-role" type="text"/></div>
       </div>
       <button class="btn btn-r btn-sm" onclick="mAdd()">Hinzufügen</button>
     </div>
@@ -514,9 +514,9 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ab"><h4>➕ Vorstandsmitglied</h4>
       <div class="frow">
         <div class="fg"><label>Name</label><input id="v-name" type="text"/></div>
-        <div class="fg"><label>Rolle</label><input id="v-role" type="text" placeholder="1. Vorsitzender…"/></div>
+        <div class="fg"><label>Rolle</label><input id="v-role" type="text"/></div>
       </div>
-      <div class="fg"><label>Kontakt (optional)</label><input id="v-info" type="text" placeholder="E-Mail oder Telefon"/></div>
+      <div class="fg"><label>Kontakt (optional)</label><input id="v-info" type="text"/></div>
       <button class="btn btn-r btn-sm" onclick="vAdd()">Hinzufügen</button>
     </div>
   </div>
@@ -551,7 +551,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ph"><div class="phi">👥</div>
       <p>Google Groups URL eintragen:</p>
       <div style="display:flex;gap:.5rem;max-width:480px;margin:.8rem auto 0">
-        <input id="gg-url" type="text" style="flex:1;padding:.4rem .55rem;border:1px solid var(--div);border-radius:2px;font-size:.82rem;background:var(--paper);" placeholder="https://groups.google.com/g/..."/>
+        <input id="gg-url" type="text" style="flex:1;padding:.4rem .55rem;border:1px solid var(--div);border-radius:2px;font-size:.82rem;background:var(--paper);"/>
         <a id="gg-link" href="#" target="_blank" class="btn btn-b btn-sm" onclick="document.getElementById('gg-link').href=document.getElementById('gg-url').value">Öffnen</a>
       </div>
     </div>
@@ -631,15 +631,14 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
           <div class="nbox-title">➕ Belegung eintragen</div>
           <div class="fg"><label>Von <span class="req">*</span></label><input id="b-von" type="date"/></div>
           <div class="fg"><label>Bis (Abreisetag) <span class="req">*</span></label><input id="b-bis" type="date"/></div>
-          <div class="fg"><label>Name / Vertreter <span class="req">*</span></label><input id="b-name" type="text" placeholder="z.B. Familie Müller"/></div>
+          <div class="fg"><label>Name / Vertreter <span class="req">*</span></label><input id="b-name" type="text"/></div>
           <div class="frow">
             <div class="fg"><label>Erwachsene</label><input id="b-erw" type="number" min="0" value="2"/></div>
             <div class="fg"><label>Kinder</label><input id="b-kind" type="number" min="0" value="0"/></div>
           </div>
-          <div class="fg"><label>Schlafplätze benötigt <span class="req">*</span></label><input id="b-schlaf" type="number" min="1" value="2" oninput="bookingSchlafCheck()"/></div>
-          <div class="warn-box" id="booking-warn-schlaf">⚠️ Die Hütte hat max. 6 Schlafplätze. Bitte vorher absprechen!</div>
-          <div class="fg"><label>E-Mail <span class="req">*</span></label><input id="b-email" type="email" placeholder="max@beispiel.de"/></div>
-          <div class="fg"><label>Telefon</label><input id="b-tel" type="tel" placeholder="+49 123 456 789"/></div>
+          <div class="fg"><label>Schlafplätze benötigt <span class="req">*</span></label><input id="b-schlaf" type="number" min="1" value="2"/></div>
+          <div class="fg"><label>E-Mail <span class="req">*</span></label><input id="b-email" type="email"/></div>
+          <div class="fg"><label>Telefon</label><input id="b-tel" type="tel"/></div>
           <button class="btn btn-r btn-sm" id="b-btn-save" onclick="bookingSave()">Belegung speichern</button>
         </div>
         <div class="nbox">
@@ -669,7 +668,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ab"><h4>➕ Aufgabe</h4>
       <div class="frow">
         <div class="fg"><label>Aufgabe</label><input id="td-txt" type="text"/></div>
-        <div class="fg"><label>Zuständig</label><input id="td-who" type="text" placeholder="Name"/></div>
+        <div class="fg"><label>Zuständig</label><input id="td-who" type="text"/></div>
       </div>
       <button class="btn btn-r btn-sm" onclick="tdAdd()">Hinzufügen</button>
     </div>
@@ -679,7 +678,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ph"><div class="phi">📊</div>
       <p>Google Forms URL eintragen und hier einbinden:</p>
       <div style="display:flex;gap:.5rem;max-width:580px;margin:.8rem auto 0">
-        <input id="uf-url" type="text" style="flex:1;padding:.4rem .55rem;border:1px solid var(--div);border-radius:2px;font-size:.82rem;background:var(--paper);" placeholder="https://docs.google.com/forms/..."/>
+        <input id="uf-url" type="text" style="flex:1;padding:.4rem .55rem;border:1px solid var(--div);border-radius:2px;font-size:.82rem;background:var(--paper);"/>
         <button class="btn btn-b btn-sm" onclick="loadUmfrage()">Laden</button>
       </div>
       <iframe id="uf-frame" style="display:none;width:100%;height:600px;border:none;margin-top:1rem;border-radius:2px;"></iframe>
@@ -711,11 +710,11 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ct">Wir sind erreichbar unter:</div>
     <div class="cs">Schnellkontakt · Direkt an die Verwaltung</div>
     <div class="cfg">
-      <div class="fg"><label>Name <span style="color:var(--gold)">*</span></label><input id="cf-n" type="text" placeholder="Dein Name"/></div>
-      <div class="fg"><label>E-Mail <span style="color:var(--gold)">*</span></label><input id="cf-e" type="email" placeholder="deine@email.de"/></div>
+      <div class="fg"><label>Name <span style="color:var(--gold)">*</span></label><input id="cf-n" type="text"/></div>
+      <div class="fg"><label>E-Mail <span style="color:var(--gold)">*</span></label><input id="cf-e" type="email"/></div>
     </div>
     <div class="fg cmsg"><label>Nachricht <span style="color:var(--gold)">*</span></label><textarea id="cf-m" placeholder="Deine Nachricht..."></textarea></div>
-    <div class="cap-row"><span class="cap-q" id="cap-q"></span><input class="cap-a" id="cap-a" type="number" placeholder="?"/></div>
+    <div class="cap-row"><span class="cap-q" id="cap-q"></span><input class="cap-a" id="cap-a" type="number"/></div>
     <button class="btn btn-r" onclick="cfSend()">ABSENDEN</button>
     <div class="rq-note">Pflichtfelder mit <span style="color:var(--gold)">*</span>. Es gilt die <a onclick="openM('mo-daten')">Datenschutzerklärung</a>.</div>
     <div class="cstatus" id="cf-status"></div>
@@ -1237,11 +1236,6 @@ async function loadKalOv() {
     : '<div class="none">Keine Belegungen</div>';
 }
 
-function bookingSchlafCheck() {
-  const v = parseInt(document.getElementById('b-schlaf').value) || 0;
-  document.getElementById('booking-warn-schlaf').classList.toggle('aktiv', v > 6);
-}
-
 async function loadBooking() {
   if (!bookingCal) {
     bookingCal = new FullCalendar.Calendar(document.getElementById('booking-kal'), {
@@ -1361,7 +1355,6 @@ async function bookingSave() {
   document.getElementById('b-erw').value='2';
   document.getElementById('b-kind').value='0';
   document.getElementById('b-schlaf').value='2';
-  document.getElementById('booking-warn-schlaf').classList.remove('aktiv');
   msg.className='statusbar ok';
   msg.textContent='✓ Belegung gespeichert!';
   loadBooking();
