@@ -1193,25 +1193,23 @@ function initKalHome(bel, events) {
   }
   kalHome.removeAllEvents();
   bel.forEach(b => {
-    const vonTime = dateToNoon(b.von);
-    const bisTime = dateToNoon(b.bis);
-    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
+    const vonTime = b.von + 'T00:00:00';  // Anfang des Ankunftstages
+    const bisTime = b.bis + 'T12:00:00';  // Mittag des Abreisetages (sichtbar, wo Checkout ist)
     kalHome.addEvent({
       id: 'b-' + b.id,
       title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
-      start: vonTime, end: bisPlusTick, backgroundColor:'#8b4513', borderColor:'#8b4513',
+      start: vonTime, end: bisTime, backgroundColor:'#8b4513', borderColor:'#8b4513',
       extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
     });
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = dateToNoon(e.von);
-    const bisTime = dateToNoon(e.bis);
-    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
+    const vonTime = e.von + 'T00:00:00';
+    const bisTime = e.bis + 'T12:00:00';
     kalHome.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: vonTime, end: bisPlusTick, backgroundColor:c, borderColor:c,
+      start: vonTime, end: bisTime, backgroundColor:c, borderColor:c,
       extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
     });
   });
@@ -1307,25 +1305,23 @@ async function loadKalOv() {
   window._allBelegungen = bel;
   bel.forEach(b => {
     const p = (b.erwachsene||0)+(b.kinder||0);
-    const vonTime = dateToNoon(b.von);
-    const bisTime = dateToNoon(b.bis);
-    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
+    const vonTime = b.von + 'T00:00:00';
+    const bisTime = b.bis + 'T12:00:00';
     kalOv.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' · ' + p + ' P.' : ''),
-      start: vonTime, end: bisPlusTick, backgroundColor:'#8b4513', borderColor:'#8b4513',
+      start: vonTime, end: bisTime, backgroundColor:'#8b4513', borderColor:'#8b4513',
       extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
     });
   });
   events.forEach(e => {
     const c=e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = dateToNoon(e.von);
-    const bisTime = dateToNoon(e.bis);
-    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
+    const vonTime = e.von + 'T00:00:00';
+    const bisTime = e.bis + 'T12:00:00';
     kalOv.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: vonTime, end: bisPlusTick, backgroundColor:c, borderColor:c,
+      start: vonTime, end: bisTime, backgroundColor:c, borderColor:c,
       extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
     });
   });
@@ -1376,26 +1372,24 @@ async function loadBooking() {
   window._allBelegungen = bel;
   bel.forEach(b => {
     const p = (b.erwachsene||0) + (b.kinder||0);
-    const vonTime = dateToNoon(b.von);
-    const bisTime = dateToNoon(b.bis);
-    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
+    const vonTime = b.von + 'T00:00:00';
+    const bisTime = b.bis + 'T12:00:00';
     bookingCal.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' ('+p+' P.)' : ''),
-      start: vonTime, end: bisPlusTick,
+      start: vonTime, end: bisTime,
       backgroundColor:'#8b4513', borderColor:'#8b4513',
       extendedProps:{typ:'belegung', dbId: b.id}
     });
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = dateToNoon(e.von);
-    const bisTime = dateToNoon(e.bis);
-    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
+    const vonTime = e.von + 'T00:00:00';
+    const bisTime = e.bis + 'T12:00:00';
     bookingCal.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: vonTime, end: bisPlusTick,
+      start: vonTime, end: bisTime,
       backgroundColor:c, borderColor:c,
       extendedProps:{typ:'event'}
     });
