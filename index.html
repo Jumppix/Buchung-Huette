@@ -33,6 +33,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);}
 .admin-only{display:none!important;}
 body.admin-mode .admin-only{display:inline-flex!important;}
 .admin-state{font-size:.75rem;color:var(--aged);margin-left:.8rem;}
+
 /* ══ COOKIE BANNER ══ */
 #cookie-bar{position:fixed;bottom:0;left:0;right:0;z-index:8000;background:var(--ink);color:var(--aged);padding:1rem 2rem;display:none;align-items:center;gap:1.5rem;flex-wrap:wrap;border-top:2px solid var(--rust);}
 #cookie-bar.show{display:flex;}
@@ -80,15 +81,16 @@ header{
 .panel.on{display:block;animation:fi .2s ease;}
 @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-/* Content positionierung je nach sichtbarer Navigationsebene */
-.mt-1{margin-top:var(--nh);}
-.mt-2{margin-top:calc(var(--nh) + var(--sh));}
-.mt-3{margin-top:calc(var(--nh) + var(--sh) + 40px);}
-
 /* ══ PANEL TYPOGRAFIE ══ */
 .ptitle{font-family:'Crimson Pro',serif;font-size:1.9rem;font-weight:300;color:var(--rust);margin-bottom:.25rem;}
 .ptitle em{font-style:italic;color:var(--ink);}
 .pdesc{color:var(--muted);font-size:.85rem;margin-bottom:1.6rem;}
+
+/* ══ STATUS BAR ══ */
+.statusbar{padding:.6rem .9rem;border-radius:2px;font-size:.82rem;display:flex;align-items:center;gap:.6rem;transition:all .3s;}
+.statusbar.ok{background:rgba(45,74,45,.08);color:var(--pine);border:1px solid rgba(45,74,45,.2);}
+.statusbar.laden{background:rgba(184,134,11,.08);color:var(--gold);border:1px solid rgba(184,134,11,.2);}
+.statusbar.fehler{background:rgba(192,57,43,.08);color:var(--red);border:1px solid rgba(192,57,43,.2);}
 
 /* ══ STATS / DASHBOARD ══ */
 .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1.1rem;margin-bottom:2rem;}
@@ -103,14 +105,12 @@ header{
 
 /* ══ KALENDER WRAPPER ══ */
 .kw2{display:grid;grid-template-columns:1fr 260px;gap:1.4rem;align-items:start;}
-.kw2.expanded{grid-template-columns:1fr;}  /* Für größere Kalenderansichten */
 .booking-layout{display:grid;grid-template-columns:1fr 340px;gap:1.4rem;align-items:start;}
 .booking-main{display:flex;flex-direction:column;gap:1rem;}
 .booking-sidebar .nbox{padding:1.1rem;}
 .booking-sidebar .nbox-title{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;margin-bottom:.75rem;}
 .booking-sidebar .fg{margin-bottom:.7rem;}
 .booking-sidebar .frow{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
-.booking-sidebar .warn-box{margin-top:-.4rem;}
 .booking-sidebar .btn{width:100%;}
 .kbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
 .fc{font-family:'DM Sans',sans-serif;}
@@ -125,20 +125,18 @@ header{
 .fc-event{border-radius:2px!important;border:none!important;font-size:.76rem!important;padding:3px 4px!important;cursor:pointer;line-height:1.3;}
 .fc-event-title{font-weight:500;}
 .fc-daygrid .fc-event{margin-bottom:2px;}
-.fc .fc-daygrid-day-frame{min-height:90px;}  /* Größere Tages-Zellen */
+.fc .fc-daygrid-day-frame{min-height:90px;}
 .fc .fc-daygrid-week-number{font-size:.75rem;font-weight:600;color:var(--blue);opacity:1;padding:4px 3px;background:rgba(44,95,138,.05);border-radius:2px;text-align:center;min-width:28px;}
 .fc .fc-daygrid-week-number-cell{background:rgba(232,223,200,.3)!important;}
 
-/* Jahr-Ansicht - kompaktere Darstellung */
+/* Jahr-Ansicht */
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:18px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:0;margin:0;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-top{display:flex;align-items:center;justify-content:center;padding:0;margin:0;width:100%;height:100%;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-number{display:none;} /* hide numbers for maximum compactness */
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-number{display:none;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-events{display:flex;gap:4px;align-items:center;justify-content:center;padding:0;margin:0;}
 .fc-view.fc-daygrid-year-view .fc-event{background:transparent;border:none;padding:0;margin:0;}
 .fc-yr-dot{display:inline-block;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,0.03);}
-
-/* limit event element size in year view */
 .fc-view.fc-daygrid-year-view .fc-event-main-frame{padding:0;margin:0;}
 
 /* Nächste Termine Box */
@@ -267,7 +265,7 @@ textarea.allow-resize{resize:vertical;}
 /* Iframe Panel */
 .iframe-panel{width:100%;height:calc(100vh - var(--nh) - var(--sh) - 80px);min-height:500px;border:1px solid var(--div);border-radius:2px;}
 
-/* ══ KONTAKTFORMULAR (Footer-nah) ══ */
+/* ══ KONTAKTFORMULAR ══ */
 #contact-sec{background:var(--ink);color:var(--aged);padding:2.5rem 2.5rem;border-top:3px solid var(--rust);position:relative;}
 #contact-sec.hasbg::before{content:'';position:absolute;inset:0;background:rgba(30,21,16,.88);}
 #contact-sec>*{position:relative;}
@@ -411,7 +409,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 <!-- ════════ CONTENT ════════ -->
 <div id="content" class="mt-1">
 
-  <!-- ▶ HOME / Übersicht -->
+  <!-- ▶ HOME -->
   <div class="panel" id="p-home">
     <div class="ptitle">Willkommen im <em>Hüttenbuch</em></div>
     <div class="pdesc">Familieninterne Verwaltung · Schwarzwald</div>
@@ -730,12 +728,6 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     </div>
   </div>
 
-  <!-- ▶ BILDER (Jahres-Panels werden per JS generiert) -->
-
-  <!-- ▶ ARCHIV (per JS generiert) -->
-
-  <!-- ▶ FINANZEN (per JS generiert) -->
-
 </div><!-- /content -->
 
 <!-- KONTAKTFORMULAR -->
@@ -873,29 +865,27 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 //  ⚙️  KONFIGURATION
 // ════════════════════════════════════════
 const CFG = {
-  pw:      '762870',          // ← Passwort ändern
-  sbUrl:   'https://jvxlhlpqsiipplrwozje.supabase.co',   // ← Supabase URL
-  sbKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A',        // ← Supabase Key
+  pw:      '762870',
+  sbUrl:   'https://jvxlhlpqsiipplrwozje.supabase.co',
+  sbKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A',
   bildSrv: 'https://DEIN-BILDSERVER.de',
   admins: [
-    { email: 'admin@familie.de', password: 'admin123' } // ← Mehrere Admins hier eintragen
+    { email: 'admin@familie.de', password: 'admin123' }
   ]
 };
 
 let appStarted = false;
 let prevTarget = null;
 
-function isAdmin() {
-  return sessionStorage.getItem('admin') === '1';
-}
+function isAdmin() { return sessionStorage.getItem('admin') === '1'; }
 
 function setAdminUI() {
   const admin = isAdmin();
   document.body.classList.toggle('admin-mode', admin);
-  const loginLink = document.getElementById('footer-admin-login');
+  const loginLink  = document.getElementById('footer-admin-login');
   const logoutLink = document.getElementById('footer-admin-logout');
-  const status = document.getElementById('footer-admin-status');
-  if (loginLink) loginLink.style.display = admin ? 'none' : '';
+  const status     = document.getElementById('footer-admin-status');
+  if (loginLink)  loginLink.style.display  = admin ? 'none' : '';
   if (logoutLink) logoutLink.style.display = admin ? 'inline-block' : 'none';
   if (status) {
     status.textContent = admin ? 'Admin: ' + (sessionStorage.getItem('adminEmail') || '') : '';
@@ -904,37 +894,25 @@ function setAdminUI() {
 }
 
 function openAdminLogin() {
-  if (isAdmin()) {
-    alert('Bereits als Admin angemeldet.');
-    return;
-  }
-  const email = document.getElementById('admin-email');
-  const password = document.getElementById('admin-password');
-  const err = document.getElementById('admin-err');
-  if (email) email.value = '';
-  if (password) password.value = '';
-  if (err) err.textContent = '';
+  if (isAdmin()) { alert('Bereits als Admin angemeldet.'); return; }
+  ['admin-email','admin-password'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('admin-err').textContent = '';
   openM('mo-admin-login');
 }
 
 function adminLogin() {
-  const email = document.getElementById('admin-email').value.trim().toLowerCase();
+  const email    = document.getElementById('admin-email').value.trim().toLowerCase();
   const password = document.getElementById('admin-password').value;
-  const admin = CFG.admins.find(a => a.email.toLowerCase() === email && a.password === password);
-  const err = document.getElementById('admin-err');
-  if (!admin) {
-    if (err) err.textContent = 'Ungültige Admin-Zugangsdaten.';
-    return;
-  }
-  sessionStorage.setItem('auth', '1');
-  sessionStorage.setItem('admin', '1');
+  const admin    = CFG.admins.find(a => a.email.toLowerCase() === email && a.password === password);
+  const err      = document.getElementById('admin-err');
+  if (!admin) { if (err) err.textContent = 'Ungültige Admin-Zugangsdaten.'; return; }
+  sessionStorage.setItem('auth','1');
+  sessionStorage.setItem('admin','1');
   sessionStorage.setItem('adminEmail', admin.email);
   if (err) err.textContent = '';
   closeM('mo-admin-login');
-  const gate = document.getElementById('pw-gate');
-  if (gate) gate.style.display = 'none';
-  const app = document.getElementById('app');
-  if (app) app.style.display = 'block';
+  document.getElementById('pw-gate').style.display = 'none';
+  document.getElementById('app').style.display     = 'block';
   setAdminUI();
   if (!appStarted) startApp();
 }
@@ -948,12 +926,12 @@ function logoutAdmin() {
 
 function setBookingModalMode() {
   const admin = isAdmin();
-  ['e-von', 'e-bis', 'e-name', 'e-typ', 'e-desc', 'e-erw', 'e-kind', 'e-schlaf', 'e-email', 'e-tel'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = !admin;
-  });
+  ['e-von','e-bis','e-name','e-typ','e-desc','e-erw','e-kind','e-schlaf','e-email','e-tel']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !admin; });
   const title = document.getElementById('edit-title');
-  if (title) title.textContent = admin ? (currentEdit && currentEdit.type === 'belegung' ? 'Belegung bearbeiten' : 'Event bearbeiten') : 'Termin ansehen';
+  if (title) title.textContent = admin
+    ? (currentEdit && currentEdit.type === 'belegung' ? 'Belegung bearbeiten' : 'Event bearbeiten')
+    : 'Termin ansehen';
 }
 
 async function deletePrevFile() {
@@ -961,15 +939,14 @@ async function deletePrevFile() {
   if (!db) { alert('Keine DB-Verbindung.'); return; }
   if (!prevTarget || !prevTarget.bkt || !prevTarget.folder || !prevTarget.name) return;
   if (!confirm('Datei wirklich löschen?')) return;
-  const path = prevTarget.folder + '/' + prevTarget.name;
-  const { error } = await db.storage.from(prevTarget.bkt).remove([path]);
+  const { error } = await db.storage.from(prevTarget.bkt).remove([prevTarget.folder + '/' + prevTarget.name]);
   if (error) { alert('Fehler: ' + error.message); return; }
   closeM('prev-mo');
   onShow(curSec, curSub, NAV.find(n => n.id === curSec));
 }
 
 // ════════════════════════════════════════
-//  SUPABASE INIT (sicher – kein Absturz bei Platzhalter)
+//  SUPABASE INIT
 // ════════════════════════════════════════
 let db = null;
 try {
@@ -980,11 +957,35 @@ try {
 } catch(e) { console.warn('Supabase nicht verbunden:', e.message); }
 
 async function dbQ(fn) {
-  if (!db) return { data: null, error: { message: 'Keine DB-Verbindung. Supabase-Zugangsdaten eintragen.' } };
+  if (!db) return { data: null, error: { message: 'Keine DB-Verbindung.' } };
   try { return await fn(db); } catch(e) { return { data: null, error: e }; }
 }
 
 const HEUTE = new Date();
+
+// ════════════════════════════════════════
+//  HALBTAGES-VISUAL (Check-in/out 12:00)
+// ════════════════════════════════════════
+function halfDayPx() {
+  const d = document.querySelector('.fc-daygrid-day');
+  return d ? Math.round(d.offsetWidth / 2) : 40;
+}
+
+function applyNoonMargins(info) {
+  // Nur in Monatsansicht, nicht in Jahr/Liste
+  if (info.view.type !== 'dayGridMonth') return;
+  const half = halfDayPx();
+  if (info.isStart && !info.isEnd) {
+    // Ankunftstag: Balken beginnt in der Mitte (Nachmittag)
+    info.el.style.marginLeft = half + 'px';
+  } else if (info.isEnd && !info.isStart) {
+    // Abreisetag: Balken endet in der Mitte (Vormittag)
+    info.el.style.marginRight = half + 'px';
+  } else if (info.isStart && info.isEnd) {
+    // Sonderfall: An- und Abreise am selben Tag
+    info.el.style.marginLeft = half + 'px';
+  }
+}
 
 // ════════════════════════════════════════
 //  NAV DEFINITION
@@ -1064,8 +1065,7 @@ function buildNav() {
   const nav = document.getElementById('top-nav');
   NAV.forEach(item => {
     const el = document.createElement('div');
-    el.className = 'ni';
-    el.id = 'ni-' + item.id;
+    el.className = 'ni'; el.id = 'ni-' + item.id;
     el.textContent = item.icon + ' ' + item.label;
     el.onclick = () => go(item.id);
     nav.appendChild(el);
@@ -1080,53 +1080,36 @@ let upTarget = { bkt:'', folder:'' };
 let kalHome = null, kalOv = null, bookingCal = null;
 
 function go(sec, sub) {
-  // Nav aktiv
   document.querySelectorAll('.ni').forEach(el => el.classList.remove('on'));
   const niEl = document.getElementById('ni-' + sec);
   if (niEl) niEl.classList.add('on');
 
-  const secDef = NAV.find(n => n.id === sec);
+  const secDef   = NAV.find(n => n.id === sec);
   const activeSub = sub || (secDef && secDef.subs ? secDef.subs[0].id : null);
 
-  // Sub-nav
   const sn = document.getElementById('sub-nav');
   if (secDef && secDef.subs && secDef.subs.length) {
     sn.classList.add('show');
     sn.innerHTML = secDef.subs.map(s =>
       `<div class="si${activeSub === s.id ? ' on' : ''}" onclick="go('${sec}','${s.id}')">${s.label}</div>`
     ).join('');
-  } else {
-    sn.classList.remove('show');
-  }
+  } else { sn.classList.remove('show'); }
 
-  // Bilder-Server Bar
   const bb = document.getElementById('bbar');
   if (secDef && secDef.isBilder) bb.classList.add('show');
   else bb.classList.remove('show');
 
-  // Content-Abstand anpassen
   const ct = document.getElementById('content');
   ct.className = '';
-  if (!secDef || !secDef.subs) {
-    ct.style.marginTop = 'var(--nh)';
-  } else if (secDef.isBilder) {
-    ct.style.marginTop = 'calc(var(--nh) + var(--sh) + 40px)';
-  } else {
-    ct.style.marginTop = 'calc(var(--nh) + var(--sh))';
-  }
+  if (!secDef || !secDef.subs)  ct.style.marginTop = 'var(--nh)';
+  else if (secDef.isBilder)     ct.style.marginTop = 'calc(var(--nh) + var(--sh) + 40px)';
+  else                          ct.style.marginTop = 'calc(var(--nh) + var(--sh))';
 
-  // Alle Panels verstecken
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
 
-  // Richtiges Panel zeigen
   const panelId = activeSub ? `p-${sec}-${activeSub}` : `p-${sec}`;
   let panel = document.getElementById(panelId);
-
-  if (!panel) {
-    // Dynamisch generieren (Archiv, Finanzen, Bilder-Jahre)
-    panel = makeDynPanel(sec, activeSub, secDef);
-  }
-
+  if (!panel) panel = makeDynPanel(sec, activeSub, secDef);
   if (panel) panel.classList.add('on');
 
   curSec = sec; curSub = activeSub;
@@ -1137,11 +1120,8 @@ function go(sec, sub) {
 function makeDynPanel(sec, sub, secDef) {
   const subDef = secDef && secDef.subs ? secDef.subs.find(s => s.id === sub) : null;
   if (!subDef) return null;
-
   const el = document.createElement('div');
-  el.className = 'panel';
-  el.id = `p-${sec}-${sub}`;
-
+  el.className = 'panel'; el.id = `p-${sec}-${sub}`;
   if (sec === 'archiv' || sec === 'finanzen') {
     el.innerHTML = `
       <div class="ptitle">${subDef.label}</div>
@@ -1160,7 +1140,6 @@ function makeDynPanel(sec, sub, secDef) {
       </div>
       <div class="imgrid" id="ig-bilder-${sub}"></div>`;
   }
-
   document.getElementById('content').appendChild(el);
   return el;
 }
@@ -1170,38 +1149,32 @@ function makeDynPanel(sec, sub, secDef) {
 // ════════════════════════════════════════
 function onShow(sec, sub, secDef) {
   const subDef = secDef && secDef.subs ? secDef.subs.find(s => s.id === sub) : null;
-
-  if (sec === 'home')                                   loadHome();
-  else if (sec === 'news')                              loadNews(sub);
-  else if (sec === 'kontakt' && sub === 'gaestebuch')   loadGb();
-  else if (sec === 'verein' && sub === 'mitglieder')    renderM();
-  else if (sec === 'verein' && sub === 'vorstand')      renderV();
-  else if (sec === 'aktivitaeten' && sub === 'kalender') loadKalOv();
-  else if (sec === 'aktivitaeten' && sub === 'termine')  loadEv();
+  if (sec === 'home')                                        loadHome();
+  else if (sec === 'news')                                   loadNews(sub);
+  else if (sec === 'kontakt' && sub === 'gaestebuch')        loadGb();
+  else if (sec === 'verein' && sub === 'mitglieder')         renderM();
+  else if (sec === 'verein' && sub === 'vorstand')           renderV();
+  else if (sec === 'aktivitaeten' && sub === 'kalender')     loadKalOv();
+  else if (sec === 'aktivitaeten' && sub === 'termine')      loadEv();
   else if (sec === 'aktivitaeten' && sub === 'uebernachtungen') loadBooking();
-  else if (sec === 'aktivitaeten' && sub === 'todo')     renderTd();
-  else if ((sec === 'archiv' || sec === 'finanzen') && subDef && subDef.bkt) {
+  else if (sec === 'aktivitaeten' && sub === 'todo')         renderTd();
+  else if ((sec === 'archiv' || sec === 'finanzen') && subDef && subDef.bkt)
     loadFiles(subDef.bkt, subDef.folder, `fg-${sec}-${sub}`);
-  }
   else if (sec === 'bilder') {
     const folder = sub === 'diverse' ? 'diverse' : sub.replace('y','');
     loadMedia('bilder', folder, `ig-bilder-${sub}`);
   }
-  else if (sec === 'verein' && ['satzung','mv','stammbaum','vorlagen'].includes(sub)) {
+  else if (sec === 'verein' && ['satzung','mv','stammbaum','vorlagen'].includes(sub))
     loadFiles('verein', sub, `fg-verein-${sub}`);
-  }
-  else if (sec === 'aktivitaeten' && sub === 'abfall') {
+  else if (sec === 'aktivitaeten' && sub === 'abfall')
     loadFiles('aktivitaeten', 'abfall', 'fg-akt-abfall');
-  }
 }
 
 // ════════════════════════════════════════
-//  HOME / ÜBERSICHT
+//  HOME
 // ════════════════════════════════════════
 async function loadHome() {
   document.getElementById('sy').textContent = HEUTE.getFullYear();
-
-  // Supabase-Status anzeigen wenn nicht verbunden
   if (!db) {
     ['sv-b','sv-f','sv-n','sv-e'].forEach(id => document.getElementById(id).textContent = '–');
     ['sn-b','sn-f','sn-n','sn-e'].forEach(id => document.getElementById(id).textContent = 'Supabase Zugangsdaten eintragen');
@@ -1209,89 +1182,57 @@ async function loadHome() {
     initKalHome([], []);
     return;
   }
-
-  const jetzt = HEUTE.toISOString().slice(0,10);
+  const jetzt  = HEUTE.toISOString().slice(0,10);
   const jarAnf = HEUTE.getFullYear() + '-01-01';
-
   const [r1, r2] = await Promise.all([
     dbQ(d => d.from('belegungen').select('*').order('von')),
     dbQ(d => d.from('special_events').select('*').order('von'))
   ]);
-
-  const bel = r1.data || [];
+  const bel    = r1.data || [];
   const events = r2.data || [];
-
-  const belJahr = bel.filter(b => b.von >= jarAnf);
+  const belJahr  = bel.filter(b => b.von >= jarAnf);
   const belKunft = bel.filter(b => b.bis > jetzt);
-
   document.getElementById('sv-b').textContent = belJahr.length;
   document.getElementById('sn-b').textContent = belKunft.length + ' bevorstehend';
-
   const naechste = belKunft.sort((a,b) => a.von.localeCompare(b.von))[0];
   document.getElementById('sv-n').textContent = naechste ? naechste.name : '–';
   document.getElementById('sn-n').textContent = naechste
     ? dDE(naechste.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(naechste.bis,{day:'2-digit',month:'short'})
     : 'Keine bevorstehend';
-
   const fw = freieWoche(belKunft);
   document.getElementById('sv-f').textContent = fw ? 'KW ' + fw.kw : '–';
   document.getElementById('sn-f').textContent = fw
-    ? dDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(fw.bis,{day:'2-digit',month:'short'})
-    : '';
-
+    ? dDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(fw.bis,{day:'2-digit',month:'short'}) : '';
   const nextEv = events.filter(e => e.bis > jetzt).sort((a,b) => a.von.localeCompare(b.von))[0];
   document.getElementById('sv-e').textContent = nextEv ? nextEv.titel : '–';
-  document.getElementById('sn-e').textContent = nextEv
-    ? dDE(nextEv.von,{day:'2-digit',month:'short'})
-    : 'Keine geplant';
-
-  // Nächste Termine
+  document.getElementById('sn-e').textContent = nextEv ? dDE(nextEv.von,{day:'2-digit',month:'short'}) : 'Keine geplant';
   const alle = [
     ...belKunft.map(b => ({ name:b.name, von:b.von, bis:b.bis, ev:false })),
     ...events.filter(e => e.bis > jetzt).map(e => ({ name:e.titel, von:e.von, bis:e.bis, ev:true }))
   ].sort((a,b) => a.von.localeCompare(b.von)).slice(0,5);
-
   document.getElementById('home-next').innerHTML = alle.length
     ? alle.map(t => `<div class="nitem${t.ev?' ev':''}"><div class="nname">${t.name}</div><div class="ndat">${dDE(t.von,{day:'2-digit',month:'short'})} – ${dDE(t.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`).join('')
     : '<div class="none">Keine Termine</div>';
-
   initKalHome(bel, events);
 }
 
-// Konvertiert Datumstring zu Mittag (12:00)
-function dateToNoon(dateStr) {
-  if (dateStr.includes('T')) return dateStr; // Bereits mit Zeit
-  return dateStr + 'T12:00:00';
-}
-
-// Prüft ob zwei Buchungen sich überlappen
-// Veranstaltungen (events) dürfen sich mit Buchungen überlappen
-function hasOverlap(vonStr, bisStr, exceptId = null) {
-  const von = new Date(dateToNoon(vonStr));
-  const bis = new Date(dateToNoon(bisStr));
-  
-  // Iteriere durch alle bestehenden Belegungen
-  const allBel = (window._allBelegungen || []).filter(b => b.id !== exceptId);
-  for (let b of allBel) {
-    const bVon = new Date(dateToNoon(b.von));
-    const bBis = new Date(dateToNoon(b.bis));
-    // Überlappung wenn: von1 < bis2 AND bis1 > von2
-    if (von < bBis && bis > bVon) {
-      return true;
-    }
-  }
-  return false;
-}
-
+// ════════════════════════════════════════
+//  KALENDER: kalHome
+//  ▶ ÄNDERUNG: vonTime T12:00:00 + eventDidMount
+// ════════════════════════════════════════
 function initKalHome(bel, events) {
   if (!document.getElementById('kal-home')) return;
-  // Speichere alle Belegungen global für Overlap-Prüfung
   window._allBelegungen = bel;
   if (!kalHome) {
     kalHome = new FullCalendar.Calendar(document.getElementById('kal-home'), {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
-      events:[], eventClick: function(info) {
+      events:[],
+      // ▶ NEU: Halbtages-Visual
+      eventDidMount: function(info) {
+        applyNoonMargins(info);
+      },
+      eventClick: function(info) {
         const ep = info.event.extendedProps || {};
         if (ep.typ === 'belegung' && ep.dbId) openEditModal('belegung', ep.dbId);
         else if (ep.typ === 'event' && ep.dbId) openEditModal('event', ep.dbId);
@@ -1303,49 +1244,52 @@ function initKalHome(bel, events) {
   }
   kalHome.removeAllEvents();
   bel.forEach(b => {
-    const vonTime = b.von + 'T00:00:00';  // Anfang des Ankunftstages
-    const bisTime = b.bis + 'T12:00:00';  // Mittag des Abreisetages (sichtbar, wo Checkout ist)
+    // ▶ ÄNDERUNG: Start jetzt T12:00:00 statt T00:00:00
+    const vonTime = b.von + 'T12:00:00';
+    const bisTime = b.bis + 'T12:00:00';
     kalHome.addEvent({
       id: 'b-' + b.id,
       title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
-      start: vonTime, end: bisTime, backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
+      start: vonTime, end: bisTime,
+      backgroundColor:'#8b4513', borderColor:'#8b4513',
+      extendedProps: { typ:'belegung', dbId:b.id, erwachsene:b.erwachsene, kinder:b.kinder, schlafplaetze:b.schlafplaetze, email:b.email }
     });
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = e.von + 'T00:00:00';
+    // ▶ ÄNDERUNG: Start jetzt T12:00:00
+    const vonTime = e.von + 'T12:00:00';
     const bisTime = e.bis + 'T12:00:00';
     kalHome.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: vonTime, end: bisTime, backgroundColor:c, borderColor:c,
-      extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
+      start: vonTime, end: bisTime,
+      backgroundColor:c, borderColor:c,
+      extendedProps: { typ:'event', dbId:e.id, typname:e.typ, beschreibung:e.beschreibung }
     });
   });
 }
 
 // ════════════════════════════════════════
-//  KALENDER ÜBERSICHT
+//  KALENDER: kalOv (Übersicht)
+//  ▶ ÄNDERUNG: vonTime T12:00:00 + applyNoonMargins in eventDidMount
 // ════════════════════════════════════════
 async function loadKalOv() {
   if (!kalOv) {
     kalOv = new FullCalendar.Calendar(document.getElementById('kal-ov'), {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
-      contentHeight:'auto', datesAboveResources:true,
-      events:[], 
-      eventClick:function(info) {
+      contentHeight:'auto',
+      events:[],
+      eventClick: function(info) {
         const ep = info.event.extendedProps || {};
         if (ep.typ === 'belegung' && ep.dbId) openEditModal('belegung', ep.dbId);
         else if (ep.typ === 'event' && ep.dbId) openEditModal('event', ep.dbId);
       },
-      eventContent:function(arg) {
+      eventContent: function(arg) {
         const ep = arg.event.extendedProps || {};
-        const name = arg.event.title || '';
-        // Compact rendering for Year view
         if (arg.view && arg.view.type === 'dayGridYear') {
-          const color = arg.event.backgroundColor || arg.event.borderColor || '#8b4513';
+          const color = arg.event.backgroundColor || '#8b4513';
           return { html: `<span class="fc-yr-dot" style="background:${color}"></span>` };
         }
         let detail = '';
@@ -1353,15 +1297,12 @@ async function loadKalOv() {
           const pers = (ep.erwachsene||0) + (ep.kinder||0);
           detail = pers ? ` · ${pers}P.` : '';
         }
-        return {
-          html: `<div style="font-weight:500;line-height:1.2;white-space:normal;">${name.split(' · ')[0]}${detail}</div>`
-        };
+        return { html: `<div style="font-weight:500;line-height:1.2;white-space:normal;">${arg.event.title.split(' · ')[0]}${detail}</div>` };
       },
-      headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,dayGridYear,listMonth'},
-      buttonText:{today:'Heute',month:'Monat',year:'Jahr',list:'Liste'}
-      ,
+      // ▶ ÄNDERUNG: applyNoonMargins am Anfang eingefügt
       eventDidMount: function(info) {
-        // Show full info as native tooltip in compact year view
+        applyNoonMargins(info);
+        // Tooltip
         try {
           const ep = info.event.extendedProps || {};
           let title = info.event.title || '';
@@ -1370,69 +1311,68 @@ async function loadKalOv() {
             if (pers) title += ' · ' + pers + ' P.';
           }
           const von = info.event.start ? info.event.start.toISOString().slice(0,10) : '';
-          const bis = info.event.end ? (info.event.end.toISOString().slice(0,10)) : '';
-          const dateRange = von && bis ? (von + ' – ' + bis) : (von || bis || '');
-          const full = title + (dateRange ? ('\n' + dateRange) : '') + (ep.beschreibung ? ('\n' + ep.beschreibung) : '');
-          info.el.setAttribute('title', full);
-        } catch (e) {}
-      }
+          const bis = info.event.end   ? info.event.end.toISOString().slice(0,10)   : '';
+          const dr  = von && bis ? (von + ' – ' + bis) : (von || bis || '');
+          info.el.setAttribute('title', title + (dr ? '\n' + dr : '') + (ep.beschreibung ? '\n' + ep.beschreibung : ''));
+        } catch(e) {}
+      },
+      headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,dayGridYear,listMonth'},
+      buttonText:{today:'Heute',month:'Monat',year:'Jahr',list:'Liste'}
     });
     kalOv.render();
   }
   if (!db) { document.getElementById('kal-next').innerHTML = '<div class="none">Keine DB-Verbindung</div>'; return; }
-
-  const jetzt = HEUTE.toISOString().slice(0,10);
+  const jetzt  = HEUTE.toISOString().slice(0,10);
   const jarAnf = HEUTE.getFullYear() + '-01-01';
   const [r1,r2] = await Promise.all([
     dbQ(d => d.from('belegungen').select('*').order('von')),
     dbQ(d => d.from('special_events').select('*').order('von'))
   ]);
-  const bel = r1.data || [];
+  const bel    = r1.data || [];
   const events = r2.data || [];
-  const belJahr = bel.filter(b => b.von >= jarAnf);
+  const belJahr  = bel.filter(b => b.von >= jarAnf);
   const belKunft = bel.filter(b => b.bis > jetzt);
   const naechste = belKunft.sort((a,b) => a.von.localeCompare(b.von))[0];
-  const fw = freieWoche(belKunft);
+  const fw     = freieWoche(belKunft);
   const nextEv = events.filter(e => e.bis > jetzt).sort((a,b) => a.von.localeCompare(b.von))[0];
-
   document.getElementById('kal-year').textContent = HEUTE.getFullYear();
   document.getElementById('kal-sv-b').textContent = belJahr.length;
   document.getElementById('kal-sn-b').textContent = belKunft.length + ' bevorstehend';
   document.getElementById('kal-sv-f').textContent = fw ? 'KW ' + fw.kw : '–';
   document.getElementById('kal-sn-f').textContent = fw
-    ? dDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(fw.bis,{day:'2-digit',month:'short'})
-    : '';
+    ? dDE(fw.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(fw.bis,{day:'2-digit',month:'short'}) : '';
   document.getElementById('kal-sv-n').textContent = naechste ? naechste.name : '–';
   document.getElementById('kal-sn-n').textContent = naechste
     ? dDE(naechste.von,{day:'2-digit',month:'short'}) + ' – ' + dDE(naechste.bis,{day:'2-digit',month:'short'})
     : 'Keine bevorstehend';
   document.getElementById('kal-sv-e').textContent = nextEv ? nextEv.titel : '–';
-  document.getElementById('kal-sn-e').textContent = nextEv
-    ? dDE(nextEv.von,{day:'2-digit',month:'short'})
-    : 'Keine geplant';
-  kalOv.removeAllEvents();
-  // Speichere alle Belegungen global für Overlap-Prüfung
+  document.getElementById('kal-sn-e').textContent = nextEv ? dDE(nextEv.von,{day:'2-digit',month:'short'}) : 'Keine geplant';
   window._allBelegungen = bel;
+  kalOv.removeAllEvents();
   bel.forEach(b => {
     const p = (b.erwachsene||0)+(b.kinder||0);
-    const vonTime = b.von + 'T00:00:00';
+    // ▶ ÄNDERUNG: Start T12:00:00
+    const vonTime = b.von + 'T12:00:00';
     const bisTime = b.bis + 'T12:00:00';
     kalOv.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' · ' + p + ' P.' : ''),
-      start: vonTime, end: bisTime, backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
+      start: vonTime, end: bisTime,
+      backgroundColor:'#8b4513', borderColor:'#8b4513',
+      extendedProps: { typ:'belegung', dbId:b.id, erwachsene:b.erwachsene, kinder:b.kinder, schlafplaetze:b.schlafplaetze, email:b.email }
     });
   });
   events.forEach(e => {
-    const c=e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = e.von + 'T00:00:00';
+    const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+    // ▶ ÄNDERUNG: Start T12:00:00
+    const vonTime = e.von + 'T12:00:00';
     const bisTime = e.bis + 'T12:00:00';
     kalOv.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: vonTime, end: bisTime, backgroundColor:c, borderColor:c,
-      extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
+      start: vonTime, end: bisTime,
+      backgroundColor:c, borderColor:c,
+      extendedProps: { typ:'event', dbId:e.id, typname:e.typ, beschreibung:e.beschreibung }
     });
   });
   const next = bel.filter(b=>b.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
@@ -1441,26 +1381,30 @@ async function loadKalOv() {
     : '<div class="none">Keine Belegungen</div>';
 }
 
+// ════════════════════════════════════════
+//  KALENDER: bookingCal (Buchung eintragen)
+//  ▶ ÄNDERUNG: vonTime T12:00:00 + eventDidMount
+// ════════════════════════════════════════
 async function loadBooking() {
   if (!bookingCal) {
     bookingCal = new FullCalendar.Calendar(document.getElementById('booking-kal'), {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
       events:[],
+      // ▶ NEU: Halbtages-Visual
+      eventDidMount: function(info) {
+        applyNoonMargins(info);
+      },
       eventClick: async function(info) {
         const ep = info.event.extendedProps || {};
-        if (ep.typ === 'belegung' && ep.dbId) {
-          openEditModal('belegung', ep.dbId);
-        } else if (ep.typ === 'event' && ep.dbId) {
-          openEditModal('event', ep.dbId);
-        }
+        if (ep.typ === 'belegung' && ep.dbId) openEditModal('belegung', ep.dbId);
+        else if (ep.typ === 'event' && ep.dbId) openEditModal('event', ep.dbId);
       },
       headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},
       buttonText:{today:'Heute',month:'Monat',list:'Liste'}
     });
     bookingCal.render();
   }
-
   const status = document.getElementById('booking-status');
   if (!db) {
     status.className = 'statusbar fehler';
@@ -1468,33 +1412,32 @@ async function loadBooking() {
     document.getElementById('booking-list').innerHTML = '<div class="none">Keine DB-Verbindung</div>';
     return;
   }
-
   const jetzt = HEUTE.toISOString().slice(0,10);
   const [r1,r2] = await Promise.all([
     dbQ(d => d.from('belegungen').select('*').order('von')),
     dbQ(d => d.from('special_events').select('*').order('von'))
   ]);
-  const bel = r1.data || [];
+  const bel    = r1.data || [];
   const events = r2.data || [];
-
-  bookingCal.removeAllEvents();
-  // Speichere alle Belegungen global für Overlap-Prüfung
   window._allBelegungen = bel;
+  bookingCal.removeAllEvents();
   bel.forEach(b => {
     const p = (b.erwachsene||0) + (b.kinder||0);
-    const vonTime = b.von + 'T00:00:00';
+    // ▶ ÄNDERUNG: Start T12:00:00
+    const vonTime = b.von + 'T12:00:00';
     const bisTime = b.bis + 'T12:00:00';
     bookingCal.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' ('+p+' P.)' : ''),
       start: vonTime, end: bisTime,
       backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps:{typ:'belegung', dbId: b.id}
+      extendedProps:{typ:'belegung', dbId:b.id}
     });
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = e.von + 'T00:00:00';
+    // ▶ ÄNDERUNG: Start T12:00:00
+    const vonTime = e.von + 'T12:00:00';
     const bisTime = e.bis + 'T12:00:00';
     bookingCal.addEvent({
       id: 'e-' + e.id,
@@ -1504,7 +1447,6 @@ async function loadBooking() {
       extendedProps:{typ:'event'}
     });
   });
-
   status.className = 'statusbar ok';
   status.textContent = '✓ Verbunden · ' + bel.length + ' Belegung(en) geladen';
   renderBookingList(bel, events);
@@ -1516,7 +1458,6 @@ function renderBookingList(belegungen, events) {
     ...belegungen.filter(b => b.bis > jetzt).map(b => ({...b, _art:'bel'})),
     ...events.filter(e => e.bis > jetzt).map(e => ({...e, name:e.titel, _art:'event'}))
   ].sort((a,b) => a.von.localeCompare(b.von));
-
   const el = document.getElementById('booking-list');
   if (!items.length) { el.innerHTML = '<div class="none">Noch keine Einträge.</div>'; return; }
   el.innerHTML = items.map(item => {
@@ -1528,101 +1469,89 @@ function renderBookingList(belegungen, events) {
   }).join('');
 }
 
-async function bookingSave() {
-  const name = document.getElementById('b-name').value.trim();
-  const von = document.getElementById('b-von').value;
-  const bis = document.getElementById('b-bis').value;
-  const erw = parseInt(document.getElementById('b-erw').value) || 0;
-  const kind = parseInt(document.getElementById('b-kind').value) || 0;
-  const schlaf = parseInt(document.getElementById('b-schlaf').value) || 0;
-  const email = document.getElementById('b-email').value.trim();
-  const telefon = document.getElementById('b-tel').value.trim();
-  const msg = document.getElementById('booking-status');
-
-  const errors = [];
-  if (!name) errors.push('Name fehlt');
-  if (!von || !bis) errors.push('Datum fehlt');
-  if (von && bis && von >= bis) errors.push('Enddatum muss nach Startdatum liegen');
-  if (!email || !email.includes('@')) errors.push('Gültige E-Mail erforderlich');
-  if (schlaf < 1) errors.push('Schlafplätze fehlen');
-  
-  // Prüfe auf Überlappungen mit bestehenden Belegungen
-  if (!errors.length && hasOverlap(von, bis)) {
-    errors.push('Zeitraum überschneidet sich mit bestehender Belegung');
+// ════════════════════════════════════════
+//  BUCHUNG SPEICHERN (Overlap-Prüfung)
+// ════════════════════════════════════════
+function hasOverlap(vonStr, bisStr, exceptId = null) {
+  const von = new Date(vonStr + 'T12:00:00');
+  const bis = new Date(bisStr + 'T12:00:00');
+  const allBel = (window._allBelegungen || []).filter(b => b.id !== exceptId);
+  for (let b of allBel) {
+    const bVon = new Date(b.von + 'T12:00:00');
+    const bBis = new Date(b.bis + 'T12:00:00');
+    if (von < bBis && bis > bVon) return true;
   }
-  
-  if (errors.length) { msg.className='statusbar fehler'; msg.textContent='✗ '+errors.join(' · '); return; }
+  return false;
+}
 
+async function bookingSave() {
+  const name   = document.getElementById('b-name').value.trim();
+  const von    = document.getElementById('b-von').value;
+  const bis    = document.getElementById('b-bis').value;
+  const erw    = parseInt(document.getElementById('b-erw').value)   || 0;
+  const kind   = parseInt(document.getElementById('b-kind').value)  || 0;
+  const schlaf = parseInt(document.getElementById('b-schlaf').value)|| 0;
+  const email  = document.getElementById('b-email').value.trim();
+  const telefon= document.getElementById('b-tel').value.trim();
+  const msg    = document.getElementById('booking-status');
+  const errors = [];
+  if (!name)                          errors.push('Name fehlt');
+  if (!von || !bis)                   errors.push('Datum fehlt');
+  if (von && bis && von >= bis)       errors.push('Enddatum muss nach Startdatum liegen');
+  if (!email || !email.includes('@')) errors.push('Gültige E-Mail erforderlich');
+  if (schlaf < 1)                     errors.push('Schlafplätze fehlen');
+  if (!errors.length && hasOverlap(von, bis))
+    errors.push('Zeitraum überschneidet sich mit bestehender Belegung');
+  if (errors.length) { msg.className='statusbar fehler'; msg.textContent='✗ '+errors.join(' · '); return; }
   const btn = document.getElementById('b-btn-save');
-  btn.disabled = true;
-  btn.textContent = 'Speichern…';
+  btn.disabled = true; btn.textContent = 'Speichern…';
   msg.className = 'statusbar laden';
   msg.innerHTML = '<span class="spin">⏳</span> Wird gespeichert…';
-
   const { error } = await db.from('belegungen').insert({
-    name, von, bis, erwachsene: erw, kinder: kind,
-    schlafplaetze: schlaf, email, telefon: telefon || null
+    name, von, bis, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:telefon||null
   });
-
-  btn.disabled = false;
-  btn.textContent = 'Belegung speichern';
+  btn.disabled = false; btn.textContent = 'Belegung speichern';
   if (error) { msg.className='statusbar fehler'; msg.textContent='✗ '+error.message; return; }
-
   ['b-name','b-von','b-bis','b-email','b-tel'].forEach(id => document.getElementById(id).value='');
   document.getElementById('b-erw').value='2';
   document.getElementById('b-kind').value='0';
   document.getElementById('b-schlaf').value='2';
-  msg.className='statusbar ok';
-  msg.textContent='✓ Belegung gespeichert!';
+  msg.className='statusbar ok'; msg.textContent='✓ Belegung gespeichert!';
   loadBooking();
 }
 
-async function bookingDelete(id) {
-  if (!confirm('Belegung wirklich löschen?')) return;
-  const { error } = await db.from('belegungen').delete().eq('id', id);
-  if (error) { alert('Fehler: '+error.message); return; }
-  loadBooking();
-}
-
-// Aktueller Edit-Kontext
+// ════════════════════════════════════════
+//  EDIT MODAL
+// ════════════════════════════════════════
 let currentEdit = null;
 
 async function openEditModal(type, id) {
   if (!db) { alert('Keine DB-Verbindung'); return; }
   currentEdit = { type, id };
-  // Fülle Felder je nach Typ
   if (type === 'belegung') {
-    const { data, error } = await dbQ(d => d.from('belegungen').select('*').eq('id', id).limit(1).single());
+    const { data, error } = await dbQ(d => d.from('belegungen').select('*').eq('id',id).limit(1).single());
     if (error || !data) { alert('Eintrag nicht gefunden'); return; }
     const b = data;
-    document.getElementById('edit-title').textContent = 'Belegung bearbeiten';
-    document.getElementById('e-von').value = b.von;
-    document.getElementById('e-bis').value = b.bis;
-    document.getElementById('e-name').value = b.name || '';
-    document.getElementById('e-typ').value = 'belegung';
-    document.getElementById('e-desc').value = b.beschreibung || '';
-    document.getElementById('e-erw').value = b.erwachsene || 0;
-    document.getElementById('e-kind').value = b.kinder || 0;
-    document.getElementById('e-schlaf').value = b.schlafplaetze || 0;
+    document.getElementById('e-von').value   = b.von;
+    document.getElementById('e-bis').value   = b.bis;
+    document.getElementById('e-name').value  = b.name || '';
+    document.getElementById('e-typ').value   = 'belegung';
+    document.getElementById('e-desc').value  = b.beschreibung || '';
+    document.getElementById('e-erw').value   = b.erwachsene || 0;
+    document.getElementById('e-kind').value  = b.kinder || 0;
+    document.getElementById('e-schlaf').value= b.schlafplaetze || 0;
     document.getElementById('e-email').value = b.email || '';
-    document.getElementById('e-tel').value = b.telefon || '';
-    document.getElementById('e-del-btn').style.display = '';
+    document.getElementById('e-tel').value   = b.telefon || '';
   } else {
-    const { data, error } = await dbQ(d => d.from('special_events').select('*').eq('id', id).limit(1).single());
+    const { data, error } = await dbQ(d => d.from('special_events').select('*').eq('id',id).limit(1).single());
     if (error || !data) { alert('Eintrag nicht gefunden'); return; }
     const e = data;
-    document.getElementById('edit-title').textContent = 'Event bearbeiten';
-    document.getElementById('e-von').value = e.von;
-    document.getElementById('e-bis').value = e.bis;
-    document.getElementById('e-name').value = e.titel || '';
-    document.getElementById('e-typ').value = e.typ || 'sonstige';
-    document.getElementById('e-desc').value = e.beschreibung || '';
-    document.getElementById('e-erw').value = '';
-    document.getElementById('e-kind').value = '';
-    document.getElementById('e-schlaf').value = '';
-    document.getElementById('e-email').value = '';
-    document.getElementById('e-tel').value = '';
-    document.getElementById('e-del-btn').style.display = '';
+    document.getElementById('e-von').value   = e.von;
+    document.getElementById('e-bis').value   = e.bis;
+    document.getElementById('e-name').value  = e.titel || '';
+    document.getElementById('e-typ').value   = e.typ || 'sonstige';
+    document.getElementById('e-desc').value  = e.beschreibung || '';
+    ['e-erw','e-kind','e-schlaf','e-email','e-tel'].forEach(id => document.getElementById(id).value = '');
   }
   setBookingModalMode();
   openM('mo-booking-edit');
@@ -1631,38 +1560,29 @@ async function openEditModal(type, id) {
 async function saveEdit() {
   if (!currentEdit) return;
   if (!isAdmin()) { alert('Nur Admin kann Änderungen speichern.'); return; }
-  const id = currentEdit.id;
-  const typ = currentEdit.type;
-  const von = document.getElementById('e-von').value;
-  const bis = document.getElementById('e-bis').value;
-  const name = document.getElementById('e-name').value.trim();
-  const beschr = document.getElementById('e-desc').value.trim();
-  const erw = parseInt(document.getElementById('e-erw').value) || 0;
-  const kind = parseInt(document.getElementById('e-kind').value) || 0;
-  const schlaf = parseInt(document.getElementById('e-schlaf').value) || 0;
+  const id    = currentEdit.id;
+  const typ   = currentEdit.type;
+  const von   = document.getElementById('e-von').value;
+  const bis   = document.getElementById('e-bis').value;
+  const name  = document.getElementById('e-name').value.trim();
+  const beschr= document.getElementById('e-desc').value.trim();
+  const erw   = parseInt(document.getElementById('e-erw').value)   || 0;
+  const kind  = parseInt(document.getElementById('e-kind').value)  || 0;
+  const schlaf= parseInt(document.getElementById('e-schlaf').value)|| 0;
   const email = document.getElementById('e-email').value.trim() || null;
-  const telefon = document.getElementById('e-tel').value.trim() || null;
-
+  const tel   = document.getElementById('e-tel').value.trim()   || null;
   if (!von || !bis || von >= bis) { alert('Bitte gültige Daten wählen.'); return; }
-
   if (typ === 'belegung') {
-    // Prüfe auf Überlappungen mit anderen Belegungen (aber nicht mit sich selbst)
-    if (hasOverlap(von, bis, id)) {
-      alert('Zeitraum überschneidet sich mit bestehender Belegung!');
-      return;
-    }
-    const { error } = await db.from('belegungen').update({ von, bis, name, beschreibung: beschr, erwachsene: erw, kinder: kind, schlafplaetze: schlaf, email, telefon }).eq('id', id);
+    if (hasOverlap(von, bis, id)) { alert('Zeitraum überschneidet sich mit bestehender Belegung!'); return; }
+    const { error } = await db.from('belegungen').update({ von, bis, name, beschreibung:beschr, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:tel }).eq('id',id);
     if (error) { alert('Fehler: '+error.message); return; }
   } else {
     const evTyp = document.getElementById('e-typ').value || 'sonstige';
-    const { error } = await db.from('special_events').update({ von, bis, titel: name, beschreibung: beschr, typ: evTyp }).eq('id', id);
+    const { error } = await db.from('special_events').update({ von, bis, titel:name, beschreibung:beschr, typ:evTyp }).eq('id',id);
     if (error) { alert('Fehler: '+error.message); return; }
   }
-
-  closeM('mo-booking-edit');
-  currentEdit = null;
-  // Kalender neu laden
-  loadBooking(); loadKalOv(); if (kalHome) kalHome.refetchEvents && kalHome.refetchEvents();
+  closeM('mo-booking-edit'); currentEdit = null;
+  loadBooking(); loadKalOv();
 }
 
 async function deleteEdit() {
@@ -1671,10 +1591,10 @@ async function deleteEdit() {
   if (!confirm('Eintrag wirklich löschen?')) return;
   const id = currentEdit.id;
   if (currentEdit.type === 'belegung') {
-    const { error } = await db.from('belegungen').delete().eq('id', id);
+    const { error } = await db.from('belegungen').delete().eq('id',id);
     if (error) { alert('Fehler: '+error.message); return; }
   } else {
-    const { error } = await db.from('special_events').delete().eq('id', id);
+    const { error } = await db.from('special_events').delete().eq('id',id);
     if (error) { alert('Fehler: '+error.message); return; }
   }
   closeM('mo-booking-edit'); currentEdit = null; loadBooking(); loadKalOv();
@@ -1684,31 +1604,21 @@ async function deleteEdit() {
 //  NEWS
 // ════════════════════════════════════════
 const NEWS_IDS = {
-  oeffentlich:['n-oe-t','n-oe-i'],
-  warnung:    ['n-w-t', 'n-w-i'],
-  intern:     ['n-i-t', 'n-i-i'],
-  presse:     ['n-p-t', 'n-p-i']
+  oeffentlich:['n-oe-t','n-oe-i'], warnung:['n-w-t','n-w-i'],
+  intern:['n-i-t','n-i-i'],        presse:['n-p-t','n-p-i']
 };
-
 async function loadNews(typ) {
-  const el = document.getElementById('nl-' + typ);
-  if (!el) return;
+  const el = document.getElementById('nl-'+typ); if (!el) return;
   if (!db) { el.innerHTML = '<div class="none">Supabase Zugangsdaten eintragen.</div>'; return; }
   const {data} = await dbQ(d => d.from('nachrichten').select('*').eq('typ',typ).order('erstellt_am',{ascending:false}));
   el.innerHTML = (data||[]).length
-    ? data.map(n=>`<div class="nc ${typ}">
-        <div class="nc-head">
-          <div class="nc-title">${n.titel}</div>
-          <div style="display:flex;align-items:center;gap:.4rem">
-            <span class="nc-date">${dDE(n.erstellt_am,{day:'2-digit',month:'short',year:'numeric'})}</span>
-            <button class="del-btn" onclick="newsDel('${n.id}','${typ}')">✕</button>
-          </div>
-        </div>
-        <div class="nc-body">${n.inhalt}</div>
-      </div>`).join('')
+    ? data.map(n=>`<div class="nc ${typ}"><div class="nc-head"><div class="nc-title">${n.titel}</div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <span class="nc-date">${dDE(n.erstellt_am,{day:'2-digit',month:'short',year:'numeric'})}</span>
+          <button class="del-btn" onclick="newsDel('${n.id}','${typ}')">✕</button>
+        </div></div><div class="nc-body">${n.inhalt}</div></div>`).join('')
     : '<div class="none">Noch keine Einträge.</div>';
 }
-
 async function newsAdd(typ) {
   const [tId,iId] = NEWS_IDS[typ];
   const titel = document.getElementById(tId).value.trim();
@@ -1732,8 +1642,7 @@ async function loadGb() {
   if (!db) { el.innerHTML='<div class="none">Supabase Zugangsdaten eintragen.</div>'; return; }
   const {data} = await dbQ(d => d.from('gaestebuch').select('*').order('erstellt_am',{ascending:false}));
   el.innerHTML = (data||[]).length
-    ? data.map(g=>`<div class="ge">
-        <div class="ge-name">${g.name}</div>
+    ? data.map(g=>`<div class="ge"><div class="ge-name">${g.name}</div>
         <div class="ge-date">${dDE(g.erstellt_am,{day:'2-digit',month:'long',year:'numeric'})}</div>
         <div class="ge-text">${g.nachricht}</div>
         <button class="del-btn" style="position:absolute;top:.6rem;right:.6rem" onclick="gbDel('${g.id}')">✕</button>
@@ -1749,13 +1658,13 @@ async function gbAdd() {
   loadGb();
 }
 async function gbDel(id) {
-  if (!confirm('Löschen?'))return;
+  if (!confirm('Löschen?')) return;
   await dbQ(d => d.from('gaestebuch').delete().eq('id',id));
   loadGb();
 }
 
 // ════════════════════════════════════════
-//  MITGLIEDER & VORSTAND (localStorage)
+//  MITGLIEDER & VORSTAND
 // ════════════════════════════════════════
 let mList = JSON.parse(localStorage.getItem('mitglieder')||'[]');
 let vList = JSON.parse(localStorage.getItem('vorstand')||'[]');
@@ -1814,11 +1723,11 @@ async function loadEv() {
 }
 async function evSave(){
   const titel=document.getElementById('ev-t').value.trim();
-  const typ=document.getElementById('ev-typ').value;
-  const von=document.getElementById('ev-von').value;
-  const bis=document.getElementById('ev-bis').value;
-  const desc=document.getElementById('ev-desc').value.trim();
-  const msg=document.getElementById('ev-msg');
+  const typ  =document.getElementById('ev-typ').value;
+  const von  =document.getElementById('ev-von').value;
+  const bis  =document.getElementById('ev-bis').value;
+  const desc =document.getElementById('ev-desc').value.trim();
+  const msg  =document.getElementById('ev-msg');
   if(!titel||!von||!bis){msg.textContent='⚠ Felder ausfüllen.';return;}
   if(von>=bis){msg.textContent='⚠ Enddatum nach Startdatum.';return;}
   const {error}=await dbQ(d=>d.from('special_events').insert({titel,typ,von,bis,beschreibung:desc||null,jahr:parseInt(von.slice(0,4))}));
@@ -1834,7 +1743,7 @@ async function evDel(id){
 }
 
 // ════════════════════════════════════════
-//  TO-DO (localStorage)
+//  TO-DO
 // ════════════════════════════════════════
 let todos = JSON.parse(localStorage.getItem('todos')||'[]');
 function renderTd(){
@@ -1861,14 +1770,14 @@ function tdToggle(i){todos[i].done=!todos[i].done;localStorage.setItem('todos',J
 function tdDel(i){todos.splice(i,1);localStorage.setItem('todos',JSON.stringify(todos));renderTd();}
 
 // ════════════════════════════════════════
-//  DATEI-BROWSER (Supabase Storage)
+//  DATEI-BROWSER
 // ════════════════════════════════════════
 function ficon(n){
   const e=n.split('.').pop().toLowerCase();
-  if(e==='pdf')return'📄';if(['xls','xlsx'].includes(e))return'📊';
-  if(['doc','docx'].includes(e))return'📝';if(['jpg','jpeg','png','gif','webp'].includes(e))return'🖼';
-  if(['mp4','mov','webm'].includes(e))return'🎬';if(['mp3','m4a'].includes(e))return'🎵';
-  if(['zip','rar'].includes(e))return'📦';return'📎';
+  if(e==='pdf')return'📄'; if(['xls','xlsx'].includes(e))return'📊';
+  if(['doc','docx'].includes(e))return'📝'; if(['jpg','jpeg','png','gif','webp'].includes(e))return'🖼';
+  if(['mp4','mov','webm'].includes(e))return'🎬'; if(['mp3','m4a'].includes(e))return'🎵';
+  if(['zip','rar'].includes(e))return'📦'; return'📎';
 }
 function isImg(n){return/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(n);}
 function isVid(n){return/\.(mp4|mov|webm|avi)$/i.test(n);}
@@ -1882,8 +1791,7 @@ async function loadFiles(bkt, folder, cId) {
   const {data,error}=await dbQ(d=>d.storage.from(bkt).list(folder,{limit:100,sortBy:{column:'name',order:'asc'}}));
   if(error||!data||!data.filter(f=>f.name!=='.emptyFolderPlaceholder').length){
     el.innerHTML=`<div class="fe-empty"><div class="fi">📂</div><h4>Noch keine Dateien</h4>
-    <p>In Supabase Storage → Bucket <strong>"${bkt}"</strong> → Ordner <strong>"${folder}"</strong> hochladen.<br/>
-    Oder den ⬆ Button oben nutzen (erfordert, dass Bucket auf <code>public</code> gesetzt ist).</p></div>`;
+    <p>In Supabase Storage → Bucket <strong>"${bkt}"</strong> → Ordner <strong>"${folder}"</strong> hochladen.</p></div>`;
     return;
   }
   const files=data.filter(f=>f.name!=='.emptyFolderPlaceholder');
@@ -1914,9 +1822,6 @@ async function loadMedia(bkt, folder, cId) {
   }).join('');
 }
 
-// ════════════════════════════════════════
-//  DATEI VORSCHAU
-// ════════════════════════════════════════
 function prevFile(url, name, bkt, folder) {
   prevTarget = { bkt, folder, name };
   document.getElementById('prev-title').textContent=name;
@@ -1924,8 +1829,7 @@ function prevFile(url, name, bkt, folder) {
   document.getElementById('prev-dl').download=name;
   ['prev-frame','prev-img','prev-vid','prev-other'].forEach(id=>{
     const el=document.getElementById(id); el.style.display='none';
-    if(id==='prev-vid'){el.src='';}
-    if(id==='prev-frame'){el.src='';}
+    if(id==='prev-vid'||id==='prev-frame') el.src='';
   });
   if(isPdf(name)){
     document.getElementById('prev-frame').src=url;
@@ -1942,17 +1846,12 @@ function prevFile(url, name, bkt, folder) {
   openM('prev-mo');
 }
 
-// Upload
-function triggerUp(bkt, folder) {
-  upTarget={bkt,folder};
-  document.getElementById('up-in').click();
-}
+function triggerUp(bkt, folder) { upTarget={bkt,folder}; document.getElementById('up-in').click(); }
 async function handleUp(e) {
   const files=e.target.files; if(!files.length)return;
   if(!db){alert('Supabase nicht verbunden.');return;}
   for(const f of files){
-    const path=upTarget.folder+'/'+f.name;
-    const {error}=await dbQ(d=>d.storage.from(upTarget.bkt).upload(path,f,{upsert:true}));
+    const {error}=await dbQ(d=>d.storage.from(upTarget.bkt).upload(upTarget.folder+'/'+f.name,f,{upsert:true}));
     if(error)alert('Fehler: '+error.message);
   }
   e.target.value='';
@@ -1973,8 +1872,7 @@ function toggleCed(cedId, btnId) {
 }
 function loadCed() {
   document.querySelectorAll('.ced[id]').forEach(el=>{
-    const s=localStorage.getItem('ced-'+el.id);
-    if(s) el.innerHTML=s;
+    const s=localStorage.getItem('ced-'+el.id); if(s) el.innerHTML=s;
   });
 }
 
@@ -1990,8 +1888,7 @@ function editBg(id) {
 }
 function loadBgs() {
   document.querySelectorAll('.bgs[id]').forEach(el=>{
-    const s=localStorage.getItem('bg-'+el.id);
-    if(s) el.style.backgroundImage='url('+s+')';
+    const s=localStorage.getItem('bg-'+el.id); if(s) el.style.backgroundImage='url('+s+')';
   });
 }
 
@@ -2005,15 +1902,15 @@ function initCap(){
   document.getElementById('cap-a').value='';
 }
 async function cfSend(){
-  const name=document.getElementById('cf-n').value.trim();
+  const name =document.getElementById('cf-n').value.trim();
   const email=document.getElementById('cf-e').value.trim();
-  const msg=document.getElementById('cf-m').value.trim();
-  const ans=parseInt(document.getElementById('cap-a').value);
-  const stEl=document.getElementById('cf-status');
+  const msg  =document.getElementById('cf-m').value.trim();
+  const ans  =parseInt(document.getElementById('cap-a').value);
+  const stEl =document.getElementById('cf-status');
   if(!name||!email||!msg){stEl.style.color='var(--warn)';stEl.textContent='⚠ Pflichtfelder ausfüllen.';return;}
   if(!email.includes('@')){stEl.style.color='var(--warn)';stEl.textContent='⚠ Gültige E-Mail eingeben.';return;}
   if(ans!==capA+capB){stEl.style.color='var(--warn)';stEl.textContent='⚠ Sicherheitsfrage falsch.';return;}
-  if(!db){stEl.style.color='var(--warn)';stEl.textContent='Keine DB-Verbindung – Nachricht konnte nicht gespeichert werden.';return;}
+  if(!db){stEl.style.color='var(--warn)';stEl.textContent='Keine DB-Verbindung.';return;}
   stEl.style.color='rgba(232,223,200,.5)'; stEl.textContent='Wird gesendet…';
   const {error}=await dbQ(d=>d.from('kontakt').insert({name,email,nachricht:msg}));
   if(error){stEl.style.color='var(--warn)';stEl.textContent='✗ Fehler: '+error.message;return;}
@@ -2023,10 +1920,8 @@ async function cfSend(){
   setTimeout(()=>stEl.textContent='',5000);
 }
 
-// Umfragen
 function loadUmfrage(){
-  const url=document.getElementById('uf-url').value.trim();
-  if(!url)return;
+  const url=document.getElementById('uf-url').value.trim(); if(!url)return;
   document.getElementById('uf-frame').src=url;
   document.getElementById('uf-frame').style.display='block';
 }
@@ -2038,8 +1933,7 @@ function openM(id){document.getElementById(id).classList.add('show');}
 function closeM(id){
   document.getElementById(id).classList.remove('show');
   if(id==='prev-mo'){
-    const v=document.getElementById('prev-vid');
-    if(v.pause)v.pause();
+    const v=document.getElementById('prev-vid'); if(v.pause)v.pause();
     v.src=''; document.getElementById('prev-frame').src='';
   }
 }
@@ -2111,16 +2005,11 @@ function checkPw(){
 //  APP START
 // ════════════════════════════════════════
 function startApp(){
-  buildNav();
-  appStarted = true;
-  loadCed();
-  loadBgs();
-  initCap();
-  checkCk();
+  buildNav(); appStarted=true;
+  loadCed(); loadBgs(); initCap(); checkCk();
   document.getElementById('fy').textContent = HEUTE.getFullYear();
   document.getElementById('bbar-link').href = CFG.bildSrv;
   setAdminUI();
-  // Direkt Aktivitaeten -> Kalender als Startseite anzeigen
   go('aktivitaeten','kalender');
 }
 
@@ -2129,10 +2018,9 @@ function startApp(){
 // ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('pw-in').addEventListener('keydown', e => { if(e.key==='Enter') checkPw(); });
-
   if (sessionStorage.getItem('auth') === '1' || sessionStorage.getItem('admin') === '1') {
     document.getElementById('pw-gate').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    document.getElementById('app').style.display     = 'block';
     startApp();
   }
 });
