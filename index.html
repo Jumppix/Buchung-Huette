@@ -34,16 +34,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);}
 body.admin-mode .admin-only{display:inline-flex!important;}
 .admin-state{font-size:.75rem;color:var(--aged);margin-left:.8rem;}
 
-/* ══ COOKIE BANNER ══ */
-#cookie-bar{position:fixed;bottom:0;left:0;right:0;z-index:8000;background:var(--ink);color:var(--aged);padding:1rem 2rem;display:none;align-items:center;gap:1.5rem;flex-wrap:wrap;border-top:2px solid var(--rust);}
-#cookie-bar.show{display:flex;}
-#cookie-bar p{font-size:.8rem;flex:1;line-height:1.6;}
-#cookie-bar a{color:var(--gold);cursor:pointer;}
-.ck-btns{display:flex;gap:.6rem;flex-shrink:0;}
-.ck-btn{border:none;padding:.5rem 1.1rem;border-radius:2px;cursor:pointer;font-size:.78rem;letter-spacing:.06em;}
-.ck-acc{background:var(--pine);color:#fff;}
-.ck-ess{background:transparent;color:var(--aged);border:1px solid rgba(232,223,200,.3);}
-.ck-set{background:var(--gold);color:var(--ink);}
 
 /* ══ HEADER ══ */
 #app{display:none;}
@@ -129,29 +119,6 @@ header{
 .fc .fc-daygrid-week-number{font-size:.75rem;font-weight:600;color:var(--blue);opacity:1;padding:4px 3px;background:rgba(44,95,138,.05);border-radius:2px;text-align:center;min-width:28px;}
 .fc .fc-daygrid-week-number-cell{background:rgba(232,223,200,.3)!important;}
 
-/* Halbtages-Darstellung für Belegungen */
-.fc .fc-daygrid-event.fc-half-start,
-.fc .fc-daygrid-event.fc-half-end,
-.fc .fc-daygrid-event.fc-half-single{
-  display:block!important;
-  box-sizing:border-box!important;
-  min-width:0!important;
-}
-.fc .fc-daygrid-event.fc-half-start{
-  width:50%!important;
-  margin-left:0!important;
-  margin-right:auto!important;
-}
-.fc .fc-daygrid-event.fc-half-end{
-  width:50%!important;
-  margin-left:50%!important;
-  margin-right:0!important;
-}
-.fc .fc-daygrid-event.fc-half-single{
-  width:50%!important;
-  margin-left:0!important;
-  margin-right:0!important;
-}
 
 /* Jahr-Ansicht */
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:18px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
@@ -354,18 +321,6 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 #prev-vid{width:100%;height:100%;background:#000;display:none;}
 #prev-other{display:none;padding:2rem;text-align:center;color:var(--muted);}
 
-/* Cookie Einstellungen */
-.ck-row{display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-bottom:1px solid var(--div);}
-.ck-lbl h4{font-size:.88rem;font-weight:500;}
-.ck-lbl p{font-size:.76rem;color:var(--muted);margin-top:.1rem;}
-.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
-.toggle input{display:none;}
-.tsl{position:absolute;inset:0;background:var(--div);border-radius:11px;cursor:pointer;transition:background .2s;}
-.tsl::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;}
-.toggle input:checked~.tsl{background:var(--pine);}
-.toggle input:checked~.tsl::after{transform:translateX(18px);}
-.toggle input:disabled~.tsl{opacity:.5;cursor:not-allowed;}
-
 /* No-entries */
 .none{font-size:.83rem;color:var(--muted);font-style:italic;padding:.5rem 0;}
 
@@ -417,16 +372,6 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   </div>
 </div></div>
 
-<!-- COOKIE BANNER -->
-<div id="cookie-bar">
-  <p>Diese Website nutzt essentielle Cookies sowie optionale Funktions-Cookies.
-    <a onclick="openM('mo-cookie')">Mehr erfahren</a></p>
-  <div class="ck-btns">
-    <button class="ck-btn ck-ess" onclick="ckChoice('essential')">Nur notwendige</button>
-    <button class="ck-btn ck-acc" onclick="ckChoice('all')">Alle akzeptieren</button>
-    <button class="ck-btn ck-set" onclick="openM('mo-cksettings')">Einstellungen</button>
-  </div>
-</div>
 
 <!-- APP -->
 <div id="app">
@@ -804,8 +749,6 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   <div class="flinks">
     <a onclick="openM('mo-imp')">Impressum</a>
     <a onclick="openM('mo-daten')">Datenschutz</a>
-    <a onclick="openM('mo-cookie')">Cookie-Richtlinie</a>
-    <a onclick="openM('mo-cksettings')">Cookie-Einstellungen</a>
     <a id="footer-admin-login" onclick="openAdminLogin()">Admin</a>
     <a id="footer-admin-logout" onclick="logoutAdmin()" style="display:none">Admin abmelden</a>
   </div>
@@ -836,27 +779,6 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   </div>
 </div></div>
 
-<div class="mo" id="mo-cookie"><div class="mb">
-  <div class="mh"><h2>Cookie-Richtlinie</h2><button class="mc-btn" onclick="closeM('mo-cookie')">✕</button></div>
-  <div class="mbody">
-    <h3>Notwendige Cookies</h3><p><code>session-auth</code>: Login-Status (sessionStorage).<br/><code>cookie-consent</code>: Cookie-Einstellungen (localStorage, 1 Jahr).</p>
-    <h3>Funktionale Cookies</h3><p>Hintergrundbilder, Textanpassungen, lokale Listen (localStorage).</p>
-    <h3>Drittanbieter</h3><p>Nur bei aktivierter Facebook/Google-Einbindung – nach explizitem Nutzer-Klick.</p>
-  </div>
-</div></div>
-
-<div class="mo" id="mo-cksettings"><div class="mb">
-  <div class="mh"><h2>Cookie-Einstellungen</h2><button class="mc-btn" onclick="closeM('mo-cksettings')">✕</button></div>
-  <div class="mbody">
-    <div class="ck-row"><div class="ck-lbl"><h4>Notwendige Cookies</h4><p>Erforderlich – nicht deaktivierbar.</p></div><label class="toggle"><input type="checkbox" checked disabled/><span class="tsl"></span></label></div>
-    <div class="ck-row"><div class="ck-lbl"><h4>Funktionale Cookies</h4><p>Hintergrundbilder, Listen-Speicher.</p></div><label class="toggle"><input type="checkbox" id="ck-func" checked/><span class="tsl"></span></label></div>
-    <div class="ck-row"><div class="ck-lbl"><h4>Drittanbieter</h4><p>Facebook, Google Forms.</p></div><label class="toggle"><input type="checkbox" id="ck-3rd"/><span class="tsl"></span></label></div>
-    <div style="display:flex;gap:.7rem;margin-top:1.3rem">
-      <button class="btn btn-p btn-sm" onclick="ckSave()">Speichern</button>
-      <button class="btn btn-g btn-sm" onclick="closeM('mo-cksettings')">Abbrechen</button>
-    </div>
-  </div>
-</div></div>
 
 <!-- Datei Vorschau -->
 <div class="mo" id="prev-mo"><div class="mb" style="max-width:980px;height:88vh;display:flex;flex-direction:column;">
@@ -1029,44 +951,16 @@ async function dbQ(fn) {
 const HEUTE = new Date();
 
 // ════════════════════════════════════════
-//  HALBTAGES-VISUAL (Check-in/out 12:00)
+//  DATUMS-HILFSFUNKTION
 // ════════════════════════════════════════
-function halfDayPx() {
-  const d = document.querySelector('.fc-daygrid-day');
-  return d ? Math.round(d.offsetWidth / 2) : 40;
-}
-
-function applyNoonMargins(info) {
-  // Nur in Monatsansicht, nicht in Jahr/Liste
-  if (info.view.type !== 'dayGridMonth') return;
-
-  const el = info.el;
-  if (!el) return;
-
-  el.classList.remove('fc-half-start', 'fc-half-end', 'fc-half-single');
-  el.style.display = 'block';
-  el.style.boxSizing = 'border-box';
-  el.style.minWidth = '0';
-
-  if (info.isStart && info.isEnd) {
-    // Ein-Tages-Belegung: halbe Breite statt Vollbreite
-    el.classList.add('fc-half-single');
-    el.style.width = '50%';
-    el.style.marginLeft = '0';
-    el.style.marginRight = '0';
-  } else if (info.isStart) {
-    // Ankunftstag: nur die linke Hälfte belegen
-    el.classList.add('fc-half-start');
-    el.style.width = '50%';
-    el.style.marginLeft = '0';
-    el.style.marginRight = 'auto';
-  } else if (info.isEnd) {
-    // Abreisetag: nur die rechte Hälfte belegen
-    el.classList.add('fc-half-end');
-    el.style.width = '50%';
-    el.style.marginLeft = '50%';
-    el.style.marginRight = '0';
-  }
+function addDay(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y,m-1,d);
+  dt.setDate(dt.getDate()+1);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth()+1).padStart(2,'0');
+  const dd = String(dt.getDate()).padStart(2,'0');
+  return `${yy}-${mm}-${dd}`;
 }
 
 // ════════════════════════════════════════
@@ -1309,7 +1203,6 @@ async function loadHome() {
 
 // ════════════════════════════════════════
 //  KALENDER: kalHome
-//  ▶ ÄNDERUNG: vonTime T12:00:00 + eventDidMount
 // ════════════════════════════════════════
 function initKalHome(bel, events) {
   if (!document.getElementById('kal-home')) return;
@@ -1319,10 +1212,6 @@ function initKalHome(bel, events) {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
       events:[],
-      // ▶ NEU: Halbtages-Visual
-      eventDidMount: function(info) {
-        applyNoonMargins(info);
-      },
       eventClick: function(info) {
         const ep = info.event.extendedProps || {};
         if (ep.typ === 'belegung' && ep.dbId) openEditModal('belegung', ep.dbId);
@@ -1335,9 +1224,8 @@ function initKalHome(bel, events) {
   }
   kalHome.removeAllEvents();
   bel.forEach(b => {
-    // ▶ ÄNDERUNG: Start jetzt T12:00:00 statt T00:00:00
-    const vonTime = b.von + 'T12:00:00';
-    const bisTime = b.bis + 'T12:00:00';
+    const vonTime = b.von;
+    const bisTime = addDay(b.bis);
     const pending = b.status === 'pending';
     const color = pending ? '#e67e22' : '#8b4513';
     kalHome.addEvent({
@@ -1350,9 +1238,8 @@ function initKalHome(bel, events) {
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    // ▶ ÄNDERUNG: Start jetzt T12:00:00
-    const vonTime = e.von + 'T12:00:00';
-    const bisTime = e.bis + 'T12:00:00';
+    const vonTime = e.von;
+    const bisTime = addDay(e.bis);
     kalHome.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
@@ -1365,7 +1252,6 @@ function initKalHome(bel, events) {
 
 // ════════════════════════════════════════
 //  KALENDER: kalOv (Übersicht)
-//  ▶ ÄNDERUNG: vonTime T12:00:00 + applyNoonMargins in eventDidMount
 // ════════════════════════════════════════
 async function loadKalOv() {
   if (!kalOv) {
@@ -1392,9 +1278,7 @@ async function loadKalOv() {
         }
         return { html: `<div style="font-weight:500;line-height:1.2;white-space:normal;">${arg.event.title.split(' · ')[0]}${detail}</div>` };
       },
-      // ▶ ÄNDERUNG: applyNoonMargins am Anfang eingefügt
       eventDidMount: function(info) {
-        applyNoonMargins(info);
         // Tooltip
         try {
           const ep = info.event.extendedProps || {};
@@ -1446,8 +1330,8 @@ async function loadKalOv() {
     const p = (b.erwachsene||0)+(b.kinder||0);
     const pending = b.status === 'pending';
     const color = pending ? '#e67e22' : '#8b4513';
-    const vonTime = b.von + 'T12:00:00';
-    const bisTime = b.bis + 'T12:00:00';
+    const vonTime = b.von;
+    const bisTime = addDay(b.bis);
     kalOv.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' · ' + p + ' P.' : '') + (pending ? ' (unbestätigt)' : ''),
@@ -1458,9 +1342,8 @@ async function loadKalOv() {
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    // ▶ ÄNDERUNG: Start T12:00:00
-    const vonTime = e.von + 'T12:00:00';
-    const bisTime = e.bis + 'T12:00:00';
+    const vonTime = e.von;
+    const bisTime = addDay(e.bis);
     kalOv.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
@@ -1477,7 +1360,6 @@ async function loadKalOv() {
 
 // ════════════════════════════════════════
 //  KALENDER: bookingCal (Buchung eintragen)
-//  ▶ ÄNDERUNG: vonTime T12:00:00 + eventDidMount
 // ════════════════════════════════════════
 async function loadBooking() {
   if (!bookingCal) {
@@ -1485,10 +1367,6 @@ async function loadBooking() {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
       weekNumbers:true, weekNumberFormat:{week:'numeric'}, weekText:'KW',
       events:[],
-      // ▶ NEU: Halbtages-Visual
-      eventDidMount: function(info) {
-        applyNoonMargins(info);
-      },
       eventClick: async function(info) {
         const ep = info.event.extendedProps || {};
         if (ep.typ === 'belegung' && ep.dbId) openEditModal('belegung', ep.dbId);
@@ -1519,8 +1397,8 @@ async function loadBooking() {
     const p = (b.erwachsene||0) + (b.kinder||0);
     const pending = b.status === 'pending';
     const color = pending ? '#e67e22' : '#8b4513';
-    const vonTime = b.von + 'T12:00:00';
-    const bisTime = b.bis + 'T12:00:00';
+    const vonTime = b.von;
+    const bisTime = addDay(b.bis);
     bookingCal.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' ('+p+' P.)' : '') + (pending ? ' (unbestätigt)' : ''),
@@ -1531,9 +1409,8 @@ async function loadBooking() {
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    // ▶ ÄNDERUNG: Start T12:00:00
-    const vonTime = e.von + 'T12:00:00';
-    const bisTime = e.bis + 'T12:00:00';
+    const vonTime = e.von;
+    const bisTime = addDay(e.bis);
     bookingCal.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
@@ -1568,12 +1445,12 @@ function renderBookingList(belegungen, events) {
 //  BUCHUNG SPEICHERN (Overlap-Prüfung)
 // ════════════════════════════════════════
 function hasOverlap(vonStr, bisStr, exceptId = null) {
-  const von = new Date(vonStr + 'T12:00:00');
-  const bis = new Date(bisStr + 'T12:00:00');
+  const von = new Date(vonStr + 'T00:00:00');
+  const bis = new Date(addDay(bisStr) + 'T00:00:00');
   const allBel = (window._allBelegungen || []).filter(b => b.id !== exceptId);
   for (let b of allBel) {
-    const bVon = new Date(b.von + 'T12:00:00');
-    const bBis = new Date(b.bis + 'T12:00:00');
+    const bVon = new Date(b.von + 'T00:00:00');
+    const bBis = new Date(addDay(b.bis) + 'T00:00:00');
     if (von < bBis && bis > bVon) return true;
   }
   return false;
@@ -2187,23 +2064,6 @@ function closeM(id){
 document.addEventListener('click',e=>{ if(e.target.classList.contains('mo')) closeM(e.target.id); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.mo.show').forEach(m=>closeM(m.id)); });
 
-// ════════════════════════════════════════
-//  COOKIES
-// ════════════════════════════════════════
-function ckChoice(type){
-  localStorage.setItem('ck-consent',type); localStorage.setItem('ck-date',Date.now());
-  document.getElementById('cookie-bar').classList.remove('show');
-}
-function ckSave(){
-  const t=document.getElementById('ck-3rd').checked?'all':document.getElementById('ck-func').checked?'functional':'essential';
-  localStorage.setItem('ck-consent',t); localStorage.setItem('ck-date',Date.now());
-  document.getElementById('cookie-bar').classList.remove('show');
-  closeM('mo-cksettings');
-}
-function checkCk(){
-  const c=localStorage.getItem('ck-consent'), d=parseInt(localStorage.getItem('ck-date')||'0');
-  if(!c||Date.now()-d>365*24*3600*1000) document.getElementById('cookie-bar').classList.add('show');
-}
 
 // ════════════════════════════════════════
 //  HILFSFUNKTIONEN
@@ -2253,7 +2113,7 @@ function checkPw(){
 // ════════════════════════════════════════
 function startApp(){
   buildNav(); appStarted=true;
-  loadCed(); loadBgs(); initCap(); checkCk();
+  loadCed(); loadBgs(); initCap();
   document.getElementById('fy').textContent = HEUTE.getFullYear();
   document.getElementById('bbar-link').href = CFG.bildSrv;
   setAdminUI();
