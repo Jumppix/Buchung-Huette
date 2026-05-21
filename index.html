@@ -119,6 +119,11 @@ header{
 .fc .fc-col-header-cell-cushion{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:.5rem 0;font-weight:500;}
 .fc .fc-daygrid-day-number{font-size:.85rem;color:var(--muted);text-decoration:none;padding:4px 6px;font-weight:500;}
 .fc .fc-daygrid-day.fc-day-today{background:rgba(184,134,11,.1)!important;}
+.fc-daygrid-event-harness{display:flex;flex-direction:column;}
+.fc-daygrid-event.half-start,.fc-daygrid-event.half-end,.fc-daygrid-event.half-single{height:calc(50% - 2px);overflow:hidden;}
+.fc-daygrid-event.half-start{border-radius:0 0 4px 4px!important;margin-top:auto;}
+.fc-daygrid-event.half-end{border-radius:4px 4px 0 0!important;}
+.fc-daygrid-event.half-single{border-radius:4px!important;}
 .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number{color:var(--gold);font-weight:600;}
 .fc-event{border-radius:2px!important;border:none!important;font-size:.76rem!important;padding:3px 4px!important;cursor:pointer;line-height:1.3;}
 .fc-event-title{font-weight:500;}
@@ -1154,6 +1159,51 @@ function dateToNoon(dateStr) {
   return dateStr + 'T12:00:00';
 }
 
+function addDays(dateStr, days) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0,10);
+}
+
+function buildCalendarSegments(item, title, color, extraProps = {}) {
+  const segments = [];
+  const startDate = item.von;
+  const endDate = item.bis;
+  const startNoon = startDate + 'T12:00:00';
+  const endNoon = endDate + 'T12:00:00';
+  if (startDate === endDate) {
+    segments.push({
+      title, start: startNoon, end: endNoon,
+      backgroundColor: color, borderColor: color,
+      allDay: false, classNames: ['half-single'], extendedProps: extraProps
+    });
+    return segments;
+  }
+  const startNextDay = addDays(startDate, 1);
+  const fullEndDay = endDate + 'T00:00:00';
+
+  segments.push({
+    title, start: startNoon, end: startNextDay + 'T00:00:00',
+    backgroundColor: color, borderColor: color,
+    allDay: false, classNames: ['half-start'], extendedProps: extraProps
+  });
+
+  if (startNextDay < endDate) {
+    segments.push({
+      title, start: startNextDay + 'T00:00:00', end: fullEndDay,
+      backgroundColor: color, borderColor: color,
+      allDay: false, classNames: ['full-day'], extendedProps: extraProps
+    });
+  }
+
+  segments.push({
+    title, start: fullEndDay, end: endNoon,
+    backgroundColor: color, borderColor: color,
+    allDay: false, classNames: ['half-end'], extendedProps: extraProps
+  });
+  return segments;
+}
+
 // Prüft ob zwei Buchungen sich überlappen
 // Veranstaltungen (events) dürfen sich mit Buchungen überlappen
 function hasOverlap(vonStr, bisStr, exceptId = null) {
@@ -1193,25 +1243,14 @@ function initKalHome(bel, events) {
   }
   kalHome.removeAllEvents();
   bel.forEach(b => {
-    const vonTime = b.von + 'T00:00:00';  // Anfang des Ankunftstages
-    const bisTime = b.bis + 'T12:00:00';  // Mittag des Abreisetages (sichtbar, wo Checkout ist)
-    kalHome.addEvent({
-      id: 'b-' + b.id,
-      title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
-      start: vonTime, end: bisTime, backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
-    });
+    const title = b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : '');
+    buildCalendarSegments(b, title, '#8b4513', { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email })
+      .forEach(evt => kalHome.addEvent(evt));
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = e.von + 'T00:00:00';
-    const bisTime = e.bis + 'T12:00:00';
-    kalHome.addEvent({
-      id: 'e-' + e.id,
-      title: '📌 ' + e.titel,
-      start: vonTime, end: bisTime, backgroundColor:c, borderColor:c,
-      extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
-    });
+    buildCalendarSegments(e, '📌 ' + e.titel, c, { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung })
+      .forEach(evt => kalHome.addEvent(evt));
   });
 }
 
@@ -1305,25 +1344,14 @@ async function loadKalOv() {
   window._allBelegungen = bel;
   bel.forEach(b => {
     const p = (b.erwachsene||0)+(b.kinder||0);
-    const vonTime = b.von + 'T00:00:00';
-    const bisTime = b.bis + 'T12:00:00';
-    kalOv.addEvent({
-      id: 'b-' + b.id,
-      title: b.name + (p ? ' · ' + p + ' P.' : ''),
-      start: vonTime, end: bisTime, backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
-    });
+    const title = b.name + (p ? ' · ' + p + ' P.' : '');
+    buildCalendarSegments(b, title, '#8b4513', { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email })
+      .forEach(evt => kalOv.addEvent(evt));
   });
   events.forEach(e => {
     const c=e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = e.von + 'T00:00:00';
-    const bisTime = e.bis + 'T12:00:00';
-    kalOv.addEvent({
-      id: 'e-' + e.id,
-      title: '📌 ' + e.titel,
-      start: vonTime, end: bisTime, backgroundColor:c, borderColor:c,
-      extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
-    });
+    buildCalendarSegments(e, '📌 ' + e.titel, c, { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung })
+      .forEach(evt => kalOv.addEvent(evt));
   });
   const next = bel.filter(b=>b.bis>jetzt).sort((a,b)=>a.von.localeCompare(b.von)).slice(0,6);
   document.getElementById('kal-next').innerHTML = next.length
@@ -1372,27 +1400,14 @@ async function loadBooking() {
   window._allBelegungen = bel;
   bel.forEach(b => {
     const p = (b.erwachsene||0) + (b.kinder||0);
-    const vonTime = b.von + 'T00:00:00';
-    const bisTime = b.bis + 'T12:00:00';
-    bookingCal.addEvent({
-      id: 'b-' + b.id,
-      title: b.name + (p ? ' ('+p+' P.)' : ''),
-      start: vonTime, end: bisTime,
-      backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps:{typ:'belegung', dbId: b.id}
-    });
+    const title = b.name + (p ? ' ('+p+' P.)' : '');
+    buildCalendarSegments(b, title, '#8b4513', { typ:'belegung', dbId: b.id })
+      .forEach(evt => bookingCal.addEvent(evt));
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
-    const vonTime = e.von + 'T00:00:00';
-    const bisTime = e.bis + 'T12:00:00';
-    bookingCal.addEvent({
-      id: 'e-' + e.id,
-      title: '📌 ' + e.titel,
-      start: vonTime, end: bisTime,
-      backgroundColor:c, borderColor:c,
-      extendedProps:{typ:'event'}
-    });
+    buildCalendarSegments(e, '📌 ' + e.titel, c, { typ:'event' })
+      .forEach(evt => bookingCal.addEvent(evt));
   });
 
   status.className = 'statusbar ok';
