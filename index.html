@@ -285,6 +285,19 @@ textarea.allow-resize{resize:vertical;}
 .ev-title{font-family:'Crimson Pro',serif;font-size:1.05rem;font-weight:600;}
 .ev-date{font-size:.76rem;color:var(--muted);margin-top:.15rem;}
 .ev-desc{font-size:.8rem;color:var(--muted);margin-top:.25rem;}
+.booking-pending{background:#fff7ed;border-left-color:var(--warn);}
+.booking-pending-badge{display:inline-block;background:var(--warn);color:#fff;padding:.15rem .45rem;border-radius:2px;font-size:.68rem;font-weight:700;margin-left:.5rem;}
+.request-item{background:#fff;border:1px solid var(--div);border-left:4px solid var(--warn);border-radius:2px;padding:1rem;margin-bottom:.85rem;}
+.request-item.approved{border-left-color:var(--pine);background:rgba(45,74,45,.05);}
+.request-item.rejected{border-left-color:var(--red);background:rgba(192,57,43,.05);}
+.request-header{display:flex;justify-content:space-between;align-items:start;gap:.6rem;margin-bottom:.6rem;}
+.request-status{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .45rem;border-radius:2px;}
+.request-status.pending{background:var(--warn);color:#fff;}
+.request-status.approved{background:var(--pine);color:#fff;}
+.request-status.rejected{background:var(--red);color:#fff;}
+.request-details{font-size:.83rem;line-height:1.6;color:#4a3728;margin-bottom:.7rem;}
+.request-actions{display:flex;flex-wrap:wrap;gap:.5rem;}
+.request-actions .btn{padding:.35rem .7rem;font-size:.72rem;}
 
 /* Iframe Panel */
 .iframe-panel{width:100%;height:calc(100vh - var(--nh) - var(--sh) - 80px);min-height:500px;border:1px solid var(--div);border-radius:2px;}
@@ -707,6 +720,18 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
       </div>
     </div>
   </div>
+  <div class="panel admin-only" id="p-admin-genehmigungen">
+    <div class="ptitle">Belegungs<em>Anfragen</em></div>
+    <div class="pdesc">Hier sehen Admins alle ausstehenden Belegungs- und Änderungsanfragen.</div>
+    <div class="dgrid">
+      <div class="sc"><div class="slbl">Ausstehende Anfragen</div><div class="sv" id="req-count">–</div></div>
+      <div class="sc au"><div class="slbl">Letzte Anfrage</div><div class="sv sm" id="req-last">–</div></div>
+    </div>
+    <div class="nbox">
+      <div class="nbox-title">Offene Anfragen</div>
+      <div id="admin-req-list"></div>
+    </div>
+  </div>
   <div class="panel" id="p-aktivitaeten-freizeit">
     <div class="ptitle"><em>Freizeittipps</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
@@ -893,6 +918,7 @@ const CFG = {
   sbUrl:   'https://jvxlhlpqsiipplrwozje.supabase.co',
   sbKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A',
   bildSrv: 'https://DEIN-BILDSERVER.de',
+  emailFunctionUrl: '',
   admins: [
     { email: 'admin@familie.de', password: 'admin123' }
   ]
@@ -909,12 +935,14 @@ function setAdminUI() {
   const loginLink  = document.getElementById('footer-admin-login');
   const logoutLink = document.getElementById('footer-admin-logout');
   const status     = document.getElementById('footer-admin-status');
+  const adminNav   = document.getElementById('ni-admin');
   if (loginLink)  loginLink.style.display  = admin ? 'none' : '';
   if (logoutLink) logoutLink.style.display = admin ? 'inline-block' : 'none';
   if (status) {
     status.textContent = admin ? 'Admin: ' + (sessionStorage.getItem('adminEmail') || '') : '';
     status.style.display = admin ? 'inline-block' : 'none';
   }
+  if (adminNav) adminNav.style.display = admin ? '' : 'none';
 }
 
 function openAdminLogin() {
@@ -950,12 +978,25 @@ function logoutAdmin() {
 
 function setBookingModalMode() {
   const admin = isAdmin();
+  const canRequest = !admin && currentEdit && currentEdit.type === 'belegung';
   ['e-von','e-bis','e-name','e-typ','e-desc','e-erw','e-kind','e-schlaf','e-email','e-tel']
-    .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !admin; });
+    .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !(admin || canRequest); });
   const title = document.getElementById('edit-title');
   if (title) title.textContent = admin
     ? (currentEdit && currentEdit.type === 'belegung' ? 'Belegung bearbeiten' : 'Event bearbeiten')
-    : 'Termin ansehen';
+    : (currentEdit && currentEdit.type === 'belegung' ? 'Belegung ansehen / Änderungsanfrage' : 'Termin ansehen');
+  const saveBtn = document.getElementById('e-save-btn');
+  if (saveBtn) {
+    if (admin) {
+      saveBtn.textContent = 'Speichern';
+      saveBtn.style.display = '';
+    } else if (canRequest) {
+      saveBtn.textContent = 'Änderungsanfrage senden';
+      saveBtn.style.display = '';
+    } else {
+      saveBtn.style.display = 'none';
+    }
+  }
 }
 
 async function deletePrevFile() {
@@ -1097,6 +1138,9 @@ const NAV = [
     {id:'mahnungen',     label:'Mahnungen',             bkt:'finanzen',folder:'mahnungen'},
     {id:'versicherungen',label:'Versicherungen',        bkt:'finanzen',folder:'versicherungen'},
   ]},
+  { id:'admin', icon:'🔐', label:'Admin', adminOnly:true, subs:[
+    {id:'genehmigungen', label:'Anfragen genehmigen'}
+  ]},
 ];
 
 // ════════════════════════════════════════
@@ -1104,11 +1148,14 @@ const NAV = [
 // ════════════════════════════════════════
 function buildNav() {
   const nav = document.getElementById('top-nav');
+  const admin = isAdmin();
   NAV.forEach(item => {
     const el = document.createElement('div');
-    el.className = 'ni'; el.id = 'ni-' + item.id;
+    el.className = 'ni' + (item.adminOnly ? ' admin-only' : '');
+    el.id = 'ni-' + item.id;
     el.textContent = item.icon + ' ' + item.label;
     el.onclick = () => go(item.id);
+    if (item.adminOnly && !admin) el.style.display = 'none';
     nav.appendChild(el);
   });
 }
@@ -1198,6 +1245,9 @@ function onShow(sec, sub, secDef) {
   else if (sec === 'aktivitaeten' && sub === 'kalender')     loadKalOv();
   else if (sec === 'aktivitaeten' && sub === 'termine')      loadEv();
   else if (sec === 'aktivitaeten' && sub === 'uebernachtungen') loadBooking();
+  else if (sec === 'admin' && sub === 'genehmigungen') {
+    if (isAdmin()) loadAdminRequests(); else go('aktivitaeten','kalender');
+  }
   else if (sec === 'aktivitaeten' && sub === 'todo')         renderTd();
   else if ((sec === 'archiv' || sec === 'finanzen') && subDef && subDef.bkt)
     loadFiles(subDef.bkt, subDef.folder, `fg-${sec}-${sub}`);
@@ -1288,12 +1338,14 @@ function initKalHome(bel, events) {
     // ▶ ÄNDERUNG: Start jetzt T12:00:00 statt T00:00:00
     const vonTime = b.von + 'T12:00:00';
     const bisTime = b.bis + 'T12:00:00';
+    const pending = b.status === 'pending';
+    const color = pending ? '#e67e22' : '#8b4513';
     kalHome.addEvent({
       id: 'b-' + b.id,
-      title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
+      title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : '') + (pending ? ' (unbestätigt)' : ''),
       start: vonTime, end: bisTime,
-      backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps: { typ:'belegung', dbId:b.id, erwachsene:b.erwachsene, kinder:b.kinder, schlafplaetze:b.schlafplaetze, email:b.email }
+      backgroundColor: color, borderColor: color,
+      extendedProps: { typ:'belegung', dbId:b.id, status:b.status, erwachsene:b.erwachsene, kinder:b.kinder, schlafplaetze:b.schlafplaetze, email:b.email }
     });
   });
   events.forEach(e => {
@@ -1392,15 +1444,16 @@ async function loadKalOv() {
   kalOv.removeAllEvents();
   bel.forEach(b => {
     const p = (b.erwachsene||0)+(b.kinder||0);
-    // ▶ ÄNDERUNG: Start T12:00:00
+    const pending = b.status === 'pending';
+    const color = pending ? '#e67e22' : '#8b4513';
     const vonTime = b.von + 'T12:00:00';
     const bisTime = b.bis + 'T12:00:00';
     kalOv.addEvent({
       id: 'b-' + b.id,
-      title: b.name + (p ? ' · ' + p + ' P.' : ''),
+      title: b.name + (p ? ' · ' + p + ' P.' : '') + (pending ? ' (unbestätigt)' : ''),
       start: vonTime, end: bisTime,
-      backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps: { typ:'belegung', dbId:b.id, erwachsene:b.erwachsene, kinder:b.kinder, schlafplaetze:b.schlafplaetze, email:b.email }
+      backgroundColor: color, borderColor: color,
+      extendedProps: { typ:'belegung', dbId:b.id, status:b.status, erwachsene:b.erwachsene, kinder:b.kinder, schlafplaetze:b.schlafplaetze, email:b.email }
     });
   });
   events.forEach(e => {
@@ -1464,15 +1517,16 @@ async function loadBooking() {
   bookingCal.removeAllEvents();
   bel.forEach(b => {
     const p = (b.erwachsene||0) + (b.kinder||0);
-    // ▶ ÄNDERUNG: Start T12:00:00
+    const pending = b.status === 'pending';
+    const color = pending ? '#e67e22' : '#8b4513';
     const vonTime = b.von + 'T12:00:00';
     const bisTime = b.bis + 'T12:00:00';
     bookingCal.addEvent({
       id: 'b-' + b.id,
-      title: b.name + (p ? ' ('+p+' P.)' : ''),
+      title: b.name + (p ? ' ('+p+' P.)' : '') + (pending ? ' (unbestätigt)' : ''),
       start: vonTime, end: bisTime,
-      backgroundColor:'#8b4513', borderColor:'#8b4513',
-      extendedProps:{typ:'belegung', dbId:b.id}
+      backgroundColor: color, borderColor: color,
+      extendedProps:{typ:'belegung', dbId:b.id, status:b.status}
     });
   });
   events.forEach(e => {
@@ -1506,7 +1560,7 @@ function renderBookingList(belegungen, events) {
       const typ = item.typ === 'familienversammlung' ? '👨‍👩‍👧‍👦' : item.typ === 'arbeitswochenende' ? '🔨' : '📌';
       return `<div class="nitem ev"><div class="nname">${typ} ${item.name}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`;
     }
-    return `<div class="nitem"><div class="nname">${item.name}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`;
+    return `<div class="nitem${item.status==='pending' ? ' booking-pending' : ''}"><div class="nname">${item.name}${item.status==='pending' ? '<span class="booking-pending-badge">Unbestätigt</span>' : ''}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`;
   }).join('');
 }
 
@@ -1548,11 +1602,15 @@ async function bookingSave() {
   btn.disabled = true; btn.textContent = 'Speichern…';
   msg.className = 'statusbar laden';
   msg.innerHTML = '<span class="spin">⏳</span> Wird gespeichert…';
+  const status = isAdmin() ? 'approved' : 'pending';
   const { error } = await db.from('belegungen').insert({
-    name, von, bis, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:telefon||null
+    name, von, bis, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:telefon||null, status
   });
   btn.disabled = false; btn.textContent = 'Belegung speichern';
   if (error) { msg.className='statusbar fehler'; msg.textContent='✗ '+error.message; return; }
+  if (!isAdmin()) {
+    notifyAdmins('Neue Belegungsanfrage', `Neue Belegung von ${name} (${email}) für ${von} – ${bis} wurde angefragt.`);
+  }
   ['b-name','b-von','b-bis','b-email','b-tel'].forEach(id => document.getElementById(id).value='');
   document.getElementById('b-erw').value='2';
   document.getElementById('b-kind').value='0';
@@ -1600,7 +1658,6 @@ async function openEditModal(type, id) {
 
 async function saveEdit() {
   if (!currentEdit) return;
-  if (!isAdmin()) { alert('Nur Admin kann Änderungen speichern.'); return; }
   const id    = currentEdit.id;
   const typ   = currentEdit.type;
   const von   = document.getElementById('e-von').value;
@@ -1613,6 +1670,11 @@ async function saveEdit() {
   const email = document.getElementById('e-email').value.trim() || null;
   const tel   = document.getElementById('e-tel').value.trim()   || null;
   if (!von || !bis || von >= bis) { alert('Bitte gültige Daten wählen.'); return; }
+  if (typ === 'belegung' && !isAdmin()) {
+    await requestBookingEdit(id, { von, bis, name, beschreibung:beschr, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:tel });
+    return;
+  }
+  if (!isAdmin()) { alert('Nur Admin kann Änderungen speichern.'); return; }
   if (typ === 'belegung') {
     if (hasOverlap(von, bis, id)) { alert('Zeitraum überschneidet sich mit bestehender Belegung!'); return; }
     const { error } = await db.from('belegungen').update({ von, bis, name, beschreibung:beschr, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:tel }).eq('id',id);
@@ -1639,6 +1701,150 @@ async function deleteEdit() {
     if (error) { alert('Fehler: '+error.message); return; }
   }
   closeM('mo-booking-edit'); currentEdit = null; loadBooking(); loadKalOv();
+}
+
+async function loadAdminRequests() {
+  if (!db) return;
+  const [r1, r2] = await Promise.all([
+    dbQ(d => d.from('belegungen').select('*').eq('status','pending').order('von')),
+    dbQ(d => d.from('booking_change_requests').select('*').eq('status','pending').order('erstellt_am'))
+  ]);
+  const pendingBookings = (r1.data || []).map(b => ({ type:'booking', item:b }));
+  const pendingChanges = (r2.data || []).map(r => ({ type:'change', item:r }));
+  const requests = [...pendingBookings, ...pendingChanges].sort((a,b) => {
+    const da = new Date(a.item.erstellt_am || a.item.created_at || 0);
+    const dbt = new Date(b.item.erstellt_am || b.item.created_at || 0);
+    return dbt - da;
+  });
+  document.getElementById('req-count').textContent = requests.length;
+  document.getElementById('req-last').textContent = requests.length
+    ? dDE(requests[0].item.erstellt_am || requests[0].item.created_at, {day:'2-digit',month:'short',year:'numeric'})
+    : '–';
+  const listEl = document.getElementById('admin-req-list');
+  if (!requests.length) {
+    listEl.innerHTML = '<div class="none">Keine offenen Anfragen.</div>';
+    return;
+  }
+  listEl.innerHTML = requests.map(req => {
+    if (req.type === 'booking') {
+      const b = req.item;
+      return `<div class="request-item">
+        <div class="request-header">
+          <strong>Neue Belegung</strong>
+          <span class="request-status pending">Ausstehend</span>
+        </div>
+        <div class="request-details">
+          <div><strong>${b.name}</strong> · ${dDE(b.von,{day:'2-digit',month:'short'})} – ${dDE(b.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
+          <div>${(b.erwachsene||0) + (b.kinder||0)} Personen · ${b.schlafplaetze || '–'} Schlafplätze</div>
+          <div>${b.email || ''}${b.telefon ? ' · ' + b.telefon : ''}</div>
+        </div>
+        <div class="request-actions">
+          <button class="btn btn-p btn-sm" onclick="approveBookingRequest('${b.id}')">Bestätigen</button>
+          <button class="btn btn-g btn-sm" onclick="rejectBookingRequest('${b.id}')">Ablehnen</button>
+        </div>
+      </div>`;
+    }
+    const r = req.item;
+    const data = r.neue_daten || {};
+    return `<div class="request-item">
+      <div class="request-header">
+        <strong>Änderungsanfrage</strong>
+        <span class="request-status pending">Ausstehend</span>
+      </div>
+      <div class="request-details">
+        <div><strong>${data.name || 'Belegung'}</strong> · ${dDE(data.von,{day:'2-digit',month:'short'})} – ${dDE(data.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>
+        <div>${(data.erwachsene||0) + (data.kinder||0)} Personen · ${data.schlafplaetze || '–'} Schlafplätze</div>
+        <div>${r.angefordert_von_email || 'Unbekannt'}</div>
+        <div>Ursprung: ${dDE(r.erstellt_am,{day:'2-digit',month:'short',year:'numeric'})}</div>
+      </div>
+      <div class="request-actions">
+        <button class="btn btn-p btn-sm" onclick="approveChangeRequest('${r.id}')">Bestätigen</button>
+        <button class="btn btn-g btn-sm" onclick="rejectChangeRequest('${r.id}')">Ablehnen</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function approveBookingRequest(id) {
+  if (!confirm('Neue Belegung bestätigen?')) return;
+  const email = sessionStorage.getItem('adminEmail') || 'admin';
+  const { error } = await db.from('belegungen').update({ status:'approved', genehmigt_von_email:email, genehmigt_am:new Date().toISOString() }).eq('id',id);
+  if (error) { alert('Fehler: '+error.message); return; }
+  loadBooking(); loadKalOv(); loadAdminRequests();
+}
+
+async function rejectBookingRequest(id) {
+  if (!confirm('Belegung ablehnen?')) return;
+  const { error } = await db.from('belegungen').update({ status:'rejected' }).eq('id',id);
+  if (error) { alert('Fehler: '+error.message); return; }
+  loadBooking(); loadKalOv(); loadAdminRequests();
+}
+
+async function approveChangeRequest(reqId) {
+  if (!confirm('Änderungsanfrage übernehmen?')) return;
+  const { data, error } = await dbQ(d => d.from('booking_change_requests').select('*').eq('id',reqId).limit(1).single());
+  if (error || !data) { alert('Anfrage nicht gefunden'); return; }
+  const change = data;
+  const updateData = change.neue_daten || {};
+  const overlap = hasOverlap(updateData.von, updateData.bis, change.booking_id);
+  if (overlap) { alert('Zeitraum überschneidet sich mit bestehender Belegung!'); return; }
+  const email = sessionStorage.getItem('adminEmail') || 'admin';
+  const { error: err } = await db.from('belegungen').update(updateData).eq('id', change.booking_id);
+  if (err) { alert('Fehler: '+err.message); return; }
+  const { error: err2 } = await db.from('booking_change_requests').update({ status:'approved', genehmigt_von_email:email, genehmigt_am:new Date().toISOString() }).eq('id', reqId);
+  if (err2) { alert('Fehler: '+err2.message); return; }
+  loadBooking(); loadKalOv(); loadAdminRequests();
+}
+
+async function rejectChangeRequest(reqId) {
+  const reason = prompt('Grund für Ablehnung (optional)');
+  const { error } = await db.from('booking_change_requests').update({ status:'rejected', ablehnung_grund:reason || null }).eq('id', reqId);
+  if (error) { alert('Fehler: '+error.message); return; }
+  loadAdminRequests();
+}
+
+async function requestBookingEdit(id, values) {
+  const { data, error } = await dbQ(d => d.from('belegungen').select('*').eq('id',id).limit(1).single());
+  if (error || !data) { alert('Belegung nicht gefunden.'); return; }
+  const oldData = {
+    name: data.name,
+    von: data.von,
+    bis: data.bis,
+    beschreibung: data.beschreibung,
+    erwachsene: data.erwachsene,
+    kinder: data.kinder,
+    schlafplaetze: data.schlafplaetze,
+    email: data.email,
+    telefon: data.telefon
+  };
+  const requester = values.email || data.email || sessionStorage.getItem('adminEmail') || 'unbekannt';
+  const { error: err } = await db.from('booking_change_requests').insert({
+    booking_id: id,
+    status: 'pending',
+    change_type: 'modify',
+    angefordert_von_email: requester,
+    neue_daten: values,
+    alte_daten: oldData,
+    erstellt_am: new Date().toISOString()
+  });
+  if (err) { alert('Fehler: '+err.message); return; }
+  closeM('mo-booking-edit'); currentEdit = null;
+  alert('Änderungsanfrage wurde an die Admins gesendet.');
+  loadBooking(); loadAdminRequests();
+  notifyAdmins('Änderungsanfrage für Belegung', `Belegung ${values.name} wurde zur Änderung angefragt.`);
+}
+
+async function notifyAdmins(subject, body) {
+  if (!CFG.emailFunctionUrl) return;
+  try {
+    await fetch(CFG.emailFunctionUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, body })
+    });
+  } catch (e) {
+    console.warn('Email-Versand fehlgeschlagen:', e.message);
+  }
 }
 
 // ════════════════════════════════════════
