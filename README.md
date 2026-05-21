@@ -17,6 +17,10 @@ Single-Page-App für die Hüttenbuchung und Veranstaltungsverwaltung. Alle Funkt
   - Beispiel: `20.5. (Anreise) – 23.5. (Abreise)` = 20.5. um 12:00 bis 23.5. um 12:00
 - **Visuell sichtbar:** Im Kalender werden die Zeiten korrekt angezeigt
 
+### Admin-Zugang
+- ✅ Admin-Login mit mehreren E-Mail/Passwort-Konten
+- 🔐 Admins können Buchungen/Events bearbeiten, Dateien löschen und Inhalte bearbeiten
+
 ## Technische Details
 
 ### Neue Funktionen im Code

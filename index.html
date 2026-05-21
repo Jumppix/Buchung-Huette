@@ -29,8 +29,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);}
 .pw-inp:focus{outline:none;border-color:var(--rust);}
 .pw-btn{width:100%;padding:.72rem;background:var(--rust);color:#fff;border:none;border-radius:2px;font-size:.85rem;letter-spacing:.18em;cursor:pointer;}
 .pw-btn:hover{background:#a0521a;}
-.pw-err{font-size:.8rem;color:var(--red);min-height:1.3em;margin-top:.5rem;}
-
+.pw-btn.pw-admin{background:var(--aged);color:var(--ink);margin-top:.5rem;}
+.admin-only{display:none!important;}
+body.admin-mode .admin-only{display:inline-flex!important;}
+.admin-state{font-size:.75rem;color:var(--aged);margin-left:.8rem;}
 /* ══ COOKIE BANNER ══ */
 #cookie-bar{position:fixed;bottom:0;left:0;right:0;z-index:8000;background:var(--ink);color:var(--aged);padding:1rem 2rem;display:none;align-items:center;gap:1.5rem;flex-wrap:wrap;border-top:2px solid var(--rust);}
 #cookie-bar.show{display:flex;}
@@ -296,6 +298,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 
 /* ══ MODALS ══ */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:5000;display:none;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;}
+#mo-admin-login{z-index:10001;}
 .mo.show{display:flex;}
 .mb{background:var(--paper);border-radius:4px;width:100%;max-width:820px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
 .mh{padding:1.4rem 1.8rem;border-bottom:1px solid var(--div);display:flex;justify-content:space-between;align-items:center;}
@@ -361,9 +364,23 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="pw-sub">Familieninterne Verwaltung</div>
     <input class="pw-inp" type="password" id="pw-in" autocomplete="current-password"/>
     <button class="pw-btn" onclick="checkPw()">Einloggen</button>
+    <button class="pw-btn pw-admin" onclick="openAdminLogin()">Admin Login</button>
     <div class="pw-err" id="pw-err"></div>
   </div>
 </div>
+
+<div class="mo" id="mo-admin-login"><div class="mb">
+  <div class="mh"><h2>Admin Login</h2><button class="mc-btn" onclick="closeM('mo-admin-login')">✕</button></div>
+  <div class="mbody">
+    <div class="fg"><label>E-Mail</label><input id="admin-email" type="email" autocomplete="username"/></div>
+    <div class="fg"><label>Passwort</label><input id="admin-password" type="password" autocomplete="current-password"/></div>
+    <div style="display:flex;gap:.7rem;margin-top:1rem">
+      <button class="btn btn-b" onclick="adminLogin()">Einloggen</button>
+      <button class="btn btn-g" onclick="closeM('mo-admin-login')">Abbrechen</button>
+    </div>
+    <div class="pw-err" id="admin-err"></div>
+  </div>
+</div></div>
 
 <!-- COOKIE BANNER -->
 <div id="cookie-bar">
@@ -399,7 +416,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ptitle">Willkommen im <em>Hüttenbuch</em></div>
     <div class="pdesc">Familieninterne Verwaltung · Schwarzwald</div>
     <div class="bgs" id="bg-home">
-      <button class="bgedit" onclick="editBg('bg-home')">🖼 Hintergrundbild</button>
+      <button class="bgedit admin-only" onclick="editBg('bg-home')">🖼 Hintergrundbild</button>
       <div class="dgrid">
         <div class="sc"><div class="slbl">Belegungen <span id="sy"></span></div><div class="sv" id="sv-b"><span class="spin">⏳</span></div><div class="sn" id="sn-b">lädt…</div></div>
         <div class="sc g"><div class="slbl">Nächste freie Woche</div><div class="sv sm" id="sv-f"><span class="spin">⏳</span></div><div class="sn" id="sn-f">lädt…</div></div>
@@ -480,9 +497,9 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
   <div class="panel" id="p-verein-leitbild">
     <div class="ptitle">Unser <em>Leitbild</em></div>
     <div class="bgs" id="bg-leitbild">
-      <button class="bgedit" onclick="editBg('bg-leitbild')">🖼 Hintergrundbild</button>
+      <button class="bgedit admin-only" onclick="editBg('bg-leitbild')">🖼 Hintergrundbild</button>
       <div class="ced" id="ced-leitbild" contenteditable="false">Hier steht das Leitbild. Klicke auf "Bearbeiten" zum Anpassen.</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-leitbild" onclick="toggleCed('ced-leitbild','btn-leitbild')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-leitbild" onclick="toggleCed('ced-leitbild','btn-leitbild')">✏️ Bearbeiten</button></div>
     </div>
   </div>
   <div class="panel" id="p-verein-satzung">
@@ -497,7 +514,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ptitle">Unsere <em>Vereinshymne</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
       <div class="ced" id="ced-hymne" contenteditable="false" style="font-family:'Crimson Pro',serif;font-size:1rem;white-space:pre-wrap;line-height:2.2;">Vereinshymne hier eintragen...</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-hymne" onclick="toggleCed('ced-hymne','btn-hymne')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-hymne" onclick="toggleCed('ced-hymne','btn-hymne')">✏️ Bearbeiten</button></div>
     </div>
   </div>
   <div class="panel" id="p-verein-mitglieder">
@@ -551,7 +568,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ptitle">Allgemeine <em>Informationen</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
       <div class="ced" id="ced-info" contenteditable="false">Allgemeine Vereinsinformationen hier eintragen...</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-info" onclick="toggleCed('ced-info','btn-info')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-info" onclick="toggleCed('ced-info','btn-info')">✏️ Bearbeiten</button></div>
     </div>
   </div>
 
@@ -579,21 +596,21 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ptitle"><em>Mail</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
       <div class="ced" id="ced-mail" contenteditable="false">E-Mail-Adressen und Postfächer hier eintragen...</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-mail" onclick="toggleCed('ced-mail','btn-mail')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-mail" onclick="toggleCed('ced-mail','btn-mail')">✏️ Bearbeiten</button></div>
     </div>
   </div>
   <div class="panel" id="p-kontakt-adressen">
     <div class="ptitle"><em>Adressen</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
       <div class="ced" id="ced-adressen" contenteditable="false">Wichtige Adressen hier eintragen...</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-adressen" onclick="toggleCed('ced-adressen','btn-adressen')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-adressen" onclick="toggleCed('ced-adressen','btn-adressen')">✏️ Bearbeiten</button></div>
     </div>
   </div>
   <div class="panel" id="p-kontakt-behoerden">
     <div class="ptitle">Behörden <em>Kontakte</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
       <div class="ced" id="ced-behoerden" contenteditable="false">Wichtige Behördenkontakte hier eintragen...</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-behoerden" onclick="toggleCed('ced-behoerden','btn-behoerden')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-behoerden" onclick="toggleCed('ced-behoerden','btn-behoerden')">✏️ Bearbeiten</button></div>
     </div>
   </div>
 
@@ -672,14 +689,14 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <div class="ptitle"><em>Freizeittipps</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
       <div class="ced" id="ced-freizeit" contenteditable="false">Ausflüge, Wanderungen und Tipps rund um die Hütte hier sammeln...</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-freizeit" onclick="toggleCed('ced-freizeit','btn-freizeit')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-freizeit" onclick="toggleCed('ced-freizeit','btn-freizeit')">✏️ Bearbeiten</button></div>
     </div>
   </div>
   <div class="panel" id="p-aktivitaeten-projekte">
     <div class="ptitle">Laufende <em>Projekte</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
       <div class="ced" id="ced-projekte" contenteditable="false">Aktuelle Projekte hier dokumentieren...</div>
-      <div class="ebar"><button class="btn btn-g btn-sm" id="btn-projekte" onclick="toggleCed('ced-projekte','btn-projekte')">✏️ Bearbeiten</button></div>
+      <div class="ebar"><button class="btn btn-g btn-sm admin-only" id="btn-projekte" onclick="toggleCed('ced-projekte','btn-projekte')">✏️ Bearbeiten</button></div>
     </div>
   </div>
   <div class="panel" id="p-aktivitaeten-todo">
@@ -724,7 +741,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 <!-- KONTAKTFORMULAR -->
 <section id="contact-sec">
   <div class="bgs" id="bg-contact" style="background:none">
-    <button class="bgedit" onclick="editBg('bg-contact')">🖼 Hintergrundbild</button>
+    <button class="bgedit admin-only" onclick="editBg('bg-contact')">🖼 Hintergrundbild</button>
   </div>
   <div class="ci">
     <div class="ct">Wir sind erreichbar unter:</div>
@@ -748,7 +765,10 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <a onclick="openM('mo-daten')">Datenschutz</a>
     <a onclick="openM('mo-cookie')">Cookie-Richtlinie</a>
     <a onclick="openM('mo-cksettings')">Cookie-Einstellungen</a>
+    <a id="footer-admin-login" onclick="openAdminLogin()">Admin</a>
+    <a id="footer-admin-logout" onclick="logoutAdmin()" style="display:none">Admin abmelden</a>
   </div>
+  <span class="admin-state" id="footer-admin-status" style="display:none"></span>
 </footer>
 
 </div><!-- /app -->
@@ -803,6 +823,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
     <h2 id="prev-title">Vorschau</h2>
     <div style="display:flex;gap:.7rem;align-items:center">
       <a id="prev-dl" href="#" download class="btn btn-r btn-sm">⬇ Download</a>
+      <button id="prev-del" class="btn btn-r btn-sm admin-only" onclick="deletePrevFile()">Löschen</button>
       <button class="mc-btn" onclick="closeM('prev-mo')">✕</button>
     </div>
   </div>
@@ -836,8 +857,8 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
         </div>
       </div>
       <div style="display:flex;gap:.6rem;margin-top:1rem">
-        <button class="btn btn-b" id="e-save-btn" onclick="saveEdit()">Speichern</button>
-        <button class="btn btn-r" id="e-del-btn" onclick="deleteEdit()">Löschen</button>
+        <button class="btn btn-b admin-only" id="e-save-btn" onclick="saveEdit()">Speichern</button>
+        <button class="btn btn-r admin-only" id="e-del-btn" onclick="deleteEdit()">Löschen</button>
         <button class="btn btn-g" onclick="closeM('mo-booking-edit')">Abbrechen</button>
       </div>
     </div>
@@ -855,8 +876,97 @@ const CFG = {
   pw:      '762870',          // ← Passwort ändern
   sbUrl:   'https://jvxlhlpqsiipplrwozje.supabase.co',   // ← Supabase URL
   sbKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A',        // ← Supabase Key
-  bildSrv: 'https://DEIN-BILDSERVER.de'
+  bildSrv: 'https://DEIN-BILDSERVER.de',
+  admins: [
+    { email: 'admin@familie.de', password: 'admin123' } // ← Mehrere Admins hier eintragen
+  ]
 };
+
+let appStarted = false;
+let prevTarget = null;
+
+function isAdmin() {
+  return sessionStorage.getItem('admin') === '1';
+}
+
+function setAdminUI() {
+  const admin = isAdmin();
+  document.body.classList.toggle('admin-mode', admin);
+  const loginLink = document.getElementById('footer-admin-login');
+  const logoutLink = document.getElementById('footer-admin-logout');
+  const status = document.getElementById('footer-admin-status');
+  if (loginLink) loginLink.style.display = admin ? 'none' : '';
+  if (logoutLink) logoutLink.style.display = admin ? 'inline-block' : 'none';
+  if (status) {
+    status.textContent = admin ? 'Admin: ' + (sessionStorage.getItem('adminEmail') || '') : '';
+    status.style.display = admin ? 'inline-block' : 'none';
+  }
+}
+
+function openAdminLogin() {
+  if (isAdmin()) {
+    alert('Bereits als Admin angemeldet.');
+    return;
+  }
+  const email = document.getElementById('admin-email');
+  const password = document.getElementById('admin-password');
+  const err = document.getElementById('admin-err');
+  if (email) email.value = '';
+  if (password) password.value = '';
+  if (err) err.textContent = '';
+  openM('mo-admin-login');
+}
+
+function adminLogin() {
+  const email = document.getElementById('admin-email').value.trim().toLowerCase();
+  const password = document.getElementById('admin-password').value;
+  const admin = CFG.admins.find(a => a.email.toLowerCase() === email && a.password === password);
+  const err = document.getElementById('admin-err');
+  if (!admin) {
+    if (err) err.textContent = 'Ungültige Admin-Zugangsdaten.';
+    return;
+  }
+  sessionStorage.setItem('auth', '1');
+  sessionStorage.setItem('admin', '1');
+  sessionStorage.setItem('adminEmail', admin.email);
+  if (err) err.textContent = '';
+  closeM('mo-admin-login');
+  const gate = document.getElementById('pw-gate');
+  if (gate) gate.style.display = 'none';
+  const app = document.getElementById('app');
+  if (app) app.style.display = 'block';
+  setAdminUI();
+  if (!appStarted) startApp();
+}
+
+function logoutAdmin() {
+  sessionStorage.removeItem('admin');
+  sessionStorage.removeItem('adminEmail');
+  setAdminUI();
+  alert('Admin-Anmeldung wurde beendet.');
+}
+
+function setBookingModalMode() {
+  const admin = isAdmin();
+  ['e-von', 'e-bis', 'e-name', 'e-typ', 'e-desc', 'e-erw', 'e-kind', 'e-schlaf', 'e-email', 'e-tel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !admin;
+  });
+  const title = document.getElementById('edit-title');
+  if (title) title.textContent = admin ? (currentEdit && currentEdit.type === 'belegung' ? 'Belegung bearbeiten' : 'Event bearbeiten') : 'Termin ansehen';
+}
+
+async function deletePrevFile() {
+  if (!isAdmin()) { alert('Nur Admin kann Dateien löschen.'); return; }
+  if (!db) { alert('Keine DB-Verbindung.'); return; }
+  if (!prevTarget || !prevTarget.bkt || !prevTarget.folder || !prevTarget.name) return;
+  if (!confirm('Datei wirklich löschen?')) return;
+  const path = prevTarget.folder + '/' + prevTarget.name;
+  const { error } = await db.storage.from(prevTarget.bkt).remove([path]);
+  if (error) { alert('Fehler: ' + error.message); return; }
+  closeM('prev-mo');
+  onShow(curSec, curSub, NAV.find(n => n.id === curSec));
+}
 
 // ════════════════════════════════════════
 //  SUPABASE INIT (sicher – kein Absturz bei Platzhalter)
@@ -1514,11 +1624,13 @@ async function openEditModal(type, id) {
     document.getElementById('e-tel').value = '';
     document.getElementById('e-del-btn').style.display = '';
   }
+  setBookingModalMode();
   openM('mo-booking-edit');
 }
 
 async function saveEdit() {
   if (!currentEdit) return;
+  if (!isAdmin()) { alert('Nur Admin kann Änderungen speichern.'); return; }
   const id = currentEdit.id;
   const typ = currentEdit.type;
   const von = document.getElementById('e-von').value;
@@ -1555,6 +1667,7 @@ async function saveEdit() {
 
 async function deleteEdit() {
   if (!currentEdit) return;
+  if (!isAdmin()) { alert('Nur Admin kann löschen.'); return; }
   if (!confirm('Eintrag wirklich löschen?')) return;
   const id = currentEdit.id;
   if (currentEdit.type === 'belegung') {
@@ -1776,7 +1889,7 @@ async function loadFiles(bkt, folder, cId) {
   const files=data.filter(f=>f.name!=='.emptyFolderPlaceholder');
   el.innerHTML=files.map(f=>{
     const url=db.storage.from(bkt).getPublicUrl(folder+'/'+f.name).data.publicUrl;
-    return`<div class="fc-card" onclick="prevFile('${url}','${f.name}')">
+    return`<div class="fc-card" onclick="prevFile('${url}','${f.name}','${bkt}','${folder}')">
       <span class="fc-icon">${ficon(f.name)}</span>
       <div class="fc-name">${f.name}</div>
       <div class="fc-size">${fsz(f.metadata?.size)}</div>
@@ -1795,16 +1908,17 @@ async function loadMedia(bkt, folder, cId) {
   if(!files.length){el.innerHTML='<div class="fe-empty" style="grid-column:1/-1"><div class="fi">📂</div><p>Noch keine Medien.</p></div>';return;}
   el.innerHTML=files.map(f=>{
     const url=db.storage.from(bkt).getPublicUrl(folder+'/'+f.name).data.publicUrl;
-    if(isVid(f.name))return`<div class="vi" onclick="prevFile('${url}','${f.name}')"><div class="vthumb"><div class="vplay">▶</div></div><div class="vlabel">${f.name}</div></div>`;
-    if(isImg(f.name))return`<div class="ith" onclick="prevFile('${url}','${f.name}')"><img src="${url}" loading="lazy" alt="${f.name}"/><div class="ith-ov"><span class="ith-ic">🔍</span></div></div>`;
-    return`<div class="fc-card" onclick="prevFile('${url}','${f.name}')"><span class="fc-icon">${ficon(f.name)}</span><div class="fc-name">${f.name}</div></div>`;
+    if(isVid(f.name))return`<div class="vi" onclick="prevFile('${url}','${f.name}','${bkt}','${folder}')"><div class="vthumb"><div class="vplay">▶</div></div><div class="vlabel">${f.name}</div></div>`;
+    if(isImg(f.name))return`<div class="ith" onclick="prevFile('${url}','${f.name}','${bkt}','${folder}')"><img src="${url}" loading="lazy" alt="${f.name}"/><div class="ith-ov"><span class="ith-ic">🔍</span></div></div>`;
+    return`<div class="fc-card" onclick="prevFile('${url}','${f.name}','${bkt}','${folder}')"><span class="fc-icon">${ficon(f.name)}</span><div class="fc-name">${f.name}</div></div>`;
   }).join('');
 }
 
 // ════════════════════════════════════════
 //  DATEI VORSCHAU
 // ════════════════════════════════════════
-function prevFile(url, name) {
+function prevFile(url, name, bkt, folder) {
+  prevTarget = { bkt, folder, name };
   document.getElementById('prev-title').textContent=name;
   document.getElementById('prev-dl').href=url;
   document.getElementById('prev-dl').download=name;
@@ -1981,6 +2095,8 @@ function checkPw(){
   const val=document.getElementById('pw-in').value;
   if(val===CFG.pw){
     sessionStorage.setItem('auth','1');
+    sessionStorage.removeItem('admin');
+    sessionStorage.removeItem('adminEmail');
     document.getElementById('pw-gate').style.display='none';
     document.getElementById('app').style.display='block';
     startApp();
@@ -1996,12 +2112,14 @@ function checkPw(){
 // ════════════════════════════════════════
 function startApp(){
   buildNav();
+  appStarted = true;
   loadCed();
   loadBgs();
   initCap();
   checkCk();
   document.getElementById('fy').textContent = HEUTE.getFullYear();
   document.getElementById('bbar-link').href = CFG.bildSrv;
+  setAdminUI();
   // Direkt Aktivitaeten -> Kalender als Startseite anzeigen
   go('aktivitaeten','kalender');
 }
@@ -2012,7 +2130,7 @@ function startApp(){
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('pw-in').addEventListener('keydown', e => { if(e.key==='Enter') checkPw(); });
 
-  if (sessionStorage.getItem('auth') === '1') {
+  if (sessionStorage.getItem('auth') === '1' || sessionStorage.getItem('admin') === '1') {
     document.getElementById('pw-gate').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     startApp();
