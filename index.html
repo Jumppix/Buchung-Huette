@@ -707,6 +707,18 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
       </div>
     </div>
   </div>
+  <div class="panel" id="p-admin-genehmigungen">
+    <div class="ptitle">Belegungs<em>Anfragen</em></div>
+    <div class="pdesc">Hier können Admins ausstehende Belegungs- und Änderungsanfragen prüfen, bestätigen oder ablehnen.</div>
+    <div class="dgrid">
+      <div class="sc"><div class="slbl">Ausstehende Anfragen</div><div class="sv" id="req-count">–</div></div>
+      <div class="sc au"><div class="slbl">Letzte Anfrage</div><div class="sv sm" id="req-last">–</div></div>
+    </div>
+    <div class="nbox">
+      <div class="nbox-title">Offene Anfragen</div>
+      <div id="admin-req-list"></div>
+    </div>
+  </div>
   <div class="panel" id="p-aktivitaeten-freizeit">
     <div class="ptitle"><em>Freizeittipps</em></div>
     <div style="background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.5rem">
@@ -950,12 +962,25 @@ function logoutAdmin() {
 
 function setBookingModalMode() {
   const admin = isAdmin();
+  const editable = admin || (currentEdit && currentEdit.type === 'belegung');
   ['e-von','e-bis','e-name','e-typ','e-desc','e-erw','e-kind','e-schlaf','e-email','e-tel']
-    .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !admin; });
+    .forEach(id => { const el = document.getElementById(id); if (el) el) el.disabled = !editable; });
   const title = document.getElementById('edit-title');
+  const saveBtn = document.getElementById('e-save-btn');
   if (title) title.textContent = admin
     ? (currentEdit && currentEdit.type === 'belegung' ? 'Belegung bearbeiten' : 'Event bearbeiten')
-    : 'Termin ansehen';
+    : 'Belegung ansehen / Änderungsanfrage';
+  if (saveBtn) {
+    if (admin) {
+      saveBtn.textContent = 'Speichern';
+      saveBtn.style.display = '';
+    } else if (currentEdit && currentEdit.type === 'belegung') {
+      saveBtn.textContent = 'Änderungsanfrage senden';
+      saveBtn.style.display = '';
+    } else {
+      saveBtn.style.display = 'none';
+    }
+  }
 }
 
 async function deletePrevFile() {
