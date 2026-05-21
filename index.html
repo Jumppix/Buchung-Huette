@@ -129,6 +129,30 @@ header{
 .fc .fc-daygrid-week-number{font-size:.75rem;font-weight:600;color:var(--blue);opacity:1;padding:4px 3px;background:rgba(44,95,138,.05);border-radius:2px;text-align:center;min-width:28px;}
 .fc .fc-daygrid-week-number-cell{background:rgba(232,223,200,.3)!important;}
 
+/* Halbtages-Darstellung für Belegungen */
+.fc .fc-daygrid-event.fc-half-start,
+.fc .fc-daygrid-event.fc-half-end,
+.fc .fc-daygrid-event.fc-half-single{
+  display:block!important;
+  box-sizing:border-box!important;
+  min-width:0!important;
+}
+.fc .fc-daygrid-event.fc-half-start{
+  width:50%!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+.fc .fc-daygrid-event.fc-half-end{
+  width:50%!important;
+  margin-left:50%!important;
+  margin-right:0!important;
+}
+.fc .fc-daygrid-event.fc-half-single{
+  width:50%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+
 /* Jahr-Ansicht */
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:18px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:0;margin:0;}
@@ -974,16 +998,33 @@ function halfDayPx() {
 function applyNoonMargins(info) {
   // Nur in Monatsansicht, nicht in Jahr/Liste
   if (info.view.type !== 'dayGridMonth') return;
-  const half = halfDayPx();
-  if (info.isStart && !info.isEnd) {
-    // Ankunftstag: Balken beginnt in der Mitte (Nachmittag)
-    info.el.style.marginLeft = half + 'px';
-  } else if (info.isEnd && !info.isStart) {
-    // Abreisetag: Balken endet in der Mitte (Vormittag)
-    info.el.style.marginRight = half + 'px';
-  } else if (info.isStart && info.isEnd) {
-    // Sonderfall: An- und Abreise am selben Tag
-    info.el.style.marginLeft = half + 'px';
+
+  const el = info.el;
+  if (!el) return;
+
+  el.classList.remove('fc-half-start', 'fc-half-end', 'fc-half-single');
+  el.style.display = 'block';
+  el.style.boxSizing = 'border-box';
+  el.style.minWidth = '0';
+
+  if (info.isStart && info.isEnd) {
+    // Ein-Tages-Belegung: halbe Breite statt Vollbreite
+    el.classList.add('fc-half-single');
+    el.style.width = '50%';
+    el.style.marginLeft = '0';
+    el.style.marginRight = '0';
+  } else if (info.isStart) {
+    // Ankunftstag: nur die linke Hälfte belegen
+    el.classList.add('fc-half-start');
+    el.style.width = '50%';
+    el.style.marginLeft = '0';
+    el.style.marginRight = 'auto';
+  } else if (info.isEnd) {
+    // Abreisetag: nur die rechte Hälfte belegen
+    el.classList.add('fc-half-end');
+    el.style.width = '50%';
+    el.style.marginLeft = '50%';
+    el.style.marginRight = '0';
   }
 }
 
