@@ -648,6 +648,7 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
       <div class="booking-sidebar">
         <div class="nbox">
           <div class="nbox-title">➕ Belegung eintragen</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.7rem;line-height:1.5;">Checkin und Checkout um <strong>12:00 Mittag</strong>. So können an einem Tag zwei Belegungen stattfinden (Checkout am Mittag, Checkin am Mittag).</div>
           <div class="fg"><label>Von <span class="req">*</span></label><input id="b-von" type="date"/></div>
           <div class="fg"><label>Bis (Abreisetag) <span class="req">*</span></label><input id="b-bis" type="date"/></div>
           <div class="fg"><label>Name / Vertreter <span class="req">*</span></label><input id="b-name" type="text"/></div>
@@ -1147,15 +1148,35 @@ async function loadHome() {
   initKalHome(bel, events);
 }
 
-// FullCalendar nutzt exklusives Enddatum: 1 Tag addieren, damit das letzte Datum visuell enthalten ist
-function fcEnd(bisStr) {
-  const d = new Date(bisStr + 'T12:00:00');
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0,10);
+// Konvertiert Datumstring zu Mittag (12:00)
+function dateToNoon(dateStr) {
+  if (dateStr.includes('T')) return dateStr; // Bereits mit Zeit
+  return dateStr + 'T12:00:00';
+}
+
+// Prüft ob zwei Buchungen sich überlappen
+// Veranstaltungen (events) dürfen sich mit Buchungen überlappen
+function hasOverlap(vonStr, bisStr, exceptId = null) {
+  const von = new Date(dateToNoon(vonStr));
+  const bis = new Date(dateToNoon(bisStr));
+  
+  // Iteriere durch alle bestehenden Belegungen
+  const allBel = (window._allBelegungen || []).filter(b => b.id !== exceptId);
+  for (let b of allBel) {
+    const bVon = new Date(dateToNoon(b.von));
+    const bBis = new Date(dateToNoon(b.bis));
+    // Überlappung wenn: von1 < bis2 AND bis1 > von2
+    if (von < bBis && bis > bVon) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function initKalHome(bel, events) {
   if (!document.getElementById('kal-home')) return;
+  // Speichere alle Belegungen global für Overlap-Prüfung
+  window._allBelegungen = bel;
   if (!kalHome) {
     kalHome = new FullCalendar.Calendar(document.getElementById('kal-home'), {
       initialView:'dayGridMonth', locale:'de', firstDay:1, height:'auto',
@@ -1171,18 +1192,26 @@ function initKalHome(bel, events) {
     kalHome.render();
   }
   kalHome.removeAllEvents();
-  bel.forEach(b => kalHome.addEvent({
-    id: 'b-' + b.id,
-    title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
-    start: b.von, end: fcEnd(b.bis), backgroundColor:'#8b4513', borderColor:'#8b4513',
-    extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
-  }));
+  bel.forEach(b => {
+    const vonTime = dateToNoon(b.von);
+    const bisTime = dateToNoon(b.bis);
+    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
+    kalHome.addEvent({
+      id: 'b-' + b.id,
+      title: b.name + ((b.erwachsene||0)+(b.kinder||0) ? ' · ' + ((b.erwachsene||0)+(b.kinder||0)) + ' P.' : ''),
+      start: vonTime, end: bisPlusTick, backgroundColor:'#8b4513', borderColor:'#8b4513',
+      extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
+    });
+  });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+    const vonTime = dateToNoon(e.von);
+    const bisTime = dateToNoon(e.bis);
+    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
     kalHome.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: e.von, end: fcEnd(e.bis), backgroundColor:c, borderColor:c,
+      start: vonTime, end: bisPlusTick, backgroundColor:c, borderColor:c,
       extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
     });
   });
@@ -1274,21 +1303,29 @@ async function loadKalOv() {
     ? dDE(nextEv.von,{day:'2-digit',month:'short'})
     : 'Keine geplant';
   kalOv.removeAllEvents();
+  // Speichere alle Belegungen global für Overlap-Prüfung
+  window._allBelegungen = bel;
   bel.forEach(b => {
     const p = (b.erwachsene||0)+(b.kinder||0);
+    const vonTime = dateToNoon(b.von);
+    const bisTime = dateToNoon(b.bis);
+    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
     kalOv.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' · ' + p + ' P.' : ''),
-      start: b.von, end: fcEnd(b.bis), backgroundColor:'#8b4513', borderColor:'#8b4513',
+      start: vonTime, end: bisPlusTick, backgroundColor:'#8b4513', borderColor:'#8b4513',
       extendedProps: { typ:'belegung', dbId: b.id, erwachsene: b.erwachsene, kinder: b.kinder, schlafplaetze: b.schlafplaetze, email: b.email }
     });
   });
   events.forEach(e => {
     const c=e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+    const vonTime = dateToNoon(e.von);
+    const bisTime = dateToNoon(e.bis);
+    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
     kalOv.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: e.von, end: fcEnd(e.bis), backgroundColor:c, borderColor:c,
+      start: vonTime, end: bisPlusTick, backgroundColor:c, borderColor:c,
       extendedProps: { typ:'event', dbId: e.id, typname: e.typ, beschreibung: e.beschreibung }
     });
   });
@@ -1335,22 +1372,30 @@ async function loadBooking() {
   const events = r2.data || [];
 
   bookingCal.removeAllEvents();
+  // Speichere alle Belegungen global für Overlap-Prüfung
+  window._allBelegungen = bel;
   bel.forEach(b => {
     const p = (b.erwachsene||0) + (b.kinder||0);
+    const vonTime = dateToNoon(b.von);
+    const bisTime = dateToNoon(b.bis);
+    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
     bookingCal.addEvent({
       id: 'b-' + b.id,
       title: b.name + (p ? ' ('+p+' P.)' : ''),
-      start: b.von, end: fcEnd(b.bis),
+      start: vonTime, end: bisPlusTick,
       backgroundColor:'#8b4513', borderColor:'#8b4513',
       extendedProps:{typ:'belegung', dbId: b.id}
     });
   });
   events.forEach(e => {
     const c = e.typ==='familienversammlung'?'#2c5f8a':e.typ==='arbeitswochenende'?'#2d4a2d':'#7a6a58';
+    const vonTime = dateToNoon(e.von);
+    const bisTime = dateToNoon(e.bis);
+    const bisPlusTick = new Date(new Date(bisTime).getTime() + 1000).toISOString();
     bookingCal.addEvent({
       id: 'e-' + e.id,
       title: '📌 ' + e.titel,
-      start: e.von, end: fcEnd(e.bis),
+      start: vonTime, end: bisPlusTick,
       backgroundColor:c, borderColor:c,
       extendedProps:{typ:'event'}
     });
@@ -1396,6 +1441,12 @@ async function bookingSave() {
   if (von && bis && von >= bis) errors.push('Enddatum muss nach Startdatum liegen');
   if (!email || !email.includes('@')) errors.push('Gültige E-Mail erforderlich');
   if (schlaf < 1) errors.push('Schlafplätze fehlen');
+  
+  // Prüfe auf Überlappungen mit bestehenden Belegungen
+  if (!errors.length && hasOverlap(von, bis)) {
+    errors.push('Zeitraum überschneidet sich mit bestehender Belegung');
+  }
+  
   if (errors.length) { msg.className='statusbar fehler'; msg.textContent='✗ '+errors.join(' · '); return; }
 
   const btn = document.getElementById('b-btn-save');
@@ -1489,6 +1540,11 @@ async function saveEdit() {
   if (!von || !bis || von >= bis) { alert('Bitte gültige Daten wählen.'); return; }
 
   if (typ === 'belegung') {
+    // Prüfe auf Überlappungen mit anderen Belegungen (aber nicht mit sich selbst)
+    if (hasOverlap(von, bis, id)) {
+      alert('Zeitraum überschneidet sich mit bestehender Belegung!');
+      return;
+    }
     const { error } = await db.from('belegungen').update({ von, bis, name, beschreibung: beschr, erwachsene: erw, kinder: kind, schlafplaetze: schlaf, email, telefon }).eq('id', id);
     if (error) { alert('Fehler: '+error.message); return; }
   } else {
