@@ -103,6 +103,7 @@ header{
 .booking-sidebar .frow{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
 .booking-sidebar .btn{width:100%;}
 .kbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
+.kbox .fc-daygrid-year-view{padding:.6rem !important;}
 .fc{font-family:'DM Sans',sans-serif;}
 .fc .fc-toolbar-title{font-family:'Crimson Pro',serif;font-size:1.2rem;font-weight:400;color:var(--rust);}
 .fc .fc-button-primary{background:var(--rust)!important;border-color:var(--rust)!important;font-size:.72rem!important;border-radius:2px!important;padding:.28rem .6rem!important;}
@@ -121,14 +122,33 @@ header{
 
 
 /* Jahr-Ansicht */
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:18px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:0;margin:0;}
+.fc-view.fc-daygrid-year-view{padding:0 !important;display:flex;flex-wrap:wrap;gap:.5rem;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:14px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:0;margin:0;width:auto;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-top{display:flex;align-items:center;justify-content:center;padding:0;margin:0;width:100%;height:100%;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-number{display:none;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-events{display:flex;gap:4px;align-items:center;justify-content:center;padding:0;margin:0;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-events{display:flex;gap:1.5px;align-items:center;justify-content:center;padding:0;margin:0;height:14px;flex-wrap:wrap;}
 .fc-view.fc-daygrid-year-view .fc-event{background:transparent;border:none;padding:0;margin:0;}
-.fc-yr-dot{display:inline-block;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,0.03);}
+.fc-yr-dot{display:inline-block;width:5px;height:5px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.05);}
 .fc-view.fc-daygrid-year-view .fc-event-main-frame{padding:0;margin:0;}
+.fc-view.fc-daygrid-year-view .fc-col-header-cell{padding:2px 0 !important;font-size:.5rem !important;font-weight:600;color:var(--muted);}
+.fc-view.fc-daygrid-year-view .fc-col-header-cell-cushion{padding:1px 0 !important;font-size:.5rem !important;line-height:1;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-body{margin:0 !important;padding:0 !important;border:none !important;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-week{margin:0 !important;padding:0 !important;border:none !important;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-week-frame{padding:0 !important;margin:0 !important;}
+.fc-view.fc-daygrid-year-view .fc-row{padding:0 !important;margin:0 !important;display:grid;grid-template-columns:repeat(7,1fr);}
+.fc-view.fc-daygrid-year-view .fc-daygrid-month{flex:0 1 calc(25% - .4rem) !important;min-width:140px;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-month-body{border:none !important;margin:0 !important;padding:0 !important;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-month-frame{border:1px solid rgba(0,0,0,0.08) !important;padding:0 !important;margin:0 !important;display:flex;flex-direction:column;background:#fafaf8;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-month-title{padding:2px 3px !important;font-size:.55rem !important;font-weight:700 !important;line-height:1.2;border-bottom:1px solid rgba(0,0,0,0.05);background:#f5f1ed;}
+.fc-view.fc-daygrid-year-view .fc-toolbar-title{font-size:.85rem !important;margin-bottom:.3rem !important;letter-spacing:.1em;}
+.fc-view.fc-daygrid-year-view .fc-toolbar{padding:.3rem .4rem !important;gap:.3rem !important;}
+.fc-view.fc-daygrid-year-view .fc-toolbar-chunk{gap:.2rem !important;}
+.fc-view.fc-daygrid-year-view .fc-button-primary{padding:.2rem .4rem !important;font-size:.65rem !important;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-body-unselectable{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;width:100%;}
+.fc .fc-daygrid-year-view .fc-daygrid-body-unselectable{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;width:100%;}
+.fc-daygrid-year-view .fc-daygrid-body > div{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
+.fc-daygrid-year-container{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;width:100%;}
 
 /* Nächste Termine Box */
 .nbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
