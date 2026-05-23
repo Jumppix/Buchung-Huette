@@ -31,7 +31,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);}
 .pw-btn:hover{background:#a0521a;}
 .pw-btn.pw-admin{background:var(--aged);color:var(--ink);margin-top:.5rem;}
 .admin-only{display:none!important;}
-body.admin-mode .admin-only{display:inline-flex!important;}
+body.admin-mode .admin-only:not(.panel){display:inline-flex!important;}
+.panel.admin-only{display:none!important;}
+.panel.admin-only.on{display:block!important;}
 .admin-state{font-size:.75rem;color:var(--aged);margin-left:.8rem;}
 
 
@@ -103,7 +105,6 @@ header{
 .booking-sidebar .frow{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;}
 .booking-sidebar .btn{width:100%;}
 .kbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
-.kbox .fc-daygrid-year-view{padding:.6rem !important;}
 .fc{font-family:'DM Sans',sans-serif;}
 .fc .fc-toolbar-title{font-family:'Crimson Pro',serif;font-size:1.2rem;font-weight:400;color:var(--rust);}
 .fc .fc-button-primary{background:var(--rust)!important;border-color:var(--rust)!important;font-size:.72rem!important;border-radius:2px!important;padding:.28rem .6rem!important;}
@@ -122,33 +123,14 @@ header{
 
 
 /* Jahr-Ansicht */
-.fc-view.fc-daygrid-year-view{padding:0 !important;display:flex;flex-wrap:wrap;gap:.5rem;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:14px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:0;margin:0;width:auto;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-frame{min-height:18px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day{padding:0;margin:0;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-top{display:flex;align-items:center;justify-content:center;padding:0;margin:0;width:100%;height:100%;}
 .fc-view.fc-daygrid-year-view .fc-daygrid-day-number{display:none;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-day-events{display:flex;gap:1.5px;align-items:center;justify-content:center;padding:0;margin:0;height:14px;flex-wrap:wrap;}
+.fc-view.fc-daygrid-year-view .fc-daygrid-day-events{display:flex;gap:4px;align-items:center;justify-content:center;padding:0;margin:0;}
 .fc-view.fc-daygrid-year-view .fc-event{background:transparent;border:none;padding:0;margin:0;}
-.fc-yr-dot{display:inline-block;width:5px;height:5px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.05);}
+.fc-yr-dot{display:inline-block;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 2px rgba(0,0,0,0.03);}
 .fc-view.fc-daygrid-year-view .fc-event-main-frame{padding:0;margin:0;}
-.fc-view.fc-daygrid-year-view .fc-col-header-cell{padding:2px 0 !important;font-size:.5rem !important;font-weight:600;color:var(--muted);}
-.fc-view.fc-daygrid-year-view .fc-col-header-cell-cushion{padding:1px 0 !important;font-size:.5rem !important;line-height:1;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-body{margin:0 !important;padding:0 !important;border:none !important;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-week{margin:0 !important;padding:0 !important;border:none !important;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-week-frame{padding:0 !important;margin:0 !important;}
-.fc-view.fc-daygrid-year-view .fc-row{padding:0 !important;margin:0 !important;display:grid;grid-template-columns:repeat(7,1fr);}
-.fc-view.fc-daygrid-year-view .fc-daygrid-month{flex:0 1 calc(25% - .4rem) !important;min-width:140px;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-month-body{border:none !important;margin:0 !important;padding:0 !important;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-month-frame{border:1px solid rgba(0,0,0,0.08) !important;padding:0 !important;margin:0 !important;display:flex;flex-direction:column;background:#fafaf8;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-month-title{padding:2px 3px !important;font-size:.55rem !important;font-weight:700 !important;line-height:1.2;border-bottom:1px solid rgba(0,0,0,0.05);background:#f5f1ed;}
-.fc-view.fc-daygrid-year-view .fc-toolbar-title{font-size:.85rem !important;margin-bottom:.3rem !important;letter-spacing:.1em;}
-.fc-view.fc-daygrid-year-view .fc-toolbar{padding:.3rem .4rem !important;gap:.3rem !important;}
-.fc-view.fc-daygrid-year-view .fc-toolbar-chunk{gap:.2rem !important;}
-.fc-view.fc-daygrid-year-view .fc-button-primary{padding:.2rem .4rem !important;font-size:.65rem !important;}
-.fc-view.fc-daygrid-year-view .fc-daygrid-body-unselectable{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;width:100%;}
-.fc .fc-daygrid-year-view .fc-daygrid-body-unselectable{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;width:100%;}
-.fc-daygrid-year-view .fc-daygrid-body > div{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
-.fc-daygrid-year-container{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;width:100%;}
 
 /* Nächste Termine Box */
 .nbox{background:#fff;border:1px solid var(--div);border-radius:2px;padding:1.1rem;}
@@ -840,8 +822,9 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
         </div>
       </div>
       <div style="display:flex;gap:.6rem;margin-top:1rem">
-        <button class="btn btn-b admin-only" id="e-save-btn" onclick="saveEdit()">Speichern</button>
-        <button class="btn btn-r admin-only" id="e-del-btn" onclick="deleteEdit()">Löschen</button>
+        <button class="btn btn-b" id="e-save-btn" onclick="saveEdit()">Speichern</button>
+        <button class="btn btn-r" id="e-del-btn" onclick="deleteEdit()">Löschen</button>
+        <button class="btn btn-g" id="e-request-delete-btn" onclick="requestBookingDelete()" style="display:none;">Löschanfrage senden</button>
         <button class="btn btn-g" onclick="closeM('mo-booking-edit')">Abbrechen</button>
       </div>
     </div>
@@ -857,8 +840,8 @@ footer{background:#14100c;color:rgba(232,223,200,.3);padding:1.1rem 2.5rem;displ
 // ════════════════════════════════════════
 const CFG = {
   pw:      '762870',
-  sbUrl:   'https://jvxlhlpqsiipplrwozje.supabase.co',
-  sbKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2eGxobHBxc2lpcHBscndvemplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDI1MjMsImV4cCI6MjA5NDcxODUyM30.7RkkdCCh2tCBNDPjN_h6-zCSdX8NmGAkQnOjOVWTp3A',
+  sbUrl:   'http://api.mariannenhuette.dyndns.org:26080',
+  sbKey:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc5NTQyMTI4LCJleHAiOjE5MzcyMjIxMjh9.MwFm5UHiiHtRWQz-12ZANiR7daPaf-ZgDvVuN_2vE6I',
   bildSrv: 'https://DEIN-BILDSERVER.de',
   emailFunctionUrl: '',
   admins: [
@@ -920,24 +903,40 @@ function logoutAdmin() {
 
 function setBookingModalMode() {
   const admin = isAdmin();
-  const canRequest = !admin && currentEdit && currentEdit.type === 'belegung';
+  const canRequestChange = !admin && currentEdit && currentEdit.type === 'belegung' && currentEdit.status === 'approved';
+  const canDeletePending = !admin && currentEdit && currentEdit.type === 'belegung' && currentEdit.status === 'pending';
+  const canRequestDelete = !admin && currentEdit && currentEdit.type === 'belegung' && currentEdit.status === 'approved';
   ['e-von','e-bis','e-name','e-typ','e-desc','e-erw','e-kind','e-schlaf','e-email','e-tel']
-    .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !(admin || canRequest); });
+    .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !(admin || canRequestChange); });
   const title = document.getElementById('edit-title');
   if (title) title.textContent = admin
     ? (currentEdit && currentEdit.type === 'belegung' ? 'Belegung bearbeiten' : 'Event bearbeiten')
-    : (currentEdit && currentEdit.type === 'belegung' ? 'Belegung ansehen / Änderungsanfrage' : 'Termin ansehen');
+    : (currentEdit && currentEdit.type === 'belegung'
+        ? (canDeletePending ? 'Unbestätigte Belegungsanfrage' : 'Belegung ansehen / Änderungsanfrage')
+        : 'Termin ansehen');
   const saveBtn = document.getElementById('e-save-btn');
   if (saveBtn) {
     if (admin) {
       saveBtn.textContent = 'Speichern';
       saveBtn.style.display = '';
-    } else if (canRequest) {
+    } else if (canRequestChange) {
       saveBtn.textContent = 'Änderungsanfrage senden';
       saveBtn.style.display = '';
     } else {
       saveBtn.style.display = 'none';
     }
+  }
+  const deleteBtn = document.getElementById('e-del-btn');
+  if (deleteBtn) {
+    if (admin || canDeletePending) {
+      deleteBtn.style.display = '';
+    } else {
+      deleteBtn.style.display = 'none';
+    }
+  }
+  const requestDeleteBtn = document.getElementById('e-request-delete-btn');
+  if (requestDeleteBtn) {
+    requestDeleteBtn.style.display = canRequestDelete ? '' : 'none';
   }
 }
 
@@ -1325,7 +1324,7 @@ async function loadKalOv() {
     dbQ(d => d.from('belegungen').select('*').order('von')),
     dbQ(d => d.from('special_events').select('*').order('von'))
   ]);
-  const bel    = r1.data || [];
+  const bel    = (r1.data || []).filter(b => b.status !== 'rejected');
   const events = r2.data || [];
   const belJahr  = bel.filter(b => b.von >= jarAnf);
   const belKunft = bel.filter(b => b.bis > jetzt);
@@ -1409,7 +1408,7 @@ async function loadBooking() {
     dbQ(d => d.from('belegungen').select('*').order('von')),
     dbQ(d => d.from('special_events').select('*').order('von'))
   ]);
-  const bel    = r1.data || [];
+  const bel    = (r1.data || []).filter(b => b.status !== 'rejected');
   const events = r2.data || [];
   window._allBelegungen = bel;
   bookingCal.removeAllEvents();
@@ -1436,7 +1435,7 @@ async function loadBooking() {
       title: '📌 ' + e.titel,
       start: vonTime, end: bisTime,
       backgroundColor:c, borderColor:c,
-      extendedProps:{typ:'event'}
+      extendedProps:{typ:'event', dbId:e.id, typname:e.typ, beschreibung:e.beschreibung}
     });
   });
   status.className = 'statusbar ok';
@@ -1445,6 +1444,7 @@ async function loadBooking() {
 }
 
 function renderBookingList(belegungen, events) {
+  const admin = isAdmin();
   const jetzt = HEUTE.toISOString().slice(0,10);
   const items = [
     ...belegungen.filter(b => b.bis > jetzt).map(b => ({...b, _art:'bel'})),
@@ -1457,7 +1457,8 @@ function renderBookingList(belegungen, events) {
       const typ = item.typ === 'familienversammlung' ? '👨‍👩‍👧‍👦' : item.typ === 'arbeitswochenende' ? '🔨' : '📌';
       return `<div class="nitem ev"><div class="nname">${typ} ${item.name}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`;
     }
-    return `<div class="nitem${item.status==='pending' ? ' booking-pending' : ''}"><div class="nname">${item.name}${item.status==='pending' ? '<span class="booking-pending-badge">Unbestätigt</span>' : ''}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div></div>`;
+    const actionBtn = `<div class="ebar" style="margin-top:.7rem;"><button class="btn btn-sm ${admin ? 'btn-b' : 'btn-g'}" onclick="openEditModal('belegung','${item.id}')">${admin ? 'Bearbeiten' : 'Änderungsanfrage'}</button></div>`;
+    return `<div class="nitem${item.status==='pending' ? ' booking-pending' : ''}"><div class="nname">${item.name}${item.status==='pending' ? '<span class="booking-pending-badge">Unbestätigt</span>' : ''}</div><div class="ndat">${dDE(item.von,{day:'2-digit',month:'short'})} – ${dDE(item.bis,{day:'2-digit',month:'short',year:'numeric'})}</div>${actionBtn}</div>`;
   }).join('');
 }
 
@@ -1476,6 +1477,16 @@ function hasOverlap(vonStr, bisStr, exceptId = null) {
   return false;
 }
 
+function validateBookingValues(values, requireEmail = true) {
+  const errors = [];
+  if (!values.name || !values.name.trim()) errors.push('Name fehlt');
+  if (!values.von || !values.bis) errors.push('Datum fehlt');
+  if (values.von && values.bis && values.von >= values.bis) errors.push('Enddatum muss nach Startdatum liegen');
+  if (requireEmail && (!values.email || !values.email.includes('@'))) errors.push('Gültige E-Mail erforderlich');
+  if (!values.schlafplaetze || values.schlafplaetze < 1) errors.push('Schlafplätze fehlen');
+  return errors;
+}
+
 async function bookingSave() {
   const name   = document.getElementById('b-name').value.trim();
   const von    = document.getElementById('b-von').value;
@@ -1486,14 +1497,7 @@ async function bookingSave() {
   const email  = document.getElementById('b-email').value.trim();
   const telefon= document.getElementById('b-tel').value.trim();
   const msg    = document.getElementById('booking-status');
-  const errors = [];
-  if (!name)                          errors.push('Name fehlt');
-  if (!von || !bis)                   errors.push('Datum fehlt');
-  if (von && bis && von >= bis)       errors.push('Enddatum muss nach Startdatum liegen');
-  if (!email || !email.includes('@')) errors.push('Gültige E-Mail erforderlich');
-  if (schlaf < 1)                     errors.push('Schlafplätze fehlen');
-  if (!errors.length && hasOverlap(von, bis))
-    errors.push('Zeitraum überschneidet sich mit bestehender Belegung');
+  const errors = validateBookingValues({ name, von, bis, email, schlafplaetze: schlaf });
   if (errors.length) { msg.className='statusbar fehler'; msg.textContent='✗ '+errors.join(' · '); return; }
   const btn = document.getElementById('b-btn-save');
   btn.disabled = true; btn.textContent = 'Speichern…';
@@ -1528,6 +1532,7 @@ async function openEditModal(type, id) {
     const { data, error } = await dbQ(d => d.from('belegungen').select('*').eq('id',id).limit(1).single());
     if (error || !data) { alert('Eintrag nicht gefunden'); return; }
     const b = data;
+    currentEdit.status = b.status || 'pending';
     document.getElementById('e-von').value   = b.von;
     document.getElementById('e-bis').value   = b.bis;
     document.getElementById('e-name').value  = b.name || '';
@@ -1568,7 +1573,15 @@ async function saveEdit() {
   const tel   = document.getElementById('e-tel').value.trim()   || null;
   if (!von || !bis || von >= bis) { alert('Bitte gültige Daten wählen.'); return; }
   if (typ === 'belegung' && !isAdmin()) {
-    await requestBookingEdit(id, { von, bis, name, beschreibung:beschr, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:tel });
+    if (currentEdit.status !== 'approved') {
+      alert('Änderungsanfragen sind nur für bestätigte Einträge möglich. Ungestützte Buchungsanfragen können stattdessen gelöscht werden.');
+      return;
+    }
+    const values = { von, bis, name, beschreibung:beschr, erwachsene:erw, kinder:kind, schlafplaetze:schlaf, email, telefon:tel };
+    const errors = validateBookingValues(values, false);
+    if (errors.length) { alert('✗ ' + errors.join(' · ')); return; }
+    if (hasOverlap(von, bis, id)) { alert('✗ Zeitraum überschneidet sich mit bestehender Belegung!'); return; }
+    await requestBookingEdit(id, values);
     return;
   }
   if (!isAdmin()) { alert('Nur Admin kann Änderungen speichern.'); return; }
@@ -1587,8 +1600,10 @@ async function saveEdit() {
 
 async function deleteEdit() {
   if (!currentEdit) return;
-  if (!isAdmin()) { alert('Nur Admin kann löschen.'); return; }
-  if (!confirm('Eintrag wirklich löschen?')) return;
+  if (!isAdmin() && !(currentEdit.type === 'belegung' && currentEdit.status === 'pending')) { alert('Nur Admin kann löschen.'); return; }
+  if (!confirm(currentEdit.type === 'belegung' && !isAdmin()
+      ? 'Unbestätigte Buchungsanfrage wirklich löschen?'
+      : 'Eintrag wirklich löschen?')) return;
   const id = currentEdit.id;
   if (currentEdit.type === 'belegung') {
     const { error } = await db.from('belegungen').delete().eq('id',id);
@@ -1642,10 +1657,11 @@ async function loadAdminRequests() {
       </div>`;
     }
     const r = req.item;
-    const data = r.neue_daten || {};
+    const isDelete = r.change_type === 'delete';
+    const data = isDelete ? (r.alte_daten || {}) : (r.neue_daten || {});
     return `<div class="request-item">
       <div class="request-header">
-        <strong>Änderungsanfrage</strong>
+        <strong>${isDelete ? 'Löschanfrage' : 'Änderungsanfrage'}</strong>
         <span class="request-status pending">Ausstehend</span>
       </div>
       <div class="request-details">
@@ -1655,7 +1671,7 @@ async function loadAdminRequests() {
         <div>Ursprung: ${dDE(r.erstellt_am,{day:'2-digit',month:'short',year:'numeric'})}</div>
       </div>
       <div class="request-actions">
-        <button class="btn btn-p btn-sm" onclick="approveChangeRequest('${r.id}')">Bestätigen</button>
+        <button class="btn btn-p btn-sm" onclick="approveChangeRequest('${r.id}')">${isDelete ? 'Löschen' : 'Bestätigen'}</button>
         <button class="btn btn-g btn-sm" onclick="rejectChangeRequest('${r.id}')">Ablehnen</button>
       </div>
     </div>`;
@@ -1672,7 +1688,7 @@ async function approveBookingRequest(id) {
 
 async function rejectBookingRequest(id) {
   if (!confirm('Belegung ablehnen?')) return;
-  const { error } = await db.from('belegungen').update({ status:'rejected' }).eq('id',id);
+  const { error } = await db.from('belegungen').delete().eq('id',id);
   if (error) { alert('Fehler: '+error.message); return; }
   loadBooking(); loadKalOv(); loadAdminRequests();
 }
@@ -1682,12 +1698,17 @@ async function approveChangeRequest(reqId) {
   const { data, error } = await dbQ(d => d.from('booking_change_requests').select('*').eq('id',reqId).limit(1).single());
   if (error || !data) { alert('Anfrage nicht gefunden'); return; }
   const change = data;
-  const updateData = change.neue_daten || {};
-  const overlap = hasOverlap(updateData.von, updateData.bis, change.booking_id);
-  if (overlap) { alert('Zeitraum überschneidet sich mit bestehender Belegung!'); return; }
   const email = sessionStorage.getItem('adminEmail') || 'admin';
-  const { error: err } = await db.from('belegungen').update(updateData).eq('id', change.booking_id);
-  if (err) { alert('Fehler: '+err.message); return; }
+  if (change.change_type === 'delete') {
+    const { error: err } = await db.from('belegungen').delete().eq('id', change.booking_id);
+    if (err) { alert('Fehler: '+err.message); return; }
+  } else {
+    const updateData = change.neue_daten || {};
+    const overlap = hasOverlap(updateData.von, updateData.bis, change.booking_id);
+    if (overlap) { alert('Zeitraum überschneidet sich mit bestehender Belegung!'); return; }
+    const { error: err } = await db.from('belegungen').update(updateData).eq('id', change.booking_id);
+    if (err) { alert('Fehler: '+err.message); return; }
+  }
   const { error: err2 } = await db.from('booking_change_requests').update({ status:'approved', genehmigt_von_email:email, genehmigt_am:new Date().toISOString() }).eq('id', reqId);
   if (err2) { alert('Fehler: '+err2.message); return; }
   loadBooking(); loadKalOv(); loadAdminRequests();
@@ -1703,6 +1724,7 @@ async function rejectChangeRequest(reqId) {
 async function requestBookingEdit(id, values) {
   const { data, error } = await dbQ(d => d.from('belegungen').select('*').eq('id',id).limit(1).single());
   if (error || !data) { alert('Belegung nicht gefunden.'); return; }
+  if (data.status !== 'approved') { alert('Änderungsanfragen sind nur für bestätigte Einträge möglich.'); return; }
   const oldData = {
     name: data.name,
     von: data.von,
@@ -1714,7 +1736,12 @@ async function requestBookingEdit(id, values) {
     email: data.email,
     telefon: data.telefon
   };
-  const requester = values.email || data.email || sessionStorage.getItem('adminEmail') || 'unbekannt';
+  const effectiveEmail = values.email?.trim() || data.email || '';
+  const errors = validateBookingValues({ ...values, email: effectiveEmail }, true);
+  if (errors.length) { alert('✗ ' + errors.join(' · ')); return; }
+  if (hasOverlap(values.von, values.bis, id)) { alert('Zeitraum überschneidet sich mit bestehender Belegung!'); return; }
+  values.email = values.email?.trim() || data.email || null;
+  const requester = values.email || sessionStorage.getItem('adminEmail') || 'unbekannt';
   const { error: err } = await db.from('booking_change_requests').insert({
     booking_id: id,
     status: 'pending',
@@ -1729,6 +1756,44 @@ async function requestBookingEdit(id, values) {
   alert('Änderungsanfrage wurde an die Admins gesendet.');
   loadBooking(); loadAdminRequests();
   notifyAdmins('Änderungsanfrage für Belegung', `Belegung ${values.name} wurde zur Änderung angefragt.`);
+}
+
+async function requestBookingDelete() {
+  if (!currentEdit || currentEdit.type !== 'belegung') return;
+  if (isAdmin()) { alert('Admins können Einträge direkt löschen.'); return; }
+  if (currentEdit.status !== 'approved') {
+    alert('Löschanfragen sind nur für bestätigte Einträge möglich.');
+    return;
+  }
+  if (!confirm('Möchtest du eine Löschanfrage für diese bestätigte Belegung senden?')) return;
+  const { data, error } = await dbQ(d => d.from('belegungen').select('*').eq('id',currentEdit.id).limit(1).single());
+  if (error || !data) { alert('Belegung nicht gefunden.'); return; }
+  const oldData = {
+    name: data.name,
+    von: data.von,
+    bis: data.bis,
+    beschreibung: data.beschreibung,
+    erwachsene: data.erwachsene,
+    kinder: data.kinder,
+    schlafplaetze: data.schlafplaetze,
+    email: data.email,
+    telefon: data.telefon
+  };
+  const requester = data.email || sessionStorage.getItem('adminEmail') || 'unbekannt';
+  const { error: err } = await db.from('booking_change_requests').insert({
+    booking_id: currentEdit.id,
+    status: 'pending',
+    change_type: 'delete',
+    angefordert_von_email: requester,
+    neue_daten: null,
+    alte_daten: oldData,
+    erstellt_am: new Date().toISOString()
+  });
+  if (err) { alert('Fehler: '+err.message); return; }
+  closeM('mo-booking-edit'); currentEdit = null;
+  alert('Löschanfrage wurde an die Admins gesendet.');
+  loadBooking(); loadAdminRequests();
+  notifyAdmins('Löschanfrage für Belegung', `Belegung ${oldData.name} wurde zur Löschung angefragt.`);
 }
 
 async function notifyAdmins(subject, body) {
